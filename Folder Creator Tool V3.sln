@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.8.34309.116
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Folder Creator Tool V3", "Folder Creator Tool V3.csproj", "{FEEFC0F1-CFD0-47A1-9DD9-32F569846A71}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{FEEFC0F1-CFD0-47A1-9DD9-32F569846A71}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FEEFC0F1-CFD0-47A1-9DD9-32F569846A71}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FEEFC0F1-CFD0-47A1-9DD9-32F569846A71}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FEEFC0F1-CFD0-47A1-9DD9-32F569846A71}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {B727F111-53C7-41C7-B349-8F150C4FED5F}
+	EndGlobalSection
+EndGlobal
