@@ -69,37 +69,33 @@ namespace Folder_Creator_Tool_V3
 
         List<PdmObjectId> AtelierFolderIds;
 
-        List<PdmObjectId> DossierRepIds; // Recuperation des Ids de la liste de dossier rep pour creation du rep indice
         PdmObjectId DossierRepId; //Recuperation de l'Id du dossier rep pour creation du rep indice
 
-        List<PdmObjectId> DossierIndiceIds; // Recuperation des Ids de la liste de dossier Ind pour creation du reste des dossiers
         PdmObjectId DossierIndiceId; //Recuperation de l'Id du dossier Indice pour creation du reste des dossiers
 
-        List<PdmObjectId> DossierFraisageIds; //Recuperation des Ids de la liste du dossier fraisage pour creation des dossiers utilisateurs
         PdmObjectId DossierFraisageId; //Recuperation de l'Id du dossier fraisage pour creation des dossiers utilisateurs
 
-        List<PdmObjectId> DossierElectrodeIds; //Recuperation des Ids de la liste du dossier electrode pour creation des dossiers 
         PdmObjectId DossierElectrodeId; //Recuperation de l'Id du dossier electrode pour creation des dossiers
 
         string TexteIndiceFolder;
-        List<PdmObjectId> DocuDossierIndiceIds = new List<PdmObjectId>() ; 
+        List<PdmObjectId> DocuDossierIndiceIds = new List<PdmObjectId>();
 
         public Form1()
         {
             InitializeComponent();
             //Current project
-        
-         
+
+
 
 
             //-----------Connexion a TopSolid-----------------------------------------------------------------------------------------------------------------
 
             bool TSConnected = TopSolidDesignHost.IsConnected;
             {
-                if (TSConnected == false)
+                /*if (TSConnected == false)
                     MessageBox.Show("Tentative de connexion a TopSolid");
                 else
-                    MessageBox.Show("Deja connecté");
+                    MessageBox.Show("Deja connecté");*/
 
                 try
                 {
@@ -111,13 +107,14 @@ namespace Folder_Creator_Tool_V3
                     MessageBox.Show("Impossible de se connecter à TopSolid " + ex.Message);
                     return;
                 }
-                if (TSConnected == false)
+                /*if (TSConnected == false)
                     MessageBox.Show("Connexion réussi");
                 else
-                    MessageBox.Show("Connexion échouée");
+                    MessageBox.Show("Connexion échouée");*/
             }
 
-//-----------Récupération ID projet courant----------------------------------------------------------------------------------------------------------------------------
+
+            //-----------Récupération ID projet courant----------------------------------------------------------------------------------------------------------------------------
             try
             {
                 CurrentProjectPdmId = TopSolidHost.Pdm.GetCurrentProject();   // Récupération ID projet courant
@@ -128,7 +125,7 @@ namespace Folder_Creator_Tool_V3
                 return;
             }
 
-//-----------Récupération Nom projet courant----------------------------------------------------------------------------------------------------------------------------
+            //-----------Récupération Nom projet courant----------------------------------------------------------------------------------------------------------------------------
             try
             {
                 CurrentProjectName = TopSolidHost.Pdm.GetName(CurrentProjectPdmId);  // Récupération Nom projet
@@ -143,7 +140,7 @@ namespace Folder_Creator_Tool_V3
                 MessageBox.Show("Echec de la récupération de l'id du projet courant " + ex.Message);
             }
 
-//-----------Récupération ID Document----------------------------------------------------------------------------------------------------------------------------
+            //-----------Récupération ID Document----------------------------------------------------------------------------------------------------------------------------
 
             try
             {
@@ -156,14 +153,14 @@ namespace Folder_Creator_Tool_V3
                 return;
             }
 
-//----------- Récupération du nom du document courant----------------------------------------------------------------------------------------------------------------------------         
+            //----------- Récupération du nom du document courant----------------------------------------------------------------------------------------------------------------------------         
             try
             {
                 string CurrentDocumentName = TopSolidHost.Documents.GetName(CurrentDocumentId);  // Récupération du nom du document courant
                 TextCurrentDocumentName = CurrentDocumentName;
 
                 textBox9.Text = TextCurrentDocumentName; //Affichage du nom du document courent dans la case texte
-                
+
 
 
             }
@@ -172,12 +169,13 @@ namespace Folder_Creator_Tool_V3
                 MessageBox.Show("Echec de la récupération du nom du document courant " + ex.Message);
             }
 
-//-------------Creation de la variable pour la recherche du dossier atelier-------------------------------------------------------------------------------------------------------------------
-            
+            //-------------Creation de la variable pour la recherche du dossier atelier-------------------------------------------------------------------------------------------------------------------
+
             try
-            {       AtelierFolderIds = TopSolidHost.Pdm.SearchFolderByName(CurrentProjectPdmId, "02-Atelier");
-                    AtelierFolderId = AtelierFolderIds[0];
-                  
+            {
+                AtelierFolderIds = TopSolidHost.Pdm.SearchFolderByName(CurrentProjectPdmId, "02-Atelier");
+                AtelierFolderId = AtelierFolderIds[0];
+
             }
             catch (Exception ex)
             {
@@ -187,7 +185,7 @@ namespace Folder_Creator_Tool_V3
 
 
 
-//------------- Récupération du commentaire (Repère) du document courant----------------------------------------------------------------------------------------------------------------------------
+            //------------- Récupération du commentaire (Repère) du document courant----------------------------------------------------------------------------------------------------------------------------
 
             try
             {
@@ -195,7 +193,7 @@ namespace Folder_Creator_Tool_V3
                 TextCurrentDocumentCommentaire = TopSolidHost.Parameters.GetTextLocalizedValue(CurrentDocumentCommentaireId);
 
                 textBox2.Text = TextCurrentDocumentCommentaire; //Affichage du commentaire (Repère) dans la case texte
-                
+
 
                 //----------- Récupération Récupération de la désignation du document courant----------------------------------------------------------------------------------------------------------------------------
             }
@@ -204,7 +202,7 @@ namespace Folder_Creator_Tool_V3
                 MessageBox.Show("Echec de la récupération du Commentaire " + ex.Message);
             }
 
-//----------- Récupération de la désignation du document courant----------------------------------------------------------------------------------------------------------------------------
+            //----------- Récupération de la désignation du document courant----------------------------------------------------------------------------------------------------------------------------
 
             try
             {
@@ -220,50 +218,22 @@ namespace Folder_Creator_Tool_V3
                 MessageBox.Show("Echec de la récupération du Commentaire " + ex.Message);
             }
 
-//----------- Recuperation du texte modifié par l'utilisateur pour nommer les dossiers----------------------------------------------------------------------------------------------------------------------------
+            //----------- Variable des differents façon de nommer le dossier indice----------------------------------------------------------------------------------------------------------------------------
+
 
             textBox8.Text = "A"; //Affichage de l'indice
-            IndiceTxtFormat00 = "Ind" + textBox8.Text;
-            IndiceTxtFormat01 = "Ind " + textBox8.Text;
 
-            
-            CommentaireTxtFormat00 = textBox2.Text + "-";
-            CommentaireTxtFormat01 = textBox2.Text + " ";
-
-            TexteDossierRep = textBox2.Text + " - " + textBox3.Text; //Nom du dossier repere
-            
-            
 
 
 
         }
-      
 
-    //------------------------------Dérivation de la piece dans le dossier 3D-------------
+
+        //------------------------------Bouton click dossier-------------
 
         private void button2_Click_1(object sender, EventArgs e)
         {
-            //Recuperation du texte modifié par l'utilisateur pour nommer les dossiers.
-            TextBoxCommentaireValue = textBox2.Text; //Repere de la piece
-            TextBoxIndiceValue = textBox8.Text; //Indice de la piece
-            TextBoxDesignationValue = textBox3.Text; //Designation de la piece
-            TextBoxNomMouleValue = textBox10.Text; //Numero du moule
-            TexteIndiceFolder = "Ind " + TextBoxIndiceValue;
 
-            if (!TopSolidHost.Application.StartModification("My Action", false)) return;
-
-            try
-            {
-
-                TopSolidHost.Elements.SetComment(CurrentDocumentCommentaireId, TextBoxCommentaireValue); //Edition du parametre commentaire
-                TopSolidHost.Elements.SetComment(CurrentDocumentDesignationId, TextBoxDesignationValue); //Edition du parametre commentaire
-                TopSolidHost.Application.EndModification(true, true);
-
-            }
-            catch
-            {
-                TopSolidHost.Application.EndModification(false, false);
-            }
 
 
 
@@ -279,147 +249,151 @@ namespace Folder_Creator_Tool_V3
                                      //Récuperation des noms de dossiers
                 try
                 {
+                    //Recuperation du texte modifié par l'utilisateur pour nommer les dossiers.
+                    TextBoxCommentaireValue = textBox2.Text; //Repere de la piece
+                    TextBoxIndiceValue = textBox8.Text; //Indice de la piece
+                    TextBoxDesignationValue = textBox3.Text; //Designation de la piece
+                    TextBoxNomMouleValue = textBox10.Text; //Numero du moule
+                    TexteIndiceFolder = "Ind " + TextBoxIndiceValue;
+                    TexteDossierRep = textBox2.Text + " - " + textBox3.Text; //Nom du dossier repere
+
+                    IndiceTxtFormat00 = "Ind" + textBox8.Text;
+                    IndiceTxtFormat01 = "Ind " + textBox8.Text;
+
+
+                    CommentaireTxtFormat00 = textBox2.Text + "-";
+                    CommentaireTxtFormat01 = textBox2.Text + " ";
+
+                    TopSolidHost.Application.StartModification("", true);
+                    TopSolidHost.Elements.SetComment(CurrentDocumentCommentaireId, TextBoxCommentaireValue); //Edition du parametre commentaire
+                    TopSolidHost.Elements.SetComment(CurrentDocumentDesignationId, TextBoxDesignationValue); //Edition du parametre commentaire
+                    TopSolidHost.Application.EndModification(true, true);
                     TopSolidHost.Pdm.GetConstituents(AtelierFolderId, out FolderIds, out DocumentsIds);
 
-                                int i=0; // index
-                            if (FolderIds.Count != 0)
+                    int i = 0; // index
+                    if (FolderIds.Count != 0)
+                    {
+                        ConstituantFolderName = TopSolidHost.Pdm.GetName(FolderIds[i]); //Obtention des noms de dossier
+                        test00 = ConstituantFolderName.StartsWith(CommentaireTxtFormat00, StringComparison.OrdinalIgnoreCase);
+                        test01 = ConstituantFolderName.StartsWith(CommentaireTxtFormat01, StringComparison.OrdinalIgnoreCase);
+                        for (i = 0; i < FolderIds.Count; i++) //Boucle de décompte
+                        {
+
+
+                            DossierExistantId = FolderIds[i];
+
+                            if (test00 ^ test01)
                             {
-                                ConstituantFolderName = TopSolidHost.Pdm.GetName(FolderIds[i]); //Obtention des noms de dossier
-                                test00 = ConstituantFolderName.StartsWith(CommentaireTxtFormat00, StringComparison.OrdinalIgnoreCase);
-                                test01 = ConstituantFolderName.StartsWith(CommentaireTxtFormat01, StringComparison.OrdinalIgnoreCase);
-                                for (i = 0; i < FolderIds.Count; i++) //Boucle de décompte
+                                if (TexteDossierRep != ConstituantFolderName)
                                 {
+                                    DialogResult result = MessageBox.Show("Un dossier existe avec le même repère mais avec une désignation différente." + Environment.NewLine + "Merci de vérifier et de corriger avant de continuer " + Environment.NewLine + "Nom du dossier détecté = " + ConstituantFolderName + Environment.NewLine + "Nom du dossier qui doit être créé : " + TexteDossierRep, "Doublon potentiel ", MessageBoxButtons.RetryCancel);
+
+                                    if (result == DialogResult.Retry)
+                                    {
+                                        recommencer = true; // Si l'utilisateur clique sur "Retry", recommencer sera true et la boucle while recommencera
+                                    }
+                                    else if (result == DialogResult.Cancel)
+                                    {
+                                        break;
+                                    }
+                                }
 
 
-                                        DossierExistantId = FolderIds[i];
+                                else if (TexteDossierRep == ConstituantFolderName)
+                                {
+                                    MessageBox.Show("le dossier " + TexteDossierRep + " existe déjà. Recherche du dossier d'indice");
+                                    TopSolidHost.Pdm.GetConstituents(DossierExistantId, out IndiceFolderIds, out DocumentsInIndiceFolder);
+                                    if (IndiceFolderIds.Count != 0)
+                                    {
 
-                                        if (test00 ^ test01)
+                                        for (int i3 = 0; i3 < IndiceFolderIds.Count; i3++)
                                         {
-                                            if (TexteDossierRep != ConstituantFolderName)
-                                            {
-                                                DialogResult result = MessageBox.Show("Un dossier existe avec le même repère mais avec une désignation différente." + Environment.NewLine + "Merci de vérifier et de corriger avant de continuer " + Environment.NewLine + "Nom du dossier détecté = " + ConstituantFolderName + Environment.NewLine + "Nom du dossier qui doit être créé : " + TexteDossierRep, "Doublon potentiel ", MessageBoxButtons.RetryCancel);
+                                            IndiceFolderName = TopSolidHost.Pdm.GetName(IndiceFolderIds[i3]);
+                                            test02 = IndiceFolderName.Equals(IndiceTxtFormat00, StringComparison.OrdinalIgnoreCase);
+                                            test03 = IndiceFolderName.Equals(IndiceTxtFormat01, StringComparison.OrdinalIgnoreCase);
 
-                                                if (result == DialogResult.Retry)
-                                                {
-                                                    recommencer = true; // Si l'utilisateur clique sur "Retry", recommencer sera true et la boucle while recommencera
-                                                }
-                                                else if (result == DialogResult.Cancel)
-                                                {
-                                                    break;
-                                                }
+                                            if (test02 ^ test03)
+                                            {
+                                                MessageBox.Show("les dossiers existe deja");
+                                                return;
                                             }
 
-
-                                            else if (TexteDossierRep == ConstituantFolderName)
-                                            {
-                                                    MessageBox.Show("le dossier " + TexteDossierRep + " existe déjà. Recherche du dossier d'indice");
-                                                            TopSolidHost.Pdm.GetConstituents(DossierExistantId, out IndiceFolderIds, out DocumentsInIndiceFolder);
-                                                    if (IndiceFolderIds.Count != 0)
-                                                    {
-
-                                                        for (int i3 = 0; i3 < IndiceFolderIds.Count; i3++)
-                                                        {
-                                                            IndiceFolderName = TopSolidHost.Pdm.GetName(IndiceFolderIds[i3]);
-                                                            test02 = IndiceFolderName.Equals(IndiceTxtFormat00, StringComparison.OrdinalIgnoreCase);
-                                                            test03 = IndiceFolderName.Equals(IndiceTxtFormat01, StringComparison.OrdinalIgnoreCase);
-
-                                                            if (test02 ^ test03)
-                                                            {
-                                                                MessageBox.Show("les dossiers existe deja");
-                                                                return;
-                                                            }
-
-                                                        }
-                                                    
-                                                    }
-                                                    try
-                                                    {
-                                                            MessageBox.Show("Création du dossier Ind");
-                                                            DossierIndiceId=TopSolidHost.Pdm.CreateFolder(DossierExistantId, TexteIndiceFolder);
-                                                            System.Threading.Thread.Sleep(1000);
-                                                            
-
-                                                            //Creation du reste des dossiers
-                                                            TopSolidHost.Pdm.CreateFolder(DossierIndiceId, "3D");
-                                                            DossierElectrodeId=TopSolidHost.Pdm.CreateFolder(DossierIndiceId, "Electrode");
-                                                            DossierFraisageId=TopSolidHost.Pdm.CreateFolder(DossierIndiceId, "Fraisage");
-                                                            TopSolidHost.Pdm.CreateFolder(DossierIndiceId, "Methode");
-                                                            System.Threading.Thread.Sleep(1000);
-
-                                                            //Cration des dossier utilisateur dans le dossier fraisage
-                                                            
-                                                            TopSolidHost.Pdm.CreateFolder(DossierFraisageId, "BEHE");
-                                                            TopSolidHost.Pdm.CreateFolder(DossierFraisageId, "FLFA");
-                                                            TopSolidHost.Pdm.CreateFolder(DossierFraisageId, "SETE");
-                                                            TopSolidHost.Pdm.CreateFolder(DossierFraisageId, "THHE");
-                                                            System.Threading.Thread.Sleep(1000);
-
-                                                            //Creation des dossiers dans le dossier Electrode
-                                                            
-                                                            TopSolidHost.Pdm.CreateFolder(DossierElectrodeId, "Parallélisée");
-                                                            TopSolidHost.Pdm.CreateFolder(DossierElectrodeId, "Plan brut");
-                                                            TopSolidHost.Pdm.CreateFolder(DossierElectrodeId, "Usinage");
-                                                    }
-                                                    catch (Exception ex)
-                                                    {
-                                                            MessageBox.Show("erreur" + ex.Message);
-                                                    }
-
-
-
-
-
-
-
-
-
-                                }
                                         }
-                                        
-                                }
+
+                                    }
+
+                                    MessageBox.Show("Création du dossier Ind");
+                                    DossierIndiceId = TopSolidHost.Pdm.CreateFolder(DossierExistantId, TexteIndiceFolder);
+                                    System.Threading.Thread.Sleep(1000);
 
 
-
-
-                            }
-                            else
-                            {
-                                    //Creation du dossier repere
-                                    DossierRepId=TopSolidHost.Pdm.CreateFolder(AtelierFolderId, TexteDossierRep);
-
-
-                                    //Creation du dosser indice
-                                    DossierIndiceId=TopSolidHost.Pdm.CreateFolder(DossierRepId, TexteIndiceFolder);
-                                    
-                                    
-                                    TopSolidHost.Pdm.CreateFolder(DossierIndiceId, TexteIndiceFolder);
-
-                                    //Creation du dossier reste des dossiers
+                                    //Creation du reste des dossiers
                                     TopSolidHost.Pdm.CreateFolder(DossierIndiceId, "3D");
-                                    DossierElectrodeId=TopSolidHost.Pdm.CreateFolder(DossierIndiceId, "Electrode");
-                                    DossierFraisageId=TopSolidHost.Pdm.CreateFolder(DossierIndiceId, "Fraisage");
+                                    DossierElectrodeId = TopSolidHost.Pdm.CreateFolder(DossierIndiceId, "Electrode");
+                                    DossierFraisageId = TopSolidHost.Pdm.CreateFolder(DossierIndiceId, "Fraisage");
                                     TopSolidHost.Pdm.CreateFolder(DossierIndiceId, "Methode");
-                                    
-                                    //Creation des dossiers dans le dossier Electrode
-                                    
-                                    TopSolidHost.Pdm.CreateFolder(DossierElectrodeId, "Parallélisée");
-                                    TopSolidHost.Pdm.CreateFolder(DossierElectrodeId, "Plan brut");
-                                    TopSolidHost.Pdm.CreateFolder(DossierElectrodeId, "Usinage");
+                                    System.Threading.Thread.Sleep(1000);
 
                                     //Cration des dossier utilisateur dans le dossier fraisage
-                                    
+
                                     TopSolidHost.Pdm.CreateFolder(DossierFraisageId, "BEHE");
                                     TopSolidHost.Pdm.CreateFolder(DossierFraisageId, "FLFA");
                                     TopSolidHost.Pdm.CreateFolder(DossierFraisageId, "SETE");
                                     TopSolidHost.Pdm.CreateFolder(DossierFraisageId, "THHE");
+                                    System.Threading.Thread.Sleep(1000);
+
+                                    //Creation des dossiers dans le dossier Electrode
+
+                                    TopSolidHost.Pdm.CreateFolder(DossierElectrodeId, "Parallélisée");
+                                    TopSolidHost.Pdm.CreateFolder(DossierElectrodeId, "Plan brut");
+                                    TopSolidHost.Pdm.CreateFolder(DossierElectrodeId, "Usinage");
+                                    MessageBox.Show("Succés de la creation des dossiers");
+
+
+                                }
                             }
 
-                        
+                        }
 
+                    }
+                    else
+                    {
+                        //Creation du dossier repere
+                        DossierRepId = TopSolidHost.Pdm.CreateFolder(AtelierFolderId, TexteDossierRep);
+
+
+                        //Creation du dosser indice
+                        DossierIndiceId = TopSolidHost.Pdm.CreateFolder(DossierRepId, TexteIndiceFolder);
+
+
+
+
+                        //Creation du dossier reste des dossiers
+                        TopSolidHost.Pdm.CreateFolder(DossierIndiceId, "3D");
+                        DossierElectrodeId = TopSolidHost.Pdm.CreateFolder(DossierIndiceId, "Electrode");
+                        DossierFraisageId = TopSolidHost.Pdm.CreateFolder(DossierIndiceId, "Fraisage");
+                        TopSolidHost.Pdm.CreateFolder(DossierIndiceId, "Methode");
+
+                        //Creation des dossiers dans le dossier Electrode
+
+                        TopSolidHost.Pdm.CreateFolder(DossierElectrodeId, "Parallélisée");
+                        TopSolidHost.Pdm.CreateFolder(DossierElectrodeId, "Plan brut");
+                        TopSolidHost.Pdm.CreateFolder(DossierElectrodeId, "Usinage");
+
+                        //Cration des dossier utilisateur dans le dossier fraisage
+
+                        TopSolidHost.Pdm.CreateFolder(DossierFraisageId, "BEHE");
+                        TopSolidHost.Pdm.CreateFolder(DossierFraisageId, "FLFA");
+                        TopSolidHost.Pdm.CreateFolder(DossierFraisageId, "SETE");
+                        TopSolidHost.Pdm.CreateFolder(DossierFraisageId, "THHE");
+                        MessageBox.Show("Succés de la creation des dossiers");
+
+                    }
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show("Echec de la récupération la liste des noms de dossier constituant ''02-Atelier'' " + ex.Message);
+
+                    MessageBox.Show("erreur" + ex.Message);
                 }
 
             }
@@ -427,16 +401,24 @@ namespace Folder_Creator_Tool_V3
             while (recommencer); // La boucle while recommencera si recommencer est true
 
 
-            TopSolidDesignHost.Disconnect(); TopSolidHost.Disconnect();
+
+
+
+
+
+            
+
+
+
+           
+
+
 
 
 
         }
-
     }
-            
-        
-} 
+}
 
 
 
