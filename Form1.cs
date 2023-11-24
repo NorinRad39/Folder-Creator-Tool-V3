@@ -80,6 +80,8 @@ namespace Folder_Creator_Tool_V3
         string TexteIndiceFolder;
         List<PdmObjectId> DocuDossierIndiceIds = new List<PdmObjectId>();
 
+        PdmObjectId PdmObjectIdCurrentDocumentId = new PdmObjectId();
+
         public Form1()
         {
             InitializeComponent();
@@ -114,37 +116,14 @@ namespace Folder_Creator_Tool_V3
             }
 
 
-            //-----------Récupération ID projet courant----------------------------------------------------------------------------------------------------------------------------
-            try
-            {
-                CurrentProjectPdmId = TopSolidHost.Pdm.GetCurrentProject();   // Récupération ID projet courant
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Echec de la récupération de l'id du projet courant " + ex.Message);
-                return;
-            }
-
-            //-----------Récupération Nom projet courant----------------------------------------------------------------------------------------------------------------------------
-            try
-            {
-                CurrentProjectName = TopSolidHost.Pdm.GetName(CurrentProjectPdmId);  // Récupération Nom projet
-                TextBoxProjectName = CurrentProjectName;
-
-                textBox10.Text = TextBoxProjectName; //Affichage du nom du projet courent dans la case texte
-                textBox1.Text = TextBoxProjectName; //Affichage le N° de moule dans la case texte
-
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Echec de la récupération de l'id du projet courant " + ex.Message);
-            }
 
             //-----------Récupération ID Document----------------------------------------------------------------------------------------------------------------------------
 
             try
             {
                 CurrentDocumentId = TopSolidHost.Documents.EditedDocument;  // Récupération ID Document courant
+                PdmObjectIdCurrentDocumentId = TopSolidHost.Documents.GetPdmObject(CurrentDocumentId);
+
             }
             catch (Exception ex)
             {
@@ -169,6 +148,33 @@ namespace Folder_Creator_Tool_V3
                 MessageBox.Show("Echec de la récupération du nom du document courant " + ex.Message);
             }
 
+
+            //-----------Récupération ID projet courant----------------------------------------------------------------------------------------------------------------------------
+            try
+            {
+                CurrentProjectPdmId = TopSolidHost.Pdm.GetProject(PdmObjectIdCurrentDocumentId);   // Récupération ID projet courant
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Echec de la récupération de l'id du projet courant " + ex.Message);
+                return;
+            }
+
+            //-----------Récupération Nom projet courant----------------------------------------------------------------------------------------------------------------------------
+            try
+            {
+                CurrentProjectName = TopSolidHost.Pdm.GetName(CurrentProjectPdmId);  // Récupération Nom projet
+                TextBoxProjectName = CurrentProjectName;
+
+                textBox10.Text = TextBoxProjectName; //Affichage du nom du projet courent dans la case texte
+                textBox1.Text = TextBoxProjectName; //Affichage le N° de moule dans la case texte
+
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Echec de la récupération de l'id du projet courant " + ex.Message);
+            }
+
             //-------------Creation de la variable pour la recherche du dossier atelier-------------------------------------------------------------------------------------------------------------------
 
             try
@@ -181,8 +187,6 @@ namespace Folder_Creator_Tool_V3
             {
                 MessageBox.Show("Dossier ''02-Atelier'' introuvable dans le projet " + ex.Message);
             }
-
-
 
 
             //------------- Récupération du commentaire (Repère) du document courant----------------------------------------------------------------------------------------------------------------------------
