@@ -355,42 +355,42 @@ namespace Folder_Creator_Tool_V3
 
 
                                 }
+                                else
+                                {
+                                    //Creation du dossier repere
+                                    DossierRepId = TopSolidHost.Pdm.CreateFolder(AtelierFolderId, TexteDossierRep);
+
+
+                                    //Creation du dosser indice
+                                    DossierIndiceId = TopSolidHost.Pdm.CreateFolder(DossierRepId, TexteIndiceFolder);
+
+
+
+
+                                    //Creation du dossier reste des dossiers
+                                    TopSolidHost.Pdm.CreateFolder(DossierIndiceId, "3D");
+                                    DossierElectrodeId = TopSolidHost.Pdm.CreateFolder(DossierIndiceId, "Electrode");
+                                    DossierFraisageId = TopSolidHost.Pdm.CreateFolder(DossierIndiceId, "Fraisage");
+                                    TopSolidHost.Pdm.CreateFolder(DossierIndiceId, "Methode");
+
+                                    //Creation des dossiers dans le dossier Electrode
+
+                                    TopSolidHost.Pdm.CreateFolder(DossierElectrodeId, "Parallélisée");
+                                    TopSolidHost.Pdm.CreateFolder(DossierElectrodeId, "Plan brut");
+                                    TopSolidHost.Pdm.CreateFolder(DossierElectrodeId, "Usinage");
+
+                                    //Cration des dossier utilisateur dans le dossier fraisage
+
+                                    TopSolidHost.Pdm.CreateFolder(DossierFraisageId, "BEHE");
+                                    TopSolidHost.Pdm.CreateFolder(DossierFraisageId, "FLFA");
+                                    TopSolidHost.Pdm.CreateFolder(DossierFraisageId, "SETE");
+                                    TopSolidHost.Pdm.CreateFolder(DossierFraisageId, "THHE");
+                                    MessageBox.Show("Succés de la creation des dossiers");
+                                    break;
+                                }
                             }
 
                         }
-
-                    }
-                    else
-                    {
-                        //Creation du dossier repere
-                        DossierRepId = TopSolidHost.Pdm.CreateFolder(AtelierFolderId, TexteDossierRep);
-
-
-                        //Creation du dosser indice
-                        DossierIndiceId = TopSolidHost.Pdm.CreateFolder(DossierRepId, TexteIndiceFolder);
-
-
-
-
-                        //Creation du dossier reste des dossiers
-                        TopSolidHost.Pdm.CreateFolder(DossierIndiceId, "3D");
-                        DossierElectrodeId = TopSolidHost.Pdm.CreateFolder(DossierIndiceId, "Electrode");
-                        DossierFraisageId = TopSolidHost.Pdm.CreateFolder(DossierIndiceId, "Fraisage");
-                        TopSolidHost.Pdm.CreateFolder(DossierIndiceId, "Methode");
-
-                        //Creation des dossiers dans le dossier Electrode
-
-                        TopSolidHost.Pdm.CreateFolder(DossierElectrodeId, "Parallélisée");
-                        TopSolidHost.Pdm.CreateFolder(DossierElectrodeId, "Plan brut");
-                        TopSolidHost.Pdm.CreateFolder(DossierElectrodeId, "Usinage");
-
-                        //Cration des dossier utilisateur dans le dossier fraisage
-
-                        TopSolidHost.Pdm.CreateFolder(DossierFraisageId, "BEHE");
-                        TopSolidHost.Pdm.CreateFolder(DossierFraisageId, "FLFA");
-                        TopSolidHost.Pdm.CreateFolder(DossierFraisageId, "SETE");
-                        TopSolidHost.Pdm.CreateFolder(DossierFraisageId, "THHE");
-                        MessageBox.Show("Succés de la creation des dossiers");
 
                     }
                 }
