@@ -274,14 +274,14 @@ namespace Folder_Creator_Tool_V3
                     TopSolidHost.Application.EndModification(true, true);
                     TopSolidHost.Pdm.GetConstituents(AtelierFolderId, out FolderIds, out DocumentsIds);
 
-                    int i = 0; // index
+                        int i = 0; // index
                     if (FolderIds.Count != 0)
                     {
-                        ConstituantFolderName = TopSolidHost.Pdm.GetName(FolderIds[i]); //Obtention des noms de dossier
-                        test00 = ConstituantFolderName.StartsWith(CommentaireTxtFormat00, StringComparison.OrdinalIgnoreCase);
-                        test01 = ConstituantFolderName.StartsWith(CommentaireTxtFormat01, StringComparison.OrdinalIgnoreCase);
                         for (i = 0; i < FolderIds.Count; i++) //Boucle de décompte
                         {
+                             ConstituantFolderName = TopSolidHost.Pdm.GetName(FolderIds[i]); //Obtention des noms de dossier
+                            test00 = ConstituantFolderName.StartsWith(CommentaireTxtFormat00, StringComparison.OrdinalIgnoreCase);
+                            test01 = ConstituantFolderName.StartsWith(CommentaireTxtFormat01, StringComparison.OrdinalIgnoreCase);
 
 
                             DossierExistantId = FolderIds[i];
