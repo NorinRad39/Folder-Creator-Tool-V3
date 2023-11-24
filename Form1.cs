@@ -5,6 +5,7 @@ using System.Data;
 using System.Drawing;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -237,9 +238,11 @@ namespace Folder_Creator_Tool_V3
 
         private void button2_Click_1(object sender, EventArgs e)
         {
+            
+           
+                
 
-
-
+            
 
 
 
@@ -251,35 +254,55 @@ namespace Folder_Creator_Tool_V3
 
                 recommencer = false; // Réinitialisez recommencer à false à chaque début de boucle
                                      //Récuperation des noms de dossiers
+                
+               
+
+                if (!TopSolidHost.IsConnected) return;
+                
+                if (PdmObjectIdCurrentDocumentId.IsEmpty) return;
+                // Start modification.
+                if (!TopSolidHost.Application.StartModification("My Action", false)) return;
+                // Modify document.
                 try
                 {
-                    //Recuperation du texte modifié par l'utilisateur pour nommer les dossiers.
-                    TextBoxCommentaireValue = textBox2.Text; //Repere de la piece
-                    TextBoxIndiceValue = textBox8.Text; //Indice de la piece
-                    TextBoxDesignationValue = textBox3.Text; //Designation de la piece
-                    TextBoxNomMouleValue = textBox10.Text; //Numero du moule
-                    TexteIndiceFolder = "Ind " + TextBoxIndiceValue;
-                    TexteDossierRep = textBox2.Text + " - " + textBox3.Text; //Nom du dossier repere
+                     try
+                     {
+                        //Recuperation du texte modifié par l'utilisateur pour nommer les dossiers.
+                        TextBoxCommentaireValue = textBox2.Text; //Repere de la piece
+                        TextBoxIndiceValue = textBox8.Text; //Indice de la piece
+                        TextBoxDesignationValue = textBox3.Text; //Designation de la piece
+                        TextBoxNomMouleValue = textBox10.Text; //Numero du moule
+                        TexteIndiceFolder = "Ind " + TextBoxIndiceValue;
+                        TexteDossierRep = textBox2.Text + " - " + textBox3.Text; //Nom du dossier repere
 
-                    IndiceTxtFormat00 = "Ind" + textBox8.Text;
-                    IndiceTxtFormat01 = "Ind " + textBox8.Text;
+                        IndiceTxtFormat00 = "Ind" + textBox8.Text;
+                        IndiceTxtFormat01 = "Ind " + textBox8.Text;
 
 
-                    CommentaireTxtFormat00 = textBox2.Text + "-";
-                    CommentaireTxtFormat01 = textBox2.Text + " ";
+                        CommentaireTxtFormat00 = textBox2.Text + "-";
+                        CommentaireTxtFormat01 = textBox2.Text + " ";
 
-                    TopSolidHost.Application.StartModification("", true);
-                    TopSolidHost.Elements.SetComment(CurrentDocumentCommentaireId, TextBoxCommentaireValue); //Edition du parametre commentaire
-                    TopSolidHost.Elements.SetComment(CurrentDocumentDesignationId, TextBoxDesignationValue); //Edition du parametre commentaire
-                    TopSolidHost.Application.EndModification(true, true);
-                    TopSolidHost.Pdm.GetConstituents(AtelierFolderId, out FolderIds, out DocumentsIds);
+                        TopSolidHost.Documents.EnsureIsDirty(ref CurrentDocumentId);
 
-                        int i = 0; // index
+                        TopSolidHost.Pdm.SetComment(PdmObjectIdCurrentDocumentId, TextBoxCommentaireValue); //Edition du parametre commentaire
+                        TopSolidHost.Pdm.SetDescription(PdmObjectIdCurrentDocumentId, TextBoxDesignationValue); //Edition du designation commentaire
+
+                        TopSolidHost.Application.EndModification(true, true);
+
+                        TopSolidHost.Pdm.GetConstituents(AtelierFolderId, out FolderIds, out DocumentsIds);
+                     }
+                        catch
+                     {
+
+                            TopSolidHost.Application.EndModification(false, false);
+                     }
+
+                    int i = 0; // index
                     if (FolderIds.Count != 0)
                     {
                         for (i = 0; i < FolderIds.Count; i++) //Boucle de décompte
                         {
-                             ConstituantFolderName = TopSolidHost.Pdm.GetName(FolderIds[i]); //Obtention des noms de dossier
+                            ConstituantFolderName = TopSolidHost.Pdm.GetName(FolderIds[i]); //Obtention des noms de dossier
                             test00 = ConstituantFolderName.StartsWith(CommentaireTxtFormat00, StringComparison.OrdinalIgnoreCase);
                             test01 = ConstituantFolderName.StartsWith(CommentaireTxtFormat01, StringComparison.OrdinalIgnoreCase);
 
@@ -316,83 +339,83 @@ namespace Folder_Creator_Tool_V3
                                             test02 = IndiceFolderName.Equals(IndiceTxtFormat00, StringComparison.OrdinalIgnoreCase);
                                             test03 = IndiceFolderName.Equals(IndiceTxtFormat01, StringComparison.OrdinalIgnoreCase);
 
-                                            if (test02 ^ test03)
+                                        }
+                                            if (test02 || test03)
                                             {
                                                 MessageBox.Show("les dossiers existe deja");
                                                 return;
                                             }
+                                            
 
-                                        }
+                                            MessageBox.Show("Création du dossier Ind");
+                                            DossierIndiceId = TopSolidHost.Pdm.CreateFolder(DossierExistantId, TexteIndiceFolder);
+                                            
 
+
+                                            //Creation du reste des dossiers
+                                            TopSolidHost.Pdm.CreateFolder(DossierIndiceId, "3D");
+                                            DossierElectrodeId = TopSolidHost.Pdm.CreateFolder(DossierIndiceId, "Electrode");
+                                            DossierFraisageId = TopSolidHost.Pdm.CreateFolder(DossierIndiceId, "Fraisage");
+                                            TopSolidHost.Pdm.CreateFolder(DossierIndiceId, "Methode");
+                                            
+
+                                            //Cration des dossier utilisateur dans le dossier fraisage
+
+                                            TopSolidHost.Pdm.CreateFolder(DossierFraisageId, "BEHE");
+                                            TopSolidHost.Pdm.CreateFolder(DossierFraisageId, "FLFA");
+                                            TopSolidHost.Pdm.CreateFolder(DossierFraisageId, "SETE");
+                                            TopSolidHost.Pdm.CreateFolder(DossierFraisageId, "THHE");
+                                            System.Threading.Thread.Sleep(1000);
+
+                                            //Creation des dossiers dans le dossier Electrode
+
+                                            TopSolidHost.Pdm.CreateFolder(DossierElectrodeId, "Parallélisée");
+                                            TopSolidHost.Pdm.CreateFolder(DossierElectrodeId, "Plan brut");
+                                            TopSolidHost.Pdm.CreateFolder(DossierElectrodeId, "Usinage");
+                                            MessageBox.Show("Succés de la creation des dossiers");
+                                        return; 
                                     }
 
-                                    MessageBox.Show("Création du dossier Ind");
-                                    DossierIndiceId = TopSolidHost.Pdm.CreateFolder(DossierExistantId, TexteIndiceFolder);
-                                    System.Threading.Thread.Sleep(1000);
-
-
-                                    //Creation du reste des dossiers
-                                    TopSolidHost.Pdm.CreateFolder(DossierIndiceId, "3D");
-                                    DossierElectrodeId = TopSolidHost.Pdm.CreateFolder(DossierIndiceId, "Electrode");
-                                    DossierFraisageId = TopSolidHost.Pdm.CreateFolder(DossierIndiceId, "Fraisage");
-                                    TopSolidHost.Pdm.CreateFolder(DossierIndiceId, "Methode");
-                                    System.Threading.Thread.Sleep(1000);
-
-                                    //Cration des dossier utilisateur dans le dossier fraisage
-
-                                    TopSolidHost.Pdm.CreateFolder(DossierFraisageId, "BEHE");
-                                    TopSolidHost.Pdm.CreateFolder(DossierFraisageId, "FLFA");
-                                    TopSolidHost.Pdm.CreateFolder(DossierFraisageId, "SETE");
-                                    TopSolidHost.Pdm.CreateFolder(DossierFraisageId, "THHE");
-                                    System.Threading.Thread.Sleep(1000);
-
-                                    //Creation des dossiers dans le dossier Electrode
-
-                                    TopSolidHost.Pdm.CreateFolder(DossierElectrodeId, "Parallélisée");
-                                    TopSolidHost.Pdm.CreateFolder(DossierElectrodeId, "Plan brut");
-                                    TopSolidHost.Pdm.CreateFolder(DossierElectrodeId, "Usinage");
-                                    MessageBox.Show("Succés de la creation des dossiers");
-
-
                                 }
-                                else
-                                {
-                                    //Creation du dossier repere
-                                    DossierRepId = TopSolidHost.Pdm.CreateFolder(AtelierFolderId, TexteDossierRep);
 
 
-                                    //Creation du dosser indice
-                                    DossierIndiceId = TopSolidHost.Pdm.CreateFolder(DossierRepId, TexteIndiceFolder);
-
-
-
-
-                                    //Creation du dossier reste des dossiers
-                                    TopSolidHost.Pdm.CreateFolder(DossierIndiceId, "3D");
-                                    DossierElectrodeId = TopSolidHost.Pdm.CreateFolder(DossierIndiceId, "Electrode");
-                                    DossierFraisageId = TopSolidHost.Pdm.CreateFolder(DossierIndiceId, "Fraisage");
-                                    TopSolidHost.Pdm.CreateFolder(DossierIndiceId, "Methode");
-
-                                    //Creation des dossiers dans le dossier Electrode
-
-                                    TopSolidHost.Pdm.CreateFolder(DossierElectrodeId, "Parallélisée");
-                                    TopSolidHost.Pdm.CreateFolder(DossierElectrodeId, "Plan brut");
-                                    TopSolidHost.Pdm.CreateFolder(DossierElectrodeId, "Usinage");
-
-                                    //Cration des dossier utilisateur dans le dossier fraisage
-
-                                    TopSolidHost.Pdm.CreateFolder(DossierFraisageId, "BEHE");
-                                    TopSolidHost.Pdm.CreateFolder(DossierFraisageId, "FLFA");
-                                    TopSolidHost.Pdm.CreateFolder(DossierFraisageId, "SETE");
-                                    TopSolidHost.Pdm.CreateFolder(DossierFraisageId, "THHE");
-                                    MessageBox.Show("Succés de la creation des dossiers");
-                                    break;
-                                }
                             }
 
                         }
 
                     }
+                    
+                        //Creation du dossier repere
+                        DossierRepId = TopSolidHost.Pdm.CreateFolder(AtelierFolderId, TexteDossierRep);
+
+
+                        //Creation du dosser indice
+                        DossierIndiceId = TopSolidHost.Pdm.CreateFolder(DossierRepId, TexteIndiceFolder);
+
+
+
+
+                        //Creation du dossier reste des dossiers
+                        TopSolidHost.Pdm.CreateFolder(DossierIndiceId, "3D");
+                        DossierElectrodeId = TopSolidHost.Pdm.CreateFolder(DossierIndiceId, "Electrode");
+                        DossierFraisageId = TopSolidHost.Pdm.CreateFolder(DossierIndiceId, "Fraisage");
+                        TopSolidHost.Pdm.CreateFolder(DossierIndiceId, "Methode");
+
+                        //Creation des dossiers dans le dossier Electrode
+
+                        TopSolidHost.Pdm.CreateFolder(DossierElectrodeId, "Parallélisée");
+                        TopSolidHost.Pdm.CreateFolder(DossierElectrodeId, "Plan brut");
+                        TopSolidHost.Pdm.CreateFolder(DossierElectrodeId, "Usinage");
+
+                        //Cration des dossier utilisateur dans le dossier fraisage
+
+                        TopSolidHost.Pdm.CreateFolder(DossierFraisageId, "BEHE");
+                        TopSolidHost.Pdm.CreateFolder(DossierFraisageId, "FLFA");
+                        TopSolidHost.Pdm.CreateFolder(DossierFraisageId, "SETE");
+                        TopSolidHost.Pdm.CreateFolder(DossierFraisageId, "THHE");
+                        MessageBox.Show("Succés de la creation des dossiers");
+                        break;
+                    
                 }
                 catch (Exception ex)
                 {
