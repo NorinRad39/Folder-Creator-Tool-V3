@@ -396,8 +396,7 @@ namespace Folder_Creator_Tool_V3
                                             TopSolidHost.Pdm.CreateFolder(DossierFraisageId, "FLFA");
                                             TopSolidHost.Pdm.CreateFolder(DossierFraisageId, "SETE");
                                             TopSolidHost.Pdm.CreateFolder(DossierFraisageId, "THHE");
-                                            System.Threading.Thread.Sleep(1000);
-
+                                            
                                             //Creation des dossiers dans le dossier Electrode
 
                                             TopSolidHost.Pdm.CreateFolder(DossierElectrodeId, "Parallélisée");
@@ -481,13 +480,15 @@ namespace Folder_Creator_Tool_V3
 
                 DerivéDocumentPdmObjectIds.Add(DerivéDocumentPdmObjectId); //ajout du PdmObectId du document derivé a la liste
 
+                TopSolidHost.Documents.Close(CurrentDocumentId,false,false); //fermeture du document courant
+                TopSolidHost.Documents.Open(ref DerivéDocumentId); //Ouverture du document dérivé
 
-                TopSolidHost.Documents.Open(ref DerivéDocumentId);
+
 
 
                 for (int i4 = 0; i4 < Dossier3DPdmObjectIds.Count; i4++)
                 {
-                    Dossier3DPdmObjectId = Dossier3DPdmObjectIds[0]; //recuperation du PdmObectId du 3D
+                    Dossier3DPdmObjectId = Dossier3DPdmObjectIds[0]; //recuperation du PdmObectId du dossier 3D
 
                 }
 
@@ -507,7 +508,7 @@ namespace Folder_Creator_Tool_V3
                 return;
             }
 
-
+            TopSolidHost.Pdm.ShowInProjectTree(DerivéDocumentPdmObjectId);
 
 
 
