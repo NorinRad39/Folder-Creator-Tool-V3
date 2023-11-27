@@ -83,6 +83,25 @@ namespace Folder_Creator_Tool_V3
 
         PdmObjectId PdmObjectIdCurrentDocumentId = new PdmObjectId();
 
+        PdmObjectId AuteurPdmObjectId = new PdmObjectId();
+
+        PdmObjectId DocumentModeleDerivation = new PdmObjectId("19_5af816ad - b4b1 - 402d - 8914 - a4c95a895d88 & 3_6038"); //Recupération du PdmObjectId du document modele de dérivation
+        //DocumentId DocumentModeleDerivationDocumentId = TopSolidHost.Pdm.(DocumentModeleDerivation);
+        
+        DocumentId DerivéDocumentId = new DocumentId(); //recuperation de l'Id de document du document dérivé
+        List<DocumentId> DerivéDocumentIds = new List<DocumentId> (); //recuperation de l'Id de document du document dérivé
+
+        PdmObjectId Dossier3DPdmObjectId = new PdmObjectId();
+        List<PdmObjectId> Dossier3DPdmObjectIds = new List<PdmObjectId> ();
+
+
+        PdmObjectId DerivéDocumentPdmObjectId = new PdmObjectId (); //Recupération du PdmObjectId du document dérivé
+
+        List<PdmObjectId> DerivéDocumentPdmObjectIds = new List<PdmObjectId>(); //Creation liste du PdmObjectId du document dérivé
+
+
+
+
         public Form1()
         {
             InitializeComponent();
@@ -98,6 +117,7 @@ namespace Folder_Creator_Tool_V3
                 /*if (TSConnected == false)
                     MessageBox.Show("Tentative de connexion a TopSolid");
                 else
+
                     MessageBox.Show("Deja connecté");*/
 
                 try
@@ -200,7 +220,7 @@ namespace Folder_Creator_Tool_V3
                 textBox2.Text = TextCurrentDocumentCommentaire; //Affichage du commentaire (Repère) dans la case texte
 
 
-                //----------- Récupération Récupération de la désignation du document courant----------------------------------------------------------------------------------------------------------------------------
+                
             }
             catch (Exception ex)
             {
@@ -284,8 +304,19 @@ namespace Folder_Creator_Tool_V3
 
                         TopSolidHost.Documents.EnsureIsDirty(ref CurrentDocumentId);
 
-                        TopSolidHost.Pdm.SetComment(PdmObjectIdCurrentDocumentId, TextBoxCommentaireValue); //Edition du parametre commentaire
-                        TopSolidHost.Pdm.SetDescription(PdmObjectIdCurrentDocumentId, TextBoxDesignationValue); //Edition du designation commentaire
+                        //Recuperation du PdmObjectId de la nouvelle revision du document apres passage a l'etat modification
+                        
+                        CurrentDocumentId = TopSolidHost.Documents.EditedDocument;  // Récupération ID Document courant
+                        PdmObjectIdCurrentDocumentId = TopSolidHost.Documents.GetPdmObject(CurrentDocumentId); // Récupération PdmObjectId Document courant
+
+                        //Recuperation de l'Id du propriétaire du document
+                        AuteurPdmObjectId = TopSolidHost.Pdm.GetOwner(PdmObjectIdCurrentDocumentId);
+
+                         TopSolidHost.Parameters.SetTextValue(CurrentDocumentCommentaireId, TextBoxCommentaireValue);
+                         TopSolidHost.Parameters.SetTextValue(CurrentDocumentDesignationId, TextBoxDesignationValue);
+
+                        //TopSolidHost.Pdm.SetComment(PdmObjectIdCurrentDocumentId, TextBoxCommentaireValue); //Edition du parametre commentaire
+                        //TopSolidHost.Pdm.SetDescription(PdmObjectIdCurrentDocumentId, TextBoxDesignationValue); //Edition du designation commentaire
 
                         TopSolidHost.Application.EndModification(true, true);
 
@@ -427,17 +458,61 @@ namespace Folder_Creator_Tool_V3
 
             while (recommencer); // La boucle while recommencera si recommencer est true
 
+            //--------------------- Dérivation et déplacement du fichier dérivé dans le dossier 3D -----------------------
 
+            try
+            {
+                CurrentProjectPdmId = TopSolidHost.Pdm.GetProject(PdmObjectIdCurrentDocumentId);   // Récupération ID projet courant
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Echec de la récupération de l'id du projet courant " + ex.Message);
+                return;
+            }
 
+            try
+            {
 
-
-
-
+                Dossier3DPdmObjectIds = TopSolidHost.Pdm.SearchFolderByName(CurrentProjectPdmId,"3D"); //Recuperation du PdmObjectId (liste) du dossier 3D
             
+                DerivéDocumentId = TopSolidDesignHost.Tools.CreateDerivedDocument(AuteurPdmObjectId, CurrentDocumentId,true); //Creation de la derivé et recuperation de document Id
+            
+                DerivéDocumentPdmObjectId = TopSolidHost.Documents.GetPdmObject(DerivéDocumentId); //recuperation du PdmObectId du document derivé
+
+                DerivéDocumentPdmObjectIds.Add(DerivéDocumentPdmObjectId); //ajout du PdmObectId du document derivé a la liste
+
+
+                TopSolidHost.Documents.Open(ref DerivéDocumentId);
+
+
+                for (int i4 = 0; i4 < Dossier3DPdmObjectIds.Count; i4++)
+                {
+                    Dossier3DPdmObjectId = Dossier3DPdmObjectIds[0]; //recuperation du PdmObectId du 3D
+
+                }
+
+                TopSolidHost.Pdm.MoveSeveral(DerivéDocumentPdmObjectIds, Dossier3DPdmObjectId);
+                
+                TopSolidHost.Pdm.CheckIn(DerivéDocumentPdmObjectId,true);
+
+                PdmLifeCycleMainState PdmLifeCycleDerivéDocument = (PdmLifeCycleMainState)2;
+
+
+                TopSolidHost.Pdm.SetLifeCycleMainState(DerivéDocumentPdmObjectId, PdmLifeCycleDerivéDocument);
+
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Erreur lors de la dérivation" + ex.Message);
+                return;
+            }
 
 
 
-           
+
+
+
+
 
 
 
