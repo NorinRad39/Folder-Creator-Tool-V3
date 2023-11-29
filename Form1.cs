@@ -537,6 +537,11 @@ namespace Folder_Creator_Tool_V3
 
 
         }
+
+        private void button1_Click_1(object sender, EventArgs e)
+        {
+            Application.Restart();
+        }
     }
 }
 
