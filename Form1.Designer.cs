@@ -49,6 +49,7 @@ namespace Folder_Creator_Tool_V3
             // 
             this.textBox1.Location = new System.Drawing.Point(81, 58);
             this.textBox1.Name = "textBox1";
+            this.textBox1.ReadOnly = true;
             this.textBox1.Size = new System.Drawing.Size(317, 20);
             this.textBox1.TabIndex = 1;
             // 
@@ -123,6 +124,7 @@ namespace Folder_Creator_Tool_V3
             // 
             this.textBox9.Location = new System.Drawing.Point(113, 32);
             this.textBox9.Name = "textBox9";
+            this.textBox9.ReadOnly = true;
             this.textBox9.Size = new System.Drawing.Size(285, 20);
             this.textBox9.TabIndex = 18;
             // 
@@ -148,6 +150,7 @@ namespace Folder_Creator_Tool_V3
             // 
             this.textBox10.Location = new System.Drawing.Point(113, 6);
             this.textBox10.Name = "textBox10";
+            this.textBox10.ReadOnly = true;
             this.textBox10.Size = new System.Drawing.Size(285, 20);
             this.textBox10.TabIndex = 20;
             // 
@@ -155,6 +158,7 @@ namespace Folder_Creator_Tool_V3
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.AutoSize = true;
             this.ClientSize = new System.Drawing.Size(415, 233);
             this.Controls.Add(this.label10);
             this.Controls.Add(this.textBox10);
@@ -169,6 +173,7 @@ namespace Folder_Creator_Tool_V3
             this.Controls.Add(this.textBox2);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.textBox1);
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.Fixed3D;
             this.Name = "Form1";
             this.Text = "Folders Créator Tool";
             this.ResumeLayout(false);
