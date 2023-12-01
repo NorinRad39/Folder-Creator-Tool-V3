@@ -98,10 +98,17 @@ namespace Folder_Creator_Tool_V3
 
         PdmObjectId DossierIndiceId; //Recuperation de l'Id du dossier Indice pour creation du reste des dossiers
 
-        PdmObjectId dossier3DId; //Recuperation de l'Id du dossier Indice pour creation du reste des dossiers
+        //PdmObjectId dossier3DId; //Recuperation de l'Id du dossier Indice pour creation du reste des dossiers
 
         String nomDocu = "";
         List <PdmObjectId> nomDocuIds ;
+
+        PdmObjectId dossier3DGenereId = new PdmObjectId();
+
+        ElementId CurrentNameParameterId = new ElementId ();
+
+
+        //------------------------------------------------------------------
 
         //Fonction de création des dossier apres ind
         static PdmObjectId creationAutreDossiers(PdmObjectId DossierIndiceIdFonction)
@@ -110,6 +117,7 @@ namespace Folder_Creator_Tool_V3
                 //PdmObjectId DossierIndiceIdFonction; //Recuperation de l'Id du dossier Indice pour creation du reste des dossiers
                 PdmObjectId DossierElectrodeId; //Recuperation de l'Id du dossier electrode pour creation des dossiers
                 PdmObjectId DossierFraisageId; //Recuperation de l'Id du dossier fraisage pour creation des dossiers utilisateursP
+                
 
             try
             {
@@ -136,6 +144,7 @@ namespace Folder_Creator_Tool_V3
                 MessageBox.Show("Succés de la creation des dossiers");
 
             }
+            
             catch (Exception ex)
             {
                 MessageBox.Show("Erreur dans la fonction autre dossier " + ex.Message);
@@ -257,7 +266,7 @@ namespace Folder_Creator_Tool_V3
 
             try
             {
-                CurrentDocumentCommentaireId = TopSolidHost.Parameters.GetCommentParameter(CurrentDocumentId); ;  // Récupération du commentaire (Repère)
+                CurrentDocumentCommentaireId = TopSolidHost.Parameters.GetCommentParameter(CurrentDocumentId);   // Récupération du commentaire (Repère)
                 TextCurrentDocumentCommentaire = TopSolidHost.Parameters.GetTextLocalizedValue(CurrentDocumentCommentaireId);
 
                 textBox2.Text = TextCurrentDocumentCommentaire; //Affichage du commentaire (Repère) dans la case texte
@@ -274,7 +283,7 @@ namespace Folder_Creator_Tool_V3
 
             try
             {
-                CurrentDocumentDesignationId = TopSolidHost.Parameters.GetDescriptionParameter(CurrentDocumentId); ;  // Récupération de la désignation
+                CurrentDocumentDesignationId = TopSolidHost.Parameters.GetDescriptionParameter(CurrentDocumentId);   // Récupération de la désignation
                 TextCurrentDocumentDesignation = TopSolidHost.Parameters.GetTextLocalizedValue(CurrentDocumentDesignationId);
 
                 textBox3.Text = TextCurrentDocumentDesignation; //Affichage du commentaire (Repère) dans la case texte
@@ -303,7 +312,7 @@ namespace Folder_Creator_Tool_V3
         {
 
                 ConstituantFolderNames.Clear();
-                ListFoldersNames.Clear(); ;
+                ListFoldersNames.Clear(); 
 
             bool recommencer;
                 recommencer = false; // Réinitialisez recommencer à false à chaque début de boucle
@@ -314,15 +323,20 @@ namespace Folder_Creator_Tool_V3
 
                         if (!TopSolidHost.IsConnected) return;
                 
-                            if (PdmObjectIdCurrentDocumentId.IsEmpty) return;
+                            if (CurrentDocumentId.IsEmpty) return;
                             // Start modification.
                             if (!TopSolidHost.Application.StartModification("My Action", false)) return;
                             // Modify document.
-                            try
-                            {
+
+                             try
+                             {
                     
                                      try
                                      {
+                                        CurrentDocumentId = TopSolidHost.Documents.EditedDocument;  // Récupération ID Document courant
+                                        //CurrentDocumentId = TopSolidHost.Documents.EditedDocument;  // Récupération ID Document courant
+                                        TopSolidHost.Documents.EnsureIsDirty(ref CurrentDocumentId);
+                                        
                                         //Recuperation du texte modifié par l'utilisateur pour nommer les dossiers.
                                         TextBoxCommentaireValue = textBox2.Text; //Repere de la piece
                                         TextBoxIndiceValue = textBox8.Text; //Indice de la piece
@@ -340,31 +354,30 @@ namespace Folder_Creator_Tool_V3
 
                                         nomDocu = textBox2.Text + " " + textBox8.Text + " " + textBox10.Text; 
 
-                                        TopSolidHost.Documents.EnsureIsDirty(ref CurrentDocumentId);
+                                        
 
                                         //Recuperation du PdmObjectId de la nouvelle revision du document apres passage a l'etat modification
                         
-                                        CurrentDocumentId = TopSolidHost.Documents.EditedDocument;  // Récupération ID Document courant
-                                        PdmObjectIdCurrentDocumentId = TopSolidHost.Documents.GetPdmObject(CurrentDocumentId); // Récupération PdmObjectId Document courant
+                                        //CurrentDocumentId = TopSolidHost.Documents.EditedDocument;  // Récupération ID Document courant
+                                        //PdmObjectIdCurrentDocumentId = TopSolidHost.Documents.GetPdmObject(CurrentDocumentId); // Récupération PdmObjectId Document courant
 
-                                        //Recuperation de l'Id du propriétaire du document
-                                        AuteurPdmObjectId = TopSolidHost.Pdm.GetOwner(PdmObjectIdCurrentDocumentId);
-
-                                         TopSolidHost.Parameters.SetTextValue(CurrentDocumentCommentaireId, TextBoxCommentaireValue);
-                                         TopSolidHost.Parameters.SetTextValue(CurrentDocumentDesignationId, TextBoxDesignationValue);
+                                        TopSolidHost.Parameters.SetTextValue(CurrentDocumentCommentaireId, TextBoxCommentaireValue);
+                                        TopSolidHost.Parameters.SetTextValue(CurrentDocumentDesignationId, TextBoxDesignationValue);
 
                                         //TopSolidHost.Pdm.SetComment(PdmObjectIdCurrentDocumentId, TextBoxCommentaireValue); //Edition du parametre commentaire
                                         //TopSolidHost.Pdm.SetDescription(PdmObjectIdCurrentDocumentId, TextBoxDesignationValue); //Edition du designation commentaire
 
-                                        TopSolidHost.Application.EndModification(true, true);
-
-                                        TopSolidHost.Pdm.GetConstituents(AtelierFolderId, out FolderIds, out DocumentsIds);
                                      }
-                                        catch
+                                        catch (Exception ex)
                                      {
 
                                             TopSolidHost.Application.EndModification(false, false);
+                                            MessageBox.Show("erreur lors de l'edition du commentaire et de la désignation du document " + ex.Message);
+                                        return;
                                      }
+                                        TopSolidHost.Application.EndModification(true, true);
+
+                                        TopSolidHost.Pdm.GetConstituents(AtelierFolderId, out FolderIds, out DocumentsIds);
 
                                     int i = 0; // index
                                     if (FolderIds.Count != 0)
@@ -450,14 +463,14 @@ namespace Folder_Creator_Tool_V3
                                     }
 
                     
-                                    }
-                                    catch (Exception ex)
-                                    {
+                             }
+                                catch (Exception ex)
+                             {
+                                TopSolidHost.Application.EndModification(false, false);
+                                MessageBox.Show("erreur" + ex.Message);
 
-                                        MessageBox.Show("erreur" + ex.Message);
-                                    }
+                             }
                     }
-
                     while (recommencer); // La boucle while recommencera si recommencer est true
                     
                         //Creation du dossier repere
@@ -467,7 +480,7 @@ namespace Folder_Creator_Tool_V3
                         //Creation du dosser indice
                         DossierIndiceId = TopSolidHost.Pdm.CreateFolder(DossierRepId, TexteIndiceFolder);
 
-                    creationAutreDossiers(DossierIndiceId);
+            dossier3DGenereId = creationAutreDossiers(DossierIndiceId);
                     
                     //break;
 
@@ -476,21 +489,25 @@ namespace Folder_Creator_Tool_V3
 
             //--------------------- Dérivation et déplacement du fichier dérivé dans le dossier 3D -----------------------
 
-            try
-            {
-                CurrentProjectPdmId = TopSolidHost.Pdm.GetProject(PdmObjectIdCurrentDocumentId);   // Récupération ID projet courant
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Echec de la récupération de l'id du projet courant " + ex.Message);
-                return;
-            }
-
-            try
-            {
-
-                Dossier3DPdmObjectIds = TopSolidHost.Pdm.SearchFolderByName(CurrentProjectPdmId,"3D"); //Recuperation du PdmObjectId (liste) du dossier 3D
             
+            try
+            {
+                try
+                {
+                    CurrentDocumentId = TopSolidHost.Documents.EditedDocument;  // Récupération ID Document courant
+                    PdmObjectIdCurrentDocumentId = TopSolidHost.Documents.GetPdmObject(CurrentDocumentId);
+
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Echec de la récupération de l'id du document dérivé " + ex.Message);
+
+                    return;
+                }
+
+                //Dossier3DPdmObjectIds = TopSolidHost.Pdm.SearchFolderByName(CurrentProjectPdmId,"3D"); //Recuperation du PdmObjectId (liste) du dossier 3D
+
+                AuteurPdmObjectId = TopSolidHost.Pdm.GetOwner(PdmObjectIdCurrentDocumentId);
                 DerivéDocumentId = TopSolidDesignHost.Tools.CreateDerivedDocument(AuteurPdmObjectId, CurrentDocumentId,true); //Creation de la derivé et recuperation de document Id
             
                 DerivéDocumentPdmObjectId = TopSolidHost.Documents.GetPdmObject(DerivéDocumentId); //recuperation du PdmObectId du document derivé
@@ -500,27 +517,50 @@ namespace Folder_Creator_Tool_V3
                 TopSolidHost.Documents.Close(CurrentDocumentId,false,false); //fermeture du document courant
                 TopSolidHost.Documents.Open(ref DerivéDocumentId); //Ouverture du document dérivé
 
+                TopSolidHost.Pdm.MoveSeveral(DerivéDocumentPdmObjectIds, dossier3DGenereId);
+                
+                TopSolidHost.Pdm.CheckIn(DerivéDocumentPdmObjectId,true);
+                if (!TopSolidHost.Application.StartModification("My Action", false)) return;
+                // Modify document.
+
+                
+
+                //TopSolidHost.Pdm.SetComment(PdmObjectIdCurrentDocumentId, TextBoxCommentaireValue); //Edition du parametre commentaire
+                //TopSolidHost.Pdm.SetDescription(PdmObjectIdCurrentDocumentId, TextBoxDesignationValue); //Edition du designation commentaire
+                //PdmLifeCycleMainState PdmLifeCycleDerivéDocument = (PdmLifeCycleMainState)2; //mise au coffre
 
 
 
-                for (int i4 = 0; i4 < Dossier3DPdmObjectIds.Count; i4++)
+
+
+               /* for (int i4 = 0; i4 < Dossier3DPdmObjectIds.Count; i4++)
                 {
                     Dossier3DPdmObjectId = Dossier3DPdmObjectIds[0]; //recuperation du PdmObectId du dossier 3D
 
-                }
+                }*/
 
-                TopSolidHost.Pdm.MoveSeveral(DerivéDocumentPdmObjectIds, Dossier3DPdmObjectId);
                 
-                TopSolidHost.Pdm.CheckIn(DerivéDocumentPdmObjectId,true);
-
-                PdmLifeCycleMainState PdmLifeCycleDerivéDocument = (PdmLifeCycleMainState)2;
 
 
-                TopSolidHost.Pdm.SetLifeCycleMainState(DerivéDocumentPdmObjectId, PdmLifeCycleDerivéDocument);
+
+                TopSolidHost.Documents.EnsureIsDirty(ref DerivéDocumentId);
+
+                CurrentNameParameterId = TopSolidHost.Parameters.GetNameParameter(DerivéDocumentId);
+
+                TopSolidHost.Parameters.SetTextValue(CurrentNameParameterId, nomDocu) ;
+
+                //TopSolidHost.Documents.SetName(DerivéDocumentId, nomDocu);
+
+                TopSolidHost.Application.EndModification(true, true);
+
+
+
+                //TopSolidHost.Pdm.SetLifeCycleMainState(DerivéDocumentPdmObjectId, PdmLifeCycleDerivéDocument);
 
             }
             catch (Exception ex)
             {
+                TopSolidHost.Application.EndModification(false, false);
                 MessageBox.Show("Erreur lors de la dérivation" + ex.Message);
                 return;
             }
