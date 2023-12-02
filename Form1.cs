@@ -321,21 +321,9 @@ namespace Folder_Creator_Tool_V3
                     do
                     {
 
-                        if (!TopSolidHost.IsConnected) return;
-                
-                            if (CurrentDocumentId.IsEmpty) return;
-                            // Start modification.
-                            if (!TopSolidHost.Application.StartModification("My Action", false)) return;
-                            // Modify document.
 
-                             try
-                             {
-                    
-                                     try
-                                     {
                                         CurrentDocumentId = TopSolidHost.Documents.EditedDocument;  // Récupération ID Document courant
                                         //CurrentDocumentId = TopSolidHost.Documents.EditedDocument;  // Récupération ID Document courant
-                                        TopSolidHost.Documents.EnsureIsDirty(ref CurrentDocumentId);
                                         
                                         //Recuperation du texte modifié par l'utilisateur pour nommer les dossiers.
                                         TextBoxCommentaireValue = textBox2.Text; //Repere de la piece
@@ -352,14 +340,32 @@ namespace Folder_Creator_Tool_V3
                                         CommentaireTxtFormat00 = textBox2.Text + "-";
                                         CommentaireTxtFormat01 = textBox2.Text + " ";
 
-                                        nomDocu = textBox2.Text + " " + textBox8.Text + " " + textBox10.Text; 
+                                        nomDocu = textBox2.Text + " Ind " + textBox8.Text + " " + textBox10.Text; 
 
-                                        
+                    
+                                     try
+                                     {
+
+                                        if (!TopSolidHost.IsConnected) return;
+
+                                        if (CurrentDocumentId.IsEmpty) return;
+                                        // Start modification.
+                                        if (!TopSolidHost.Application.StartModification("My Action", false)) return;
+                                        // Modify document.
+                                        //TopSolidHost.Application.StartModification("My Action", true);
 
                                         //Recuperation du PdmObjectId de la nouvelle revision du document apres passage a l'etat modification
-                        
-                                        //CurrentDocumentId = TopSolidHost.Documents.EditedDocument;  // Récupération ID Document courant
-                                        //PdmObjectIdCurrentDocumentId = TopSolidHost.Documents.GetPdmObject(CurrentDocumentId); // Récupération PdmObjectId Document courant
+
+                                        CurrentDocumentId = TopSolidHost.Documents.EditedDocument;  // Récupération ID Document courant
+                                        PdmObjectIdCurrentDocumentId = TopSolidHost.Documents.GetPdmObject(CurrentDocumentId); // Récupération PdmObjectId Document courant
+                                        
+                                        TopSolidHost.Documents.EnsureIsDirty(ref CurrentDocumentId);
+                                        CurrentDocumentId = TopSolidHost.Documents.GetDocument(PdmObjectIdCurrentDocumentId);
+                                        CurrentDocumentCommentaireId = TopSolidHost.Parameters.GetCommentParameter(CurrentDocumentId);   // Récupération du commentaire (Repère)
+                                        CurrentDocumentDesignationId = TopSolidHost.Parameters.GetDescriptionParameter(CurrentDocumentId);   // Récupération de la désignation
+
+
+
 
                                         TopSolidHost.Parameters.SetTextValue(CurrentDocumentCommentaireId, TextBoxCommentaireValue);
                                         TopSolidHost.Parameters.SetTextValue(CurrentDocumentDesignationId, TextBoxDesignationValue);
@@ -367,6 +373,7 @@ namespace Folder_Creator_Tool_V3
                                         //TopSolidHost.Pdm.SetComment(PdmObjectIdCurrentDocumentId, TextBoxCommentaireValue); //Edition du parametre commentaire
                                         //TopSolidHost.Pdm.SetDescription(PdmObjectIdCurrentDocumentId, TextBoxDesignationValue); //Edition du designation commentaire
 
+                                        TopSolidHost.Application.EndModification(true, true);
                                      }
                                         catch (Exception ex)
                                      {
@@ -375,10 +382,12 @@ namespace Folder_Creator_Tool_V3
                                             MessageBox.Show("erreur lors de l'edition du commentaire et de la désignation du document " + ex.Message);
                                         return;
                                      }
-                                        TopSolidHost.Application.EndModification(true, true);
+                                       
 
                                         TopSolidHost.Pdm.GetConstituents(AtelierFolderId, out FolderIds, out DocumentsIds);
 
+                             try
+                             {
                                     int i = 0; // index
                                     if (FolderIds.Count != 0)
                                     {
@@ -522,6 +531,7 @@ namespace Folder_Creator_Tool_V3
                 TopSolidHost.Pdm.CheckIn(DerivéDocumentPdmObjectId,true);
                 if (!TopSolidHost.Application.StartModification("My Action", false)) return;
                 // Modify document.
+                //--------------------------------TopSolidHost.Application.InvokeCommand();
 
                 
 
@@ -576,6 +586,11 @@ namespace Folder_Creator_Tool_V3
 
 
 
+        }
+
+        private void button1_Click_1(object sender, EventArgs e)
+        {
+            Application.Restart();
         }
     }
 }
