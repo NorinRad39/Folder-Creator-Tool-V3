@@ -1,4 +1,5 @@
-﻿using System;
+﻿using System.Runtime.InteropServices;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -7,17 +8,25 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Security.Cryptography;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using TopSolid.Cad.Design.Automating;
 using TopSolid.Cad.Drafting.Automating;
 using TopSolid.Kernel.Automating;
+using System.Diagnostics;
+
 
 
 namespace Folder_Creator_Tool_V3
 {
+
     public partial class Form1 : Form
     {
+        [DllImport("user32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        static extern bool SetForegroundWindow(IntPtr hWnd);
+
         PdmObjectId CurrentProjectPdmId; //Id du projet courant
         string CurrentProjectName; //Nom du projet courent
 
@@ -147,19 +156,51 @@ namespace Folder_Creator_Tool_V3
             
             catch (Exception ex)
             {
+                
                 MessageBox.Show("Erreur dans la fonction autre dossier " + ex.Message);
                 
             }
             return (dossier3DFonctionId);
 
         }
+        //empeche le demarrage de 2 applications en meme temps
+        
+    
+
 
         public Form1()
-        {
+            {
             InitializeComponent();
+
+            string appId = "Folder_Creator_Tool_V3";
+
+            bool nouvelleInstance;
+            using (Mutex mutex = new Mutex(true, appId, out nouvelleInstance))
+            {
+                if (nouvelleInstance)
+                {
+                    Application.Run(new Form1());
+                }
+                else
+                {
+                    // Récupère l'instance existante et la met au premier plan.
+                    Process current = Process.GetCurrentProcess();
+                    foreach (Process process in Process.GetProcessesByName(current.ProcessName))
+                    {
+                        if (process.Id != current.Id)
+                        {
+                            SetForegroundWindow(process.MainWindowHandle);
+                            break;
+                        }
+                    }
+                }
+            }
+
             //Current project
 
-            
+            this.WindowState = FormWindowState.Normal;
+            this.Show();
+            this.TopMost = true;
 
 
             //-----------Connexion a TopSolid-----------------------------------------------------------------------------------------------------------------
@@ -179,6 +220,7 @@ namespace Folder_Creator_Tool_V3
                 }
                 catch (Exception ex)
                 {
+                    this.TopMost = false;
                     MessageBox.Show("Impossible de se connecter à TopSolid " + ex.Message);
                     return;
                 }
@@ -200,7 +242,9 @@ namespace Folder_Creator_Tool_V3
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Echec de la récupération de l'id du document courant " + ex.Message);
+                this.TopMost = false;
+                MessageBox.Show(new Form { TopMost = true }, "Echec de la récupération de l'id du document courant. Ouvrez un document puis cliquez sur Ok  " + ex.Message);
+                Application.Restart();
 
                 return;
             }
@@ -218,7 +262,9 @@ namespace Folder_Creator_Tool_V3
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Echec de la récupération du nom du document courant " + ex.Message);
+                this.TopMost = false;
+                MessageBox.Show(new Form { TopMost = true }, "Echec de la récupération du nom du document courant " + ex.Message);
+            
             }
 
 
@@ -229,7 +275,8 @@ namespace Folder_Creator_Tool_V3
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Echec de la récupération de l'id du projet courant " + ex.Message);
+                this.TopMost = false;
+                MessageBox.Show(new Form { TopMost = true }, "Echec de la récupération de l'id du projet courant " + ex.Message);
                 return;
             }
 
@@ -245,7 +292,8 @@ namespace Folder_Creator_Tool_V3
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Echec de la récupération de l'id du projet courant " + ex.Message);
+                this.TopMost = false;
+                MessageBox.Show(new Form { TopMost = true }, "Echec de la récupération de l'id du projet courant " + ex.Message);
             }
 
             //-------------Creation de la variable pour la recherche du dossier atelier-------------------------------------------------------------------------------------------------------------------
@@ -258,7 +306,8 @@ namespace Folder_Creator_Tool_V3
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Dossier ''02-Atelier'' introuvable dans le projet " + ex.Message);
+                this.TopMost = false;
+                MessageBox.Show(new Form { TopMost = true }, "Dossier ''02-Atelier'' introuvable dans le projet " + ex.Message);
             }
 
 
@@ -276,7 +325,8 @@ namespace Folder_Creator_Tool_V3
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Echec de la récupération du Commentaire " + ex.Message);
+                this.TopMost = false;
+                MessageBox.Show(new Form { TopMost = true }, "Echec de la récupération du Commentaire " + ex.Message);
             }
 
             //----------- Récupération de la désignation du document courant----------------------------------------------------------------------------------------------------------------------------
@@ -292,7 +342,8 @@ namespace Folder_Creator_Tool_V3
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Echec de la récupération du Commentaire " + ex.Message);
+                this.TopMost = false;
+                MessageBox.Show(new Form { TopMost = true }, "Echec de la récupération du Commentaire " + ex.Message);
             }
 
             //----------- Variable des differents façon de nommer le dossier indice----------------------------------------------------------------------------------------------------------------------------
@@ -314,7 +365,7 @@ namespace Folder_Creator_Tool_V3
                 ConstituantFolderNames.Clear();
                 ListFoldersNames.Clear(); 
 
-            bool recommencer;
+                bool recommencer;
                 recommencer = false; // Réinitialisez recommencer à false à chaque début de boucle
                                      //Récuperation des noms de dossiers
 
@@ -360,9 +411,9 @@ namespace Folder_Creator_Tool_V3
                                         PdmObjectIdCurrentDocumentId = TopSolidHost.Documents.GetPdmObject(CurrentDocumentId); // Récupération PdmObjectId Document courant
                                         
                                         TopSolidHost.Documents.EnsureIsDirty(ref CurrentDocumentId);
-                                        CurrentDocumentId = TopSolidHost.Documents.GetDocument(PdmObjectIdCurrentDocumentId);
-                                        CurrentDocumentCommentaireId = TopSolidHost.Parameters.GetCommentParameter(CurrentDocumentId);   // Récupération du commentaire (Repère)
-                                        CurrentDocumentDesignationId = TopSolidHost.Parameters.GetDescriptionParameter(CurrentDocumentId);   // Récupération de la désignation
+                                       CurrentDocumentId = TopSolidHost.Documents.GetDocument(PdmObjectIdCurrentDocumentId);
+                                        //CurrentDocumentCommentaireId = TopSolidHost.Parameters.GetCommentParameter(CurrentDocumentId);   // Récupération du commentaire (Repère)
+                                        //CurrentDocumentDesignationId = TopSolidHost.Parameters.GetDescriptionParameter(CurrentDocumentId);   // Récupération de la désignation
 
 
 
@@ -377,9 +428,9 @@ namespace Folder_Creator_Tool_V3
                                      }
                                         catch (Exception ex)
                                      {
-
+                                            this.TopMost = false;
                                             TopSolidHost.Application.EndModification(false, false);
-                                            MessageBox.Show("erreur lors de l'edition du commentaire et de la désignation du document " + ex.Message);
+                                            MessageBox.Show(new Form { TopMost = true }, "erreur lors de l'edition du commentaire et de la désignation du document " + ex.Message);
                                         return;
                                      }
                                        
@@ -442,7 +493,7 @@ namespace Folder_Creator_Tool_V3
                                                                 nomDocuIds = TopSolidHost.Pdm.SearchDocumentByName(CurrentProjectPdmId,nomDocu);
                                                                  if (nomDocuIds.Count==0)
                                                                  {
-                                                                    MessageBox.Show("Un fichier " + nomDocu + " existe deja dans le dossier");
+                                                                    MessageBox.Show(new Form { TopMost = true }, "Un fichier " + nomDocu + " existe deja dans le dossier");
 
                                                     
                                                                  }
@@ -453,13 +504,6 @@ namespace Folder_Creator_Tool_V3
                                                         return;
                                             
 
-                                                           /* MessageBox.Show("Création du dossier Ind");
-                                                            DossierIndiceId = TopSolidHost.Pdm.CreateFolder(DossierExistantId, TexteIndiceFolder);
-
-
-
-                                                        dossier3DId = creationAutreDossiers(DossierIndiceId);
-                                                       //return; */
                                                     }
 
                                                 }
@@ -475,8 +519,9 @@ namespace Folder_Creator_Tool_V3
                              }
                                 catch (Exception ex)
                              {
+                                this.TopMost = false;
                                 TopSolidHost.Application.EndModification(false, false);
-                                MessageBox.Show("erreur" + ex.Message);
+                                MessageBox.Show(new Form { TopMost = true }, "erreur" + ex.Message);
 
                              }
                     }
@@ -509,7 +554,8 @@ namespace Folder_Creator_Tool_V3
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show("Echec de la récupération de l'id du document dérivé " + ex.Message);
+                    this.TopMost = false;
+                    MessageBox.Show(new Form { TopMost = true }, "Echec de la récupération de l'id du document dérivé " + ex.Message);
 
                     return;
                 }
@@ -523,12 +569,13 @@ namespace Folder_Creator_Tool_V3
 
                 DerivéDocumentPdmObjectIds.Add(DerivéDocumentPdmObjectId); //ajout du PdmObectId du document derivé a la liste
 
+                TopSolidHost.Documents.Save(CurrentDocumentId); //fermeture du document courant
                 TopSolidHost.Documents.Close(CurrentDocumentId,false,false); //fermeture du document courant
                 TopSolidHost.Documents.Open(ref DerivéDocumentId); //Ouverture du document dérivé
 
                 TopSolidHost.Pdm.MoveSeveral(DerivéDocumentPdmObjectIds, dossier3DGenereId);
                 
-                TopSolidHost.Pdm.CheckIn(DerivéDocumentPdmObjectId,true);
+                //TopSolidHost.Pdm.CheckIn(DerivéDocumentPdmObjectId,true);
                 if (!TopSolidHost.Application.StartModification("My Action", false)) return;
                 // Modify document.
                 //--------------------------------TopSolidHost.Application.InvokeCommand();
@@ -540,28 +587,19 @@ namespace Folder_Creator_Tool_V3
                 //PdmLifeCycleMainState PdmLifeCycleDerivéDocument = (PdmLifeCycleMainState)2; //mise au coffre
 
 
-
-
-
-               /* for (int i4 = 0; i4 < Dossier3DPdmObjectIds.Count; i4++)
-                {
-                    Dossier3DPdmObjectId = Dossier3DPdmObjectIds[0]; //recuperation du PdmObectId du dossier 3D
-
-                }*/
-
-                
-
-
-
                 TopSolidHost.Documents.EnsureIsDirty(ref DerivéDocumentId);
+                DerivéDocumentId = TopSolidHost.Documents.EditedDocument;
+                ElementId Indice3DParamId = TopSolidHost.Elements.SearchByName(DerivéDocumentId, "Indice 3D");
+                TopSolidHost.Parameters.SetTextValue(Indice3DParamId, TextBoxIndiceValue);
 
                 CurrentNameParameterId = TopSolidHost.Parameters.GetNameParameter(DerivéDocumentId);
-
                 TopSolidHost.Parameters.SetTextValue(CurrentNameParameterId, nomDocu) ;
+
 
                 //TopSolidHost.Documents.SetName(DerivéDocumentId, nomDocu);
 
                 TopSolidHost.Application.EndModification(true, true);
+
 
 
 
@@ -570,18 +608,50 @@ namespace Folder_Creator_Tool_V3
             }
             catch (Exception ex)
             {
+                this.TopMost = false;
                 TopSolidHost.Application.EndModification(false, false);
-                MessageBox.Show("Erreur lors de la dérivation" + ex.Message);
+                MessageBox.Show(new Form { TopMost = true }, "Erreur lors de la dérivation" + ex.Message);
                 return;
             }
+            this.TopMost = false;
+            this.WindowState = FormWindowState.Minimized;
 
             TopSolidHost.Pdm.ShowInProjectTree(DerivéDocumentPdmObjectId);
 
+            TopSolidHost.Application.InvokeCommand("TopSolid.Kernel.UI.D3.Frames.SmartFrameCommand"); 
+
+
+            MessageBox.Show(new Form { TopMost = true }, "Veuillez sélectionner ou créer le repère absolu, puis cliquez sur OK.");
+            List<ElementId> UserRepABSs = TopSolidHost.Geometries3D.GetFrames(DerivéDocumentId);
+            
+
+            TopSolidHost.Application.InvokeCommand("TopSolid.Kernel.UI.D3.Transforms.PositioningTransformCommand");
+            MessageBox.Show(new Form { TopMost = true }, "Veuillez sélectionner le repère que vous avez créé comme repère d’origine et le repère absolu comme repère de destination, puis cliquez sur OK.");
+
+            TopSolidHost.Application.InvokeCommand("TopSolid.Kernel.UI.D3.Transforms.TransformCommand");
+            MessageBox.Show(new Form { TopMost = true }, "Veuillez sélectionner la pièce et la transformation, puis cliquez sur OK.");
+
+            MessageBox.Show("Opération réussie.");
+            this.TopMost = true;
 
 
 
 
 
+
+
+            /* ElementId UserRepABS = UserRepABSs.Last();
+             ElementId DocRepABS = TopSolidHost.Geometries3D.GetAbsoluteFrame(DerivéDocumentId);
+
+             Transform3D RepSurRep = new Transform3D();
+
+             SmartPoint3D PointUserRepABS; //= TopSolidHost.Geometries3D.GetPointGeometry(UserRepABS);
+             SmartDirection3D DirectionUserRepABS;
+             SmartReal DistanceUserRepABS;
+
+            // TopSolidHost.Geometries3D.GetOffsetPointCreation(UserRepABS, out PointUserRepABS, out DirectionUserRepABS, out DistanceUserRepABS);
+
+             */
 
 
 
