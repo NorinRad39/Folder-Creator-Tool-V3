@@ -244,7 +244,7 @@ namespace Folder_Creator_Tool_V3
             {
                 this.TopMost = false;
                 MessageBox.Show(new Form { TopMost = true }, "Echec de la récupération de l'id du document courant. Ouvrez un document puis cliquez sur Ok  " + ex.Message);
-                Application.Restart();
+                
 
                 return;
             }
@@ -618,21 +618,23 @@ namespace Folder_Creator_Tool_V3
 
             TopSolidHost.Pdm.ShowInProjectTree(DerivéDocumentPdmObjectId);
 
-            TopSolidHost.Application.InvokeCommand("TopSolid.Kernel.UI.D3.Frames.SmartFrameCommand"); 
+            //TopSolidHost.Application.InvokeCommand("TopSolid.Kernel.UI.D3.Frames.SmartFrameCommand"); 
 
 
-            MessageBox.Show(new Form { TopMost = true }, "Veuillez sélectionner ou créer le repère absolu, puis cliquez sur OK.");
-            List<ElementId> UserRepABSs = TopSolidHost.Geometries3D.GetFrames(DerivéDocumentId);
+            //MessageBox.Show(new Form { TopMost = true }, "Veuillez sélectionner ou créer le repère absolu, puis cliquez sur OK.");
+            //List<ElementId> UserRepABSs = TopSolidHost.Geometries3D.GetFrames(DerivéDocumentId);
             
 
             TopSolidHost.Application.InvokeCommand("TopSolid.Kernel.UI.D3.Transforms.PositioningTransformCommand");
-            MessageBox.Show(new Form { TopMost = true }, "Veuillez sélectionner le repère que vous avez créé comme repère d’origine et le repère absolu comme repère de destination, puis cliquez sur OK.");
+            MessageBox.Show(new Form { TopMost = true }, "Veuillez sélectionner ou créer le repère absolu puis selectionner le repère que vous avez créé comme repère d’origine et le repère absolu comme repère de destination, puis cliquez sur OK.");
 
             TopSolidHost.Application.InvokeCommand("TopSolid.Kernel.UI.D3.Transforms.TransformCommand");
             MessageBox.Show(new Form { TopMost = true }, "Veuillez sélectionner la pièce et la transformation, puis cliquez sur OK.");
 
-            MessageBox.Show("Opération réussie.");
+            this.WindowState = FormWindowState.Normal;
+            this.Show();
             this.TopMost = true;
+            MessageBox.Show("Opération réussie.");
 
 
 
@@ -661,6 +663,11 @@ namespace Folder_Creator_Tool_V3
         private void button1_Click_1(object sender, EventArgs e)
         {
             Application.Restart();
+        }
+
+        private void quitterToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Application.Exit(); 
         }
     }
 }
