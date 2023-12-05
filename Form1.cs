@@ -15,6 +15,7 @@ using TopSolid.Cad.Design.Automating;
 using TopSolid.Cad.Drafting.Automating;
 using TopSolid.Kernel.Automating;
 using System.Diagnostics;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.Button;
 
 
 
@@ -26,6 +27,8 @@ namespace Folder_Creator_Tool_V3
         [DllImport("user32.dll")]
         [return: MarshalAs(UnmanagedType.Bool)]
         static extern bool SetForegroundWindow(IntPtr hWnd);
+
+        CheckedListBox checkedListBox1 = new CheckedListBox();
 
         PdmObjectId CurrentProjectPdmId; //Id du projet courant
         string CurrentProjectName; //Nom du projet courent
@@ -203,6 +206,10 @@ namespace Folder_Creator_Tool_V3
             this.TopMost = true;
 
 
+
+            
+
+
             //-----------Connexion a TopSolid-----------------------------------------------------------------------------------------------------------------
 
             bool TSConnected = TopSolidDesignHost.IsConnected;
@@ -351,16 +358,68 @@ namespace Folder_Creator_Tool_V3
 
             textBox8.Text = "A"; //Affichage de l'indice
 
+            //Liste PDF--------------------------------
+            
+            
+
+            List<PdmObjectId> dossiers2Ds = TopSolidHost.Pdm.SearchFolderByName(CurrentProjectPdmId, "01-2D");
+            PdmObjectId dossiers2D = dossiers2Ds[0];
+
+            List<PdmObjectId> PDFIds = new List<PdmObjectId>();
+            List<PdmObjectId> FoldersInPDFFolder = new List<PdmObjectId>();
+            PdmObjectId PDFId = new PdmObjectId();
+            DocumentId PDFDoc = new DocumentId();
+            string PDFDocTxt = "";
+
+            TopSolidHost.Pdm.GetConstituents(dossiers2D, out FoldersInPDFFolder, out PDFIds);
+
+            for (int i = 0; PDFIds.Count > i; i++)
+            {
+                PDFId = PDFIds[i];
+                PDFDocTxt = TopSolidHost.Pdm.GetName(PDFId);
+                checkedListBox1.Items.Add(PDFDocTxt);
+            }
+            return;
+
+
+
+
 
 
 
         }
 
 
+
+
+
+
         //------------------------------Bouton click dossier-------------
 
         private void button2_Click_1(object sender, EventArgs e)
         {
+
+            List<string> TxtCheckedItems = new List<string>();
+            List<DocumentId> CheckedItems = new List<DocumentId>();
+
+            foreach (object item in checkedListBox1.CheckedItems)
+            {
+                TxtCheckedItems.Add(item.ToString());
+            }
+
+            // Utilisez checkedItems comme vous le souhaitez.
+            // Par exemple, vous pouvez l'afficher dans une MessageBox :
+            for (int i = 0; TxtCheckedItems.Count>i; i++)
+            {
+                CheckedItems = TopSolidHost.Pdm.SearchDocumentByName(TxtCheckedItems[i]);
+
+            }
+
+
+            
+        
+
+
 
                 ConstituantFolderNames.Clear();
                 ListFoldersNames.Clear(); 
@@ -669,6 +728,8 @@ namespace Folder_Creator_Tool_V3
         {
             Application.Exit(); 
         }
+
+       
     }
 }
 
