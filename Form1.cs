@@ -399,8 +399,6 @@ namespace Folder_Creator_Tool_V3
 
         private void button2_Click_1(object sender, EventArgs e)
         {
-            try
-            {
 
                 List<string> TxtCheckedItems = new List<string>();
                 string TxtCheckedItem = null;
@@ -408,6 +406,8 @@ namespace Folder_Creator_Tool_V3
                 List<PdmObjectId> CheckedItemCopie = new List<PdmObjectId>();
                 List<PdmObjectId> CheckedItemsliste = new List<PdmObjectId>();
                 List<PdmObjectId> CheckedItemCopieListe = new List<PdmObjectId>();
+            try
+            {
 
                 foreach (object item in checkedListBox1.CheckedItems)
                 {
