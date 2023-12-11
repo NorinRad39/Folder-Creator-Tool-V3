@@ -16,6 +16,7 @@ using TopSolid.Cad.Drafting.Automating;
 using TopSolid.Kernel.Automating;
 using System.Diagnostics;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.Button;
+using System.Xml.Linq;
 
 
 
@@ -398,30 +399,44 @@ namespace Folder_Creator_Tool_V3
 
         private void button2_Click_1(object sender, EventArgs e)
         {
-
-            List<string> TxtCheckedItems = new List<string>();
-            List<DocumentId> CheckedItems = new List<DocumentId>();
-
-            foreach (object item in checkedListBox1.CheckedItems)
+            try
             {
-                TxtCheckedItems.Add(item.ToString());
+
+                List<string> TxtCheckedItems = new List<string>();
+                string TxtCheckedItem = null;
+                List<PdmObjectId> CheckedItems = new List<PdmObjectId>();
+                List<PdmObjectId> CheckedItemCopie = new List<PdmObjectId>();
+                List<PdmObjectId> CheckedItemsliste = new List<PdmObjectId>();
+                List<PdmObjectId> CheckedItemCopieListe = new List<PdmObjectId>();
+
+                foreach (object item in checkedListBox1.CheckedItems)
+                {
+                    TxtCheckedItems.Add(item.ToString());
+                }
+
+                // Utilisez checkedItems comme vous le souhaitez.
+                // Par exemple, vous pouvez l'afficher dans une MessageBox :
+                for (int i = 0; TxtCheckedItems.Count>i; i++)
+                {
+                
+                    CheckedItems = TopSolidHost.Pdm.SearchDocumentByName(CurrentProjectPdmId, TxtCheckedItems[i]);
+                    CheckedItemsliste.AddRange(CheckedItems);
+                }
+
+            }
+            catch (Exception ex)
+            {
+                this.TopMost = false;
+                MessageBox.Show(new Form { TopMost = true }, "Echec de la récupération de la liste des PDF " + ex.Message);
+
+                return;
             }
 
-            // Utilisez checkedItems comme vous le souhaitez.
-            // Par exemple, vous pouvez l'afficher dans une MessageBox :
-            for (int i = 0; TxtCheckedItems.Count>i; i++)
-            {
-                CheckedItems = TopSolidHost.Pdm.SearchDocumentByName(TxtCheckedItems[i]);
-
-            }
-
-
-            
-        
 
 
 
-                ConstituantFolderNames.Clear();
+
+            ConstituantFolderNames.Clear();
                 ListFoldersNames.Clear(); 
 
                 bool recommencer;
@@ -628,14 +643,37 @@ namespace Folder_Creator_Tool_V3
 
                 DerivéDocumentPdmObjectIds.Add(DerivéDocumentPdmObjectId); //ajout du PdmObectId du document derivé a la liste
 
-                TopSolidHost.Documents.Save(CurrentDocumentId); //fermeture du document courant
+                TopSolidHost.Documents.Save(CurrentDocumentId); //Sauvegarde du document courant
                 TopSolidHost.Documents.Close(CurrentDocumentId,false,false); //fermeture du document courant
                 TopSolidHost.Documents.Open(ref DerivéDocumentId); //Ouverture du document dérivé
 
-                TopSolidHost.Pdm.MoveSeveral(DerivéDocumentPdmObjectIds, dossier3DGenereId);
-                
-                //TopSolidHost.Pdm.CheckIn(DerivéDocumentPdmObjectId,true);
-                if (!TopSolidHost.Application.StartModification("My Action", false)) return;
+                try
+                {
+
+                    //Copie des pdf dans le dossier
+                    if (checkedListBox1.CheckedItems.Count > 0)
+                    {
+
+                        CheckedItemCopie = TopSolidHost.Pdm.CopySeveral(CheckedItemsliste, AuteurPdmObjectId); //Copie des pdf dans le dossier
+
+                        TopSolidHost.Pdm.MoveSeveral(CheckedItemCopie, dossier3DGenereId); //Déplacement du document dérivé et des PDF
+
+                    }
+
+                    TopSolidHost.Pdm.MoveSeveral(DerivéDocumentPdmObjectIds, dossier3DGenereId);
+
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(new Form { TopMost = true }, "Erreur lors de la copie ou du deplacement du PDF dans le dossier 3D" + ex.Message);
+                    return;
+                }
+
+
+            
+
+                    //TopSolidHost.Pdm.CheckIn(DerivéDocumentPdmObjectId,true);
+                    if (!TopSolidHost.Application.StartModification("My Action", false)) return;
                 // Modify document.
                 //--------------------------------TopSolidHost.Application.InvokeCommand();
 
