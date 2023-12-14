@@ -20,16 +20,19 @@ using System.Xml.Linq;
 
 
 
+
+
 namespace Folder_Creator_Tool_V3
 {
 
     public partial class Form1 : Form
     {
+
+            
+
         [DllImport("user32.dll")]
         [return: MarshalAs(UnmanagedType.Bool)]
         static extern bool SetForegroundWindow(IntPtr hWnd);
-
-        CheckedListBox checkedListBox1 = new CheckedListBox();
 
         PdmObjectId CurrentProjectPdmId; //Id du projet courant
         string CurrentProjectName; //Nom du projet courent
@@ -96,16 +99,16 @@ namespace Folder_Creator_Tool_V3
         PdmObjectId AuteurPdmObjectId = new PdmObjectId();
 
         PdmObjectId DocumentModeleDerivation = new PdmObjectId("19_5af816ad - b4b1 - 402d - 8914 - a4c95a895d88 & 3_6038"); //Recupération du PdmObjectId du document modele de dérivation
-        //DocumentId DocumentModeleDerivationDocumentId = TopSolidHost.Pdm.(DocumentModeleDerivation);
-        
+                                                                                                                            //DocumentId DocumentModeleDerivationDocumentId = TopSolidHost.Pdm.(DocumentModeleDerivation);
+
         DocumentId DerivéDocumentId = new DocumentId(); //recuperation de l'Id de document du document dérivé
-        List<DocumentId> DerivéDocumentIds = new List<DocumentId> (); //recuperation de l'Id de document du document dérivé
+        List<DocumentId> DerivéDocumentIds = new List<DocumentId>(); //recuperation de l'Id de document du document dérivé
 
         PdmObjectId Dossier3DPdmObjectId = new PdmObjectId();
-        List<PdmObjectId> Dossier3DPdmObjectIds = new List<PdmObjectId> ();
+        List<PdmObjectId> Dossier3DPdmObjectIds = new List<PdmObjectId>();
 
 
-        PdmObjectId DerivéDocumentPdmObjectId = new PdmObjectId (); //Recupération du PdmObjectId du document dérivé
+        PdmObjectId DerivéDocumentPdmObjectId = new PdmObjectId(); //Recupération du PdmObjectId du document dérivé
 
         List<PdmObjectId> DerivéDocumentPdmObjectIds = new List<PdmObjectId>(); //Creation liste du PdmObjectId du document dérivé
 
@@ -114,11 +117,11 @@ namespace Folder_Creator_Tool_V3
         //PdmObjectId dossier3DId; //Recuperation de l'Id du dossier Indice pour creation du reste des dossiers
 
         String nomDocu = "";
-        List <PdmObjectId> nomDocuIds ;
+        List<PdmObjectId> nomDocuIds;
 
         PdmObjectId dossier3DGenereId = new PdmObjectId();
 
-        ElementId CurrentNameParameterId = new ElementId ();
+        ElementId CurrentNameParameterId = new ElementId();
 
 
         //------------------------------------------------------------------
@@ -126,11 +129,11 @@ namespace Folder_Creator_Tool_V3
         //Fonction de création des dossier apres ind
         static PdmObjectId creationAutreDossiers(PdmObjectId DossierIndiceIdFonction)
         {
-                PdmObjectId dossier3DFonctionId; //Recuperation de l'Id du dossier Indice pour creation du reste des dossiers
-                //PdmObjectId DossierIndiceIdFonction; //Recuperation de l'Id du dossier Indice pour creation du reste des dossiers
-                PdmObjectId DossierElectrodeId; //Recuperation de l'Id du dossier electrode pour creation des dossiers
-                PdmObjectId DossierFraisageId; //Recuperation de l'Id du dossier fraisage pour creation des dossiers utilisateursP
-                
+            PdmObjectId dossier3DFonctionId; //Recuperation de l'Id du dossier Indice pour creation du reste des dossiers
+                                             //PdmObjectId DossierIndiceIdFonction; //Recuperation de l'Id du dossier Indice pour creation du reste des dossiers
+            PdmObjectId DossierElectrodeId; //Recuperation de l'Id du dossier electrode pour creation des dossiers
+            PdmObjectId DossierFraisageId; //Recuperation de l'Id du dossier fraisage pour creation des dossiers utilisateursP
+
 
             try
             {
@@ -157,58 +160,152 @@ namespace Folder_Creator_Tool_V3
                 MessageBox.Show("Succés de la creation des dossiers");
 
             }
-            
+
             catch (Exception ex)
             {
-                
+
                 MessageBox.Show("Erreur dans la fonction autre dossier " + ex.Message);
-                
+
             }
             return (dossier3DFonctionId);
 
         }
-        //empeche le demarrage de 2 applications en meme temps
-        
-    
+
+
+
+
+
+
+
+        //Fonction de recupéaration des pdf
+
+        void listePdf()
+        {
+            List<PdmObjectId> dossiers2Ds = new List<PdmObjectId>(); //Dossier "01-2D"
+            PdmObjectId dossiers2D = new PdmObjectId();
+            List<PdmObjectId> FoldersInPDFFolder = new List<PdmObjectId>();
+            List<PdmObjectId> PDFIds = new List<PdmObjectId>();
+
+            try
+            {
+                dossiers2Ds = TopSolidHost.Pdm.SearchFolderByName(CurrentProjectPdmId, "01-2D"); //Recherche du dossier "01-2D" dans le projet courant
+                dossiers2D = dossiers2Ds[0];
+            }
+            catch (Exception ex)
+            {
+                this.TopMost = false;
+                MessageBox.Show(new Form { TopMost = true }, "Dossier '01-2D' introuvable" + ex.Message);
+            }
+
+            // Obtenir le nom du dossier racine
+            string rootFolderName = TopSolidHost.Pdm.GetName(dossiers2D);
+
+            // Créer un nouveau TreeNode pour le dossier racine
+            TreeNode rootFolderNode = new TreeNode(rootFolderName);
+
+            // Obtenir les dossiers et les fichiers dans le dossier "01-2D"
+            TopSolidHost.Pdm.GetConstituents(dossiers2D, out FoldersInPDFFolder, out PDFIds);
+
+            // Ajouter le gestionnaire d'événements AfterCheck
+            // Ajouter un indicateur pour savoir si l'événement a été déclenché par le code
+            bool isEventTriggeredByCode = false;
+
+            // Ajouter le gestionnaire d'événements AfterCheck
+            treeView1.AfterCheck += (s, e) =>
+            {
+                // Si l'événement a été déclenché par le code, ne rien faire
+                if (isEventTriggeredByCode)
+                    return;
+
+                // Si le nœud est un dossier...
+                if (e.Node.Nodes.Count > 0)
+                {
+                    // Indiquer que l'événement est déclenché par le code
+                    isEventTriggeredByCode = true;
+
+                    // Annuler la coche
+                    e.Node.Checked = false;
+
+                    // Réinitialiser l'indicateur
+                    isEventTriggeredByCode = false;
+                }
+            };
+
+
+            // Parcourir chaque dossier
+            foreach (PdmObjectId folderId in FoldersInPDFFolder)
+            {
+                // Obtenir le nom du dossier
+                string folderName = TopSolidHost.Pdm.GetName(folderId);
+
+                // Créer un nouveau TreeNode pour le dossier
+                TreeNode folderNode = new TreeNode(folderName);
+
+                // Obtenir les fichiers dans le dossier
+                List<PdmObjectId> fileIdsInFolder;
+                TopSolidHost.Pdm.GetConstituents(folderId, out _, out fileIdsInFolder);
+
+                // Parcourir chaque fichier dans le dossier
+                foreach (PdmObjectId fileId in fileIdsInFolder)
+                {
+                    // Obtenir le nom du fichier
+                    string fileName = TopSolidHost.Pdm.GetName(fileId);
+
+                    // Créer un nouveau TreeNode pour le fichier
+                    TreeNode fileNode = new TreeNode(fileName);
+
+                    // Ajouter le TreeNode du fichier au TreeNode du dossier
+                    folderNode.Nodes.Add(fileNode);
+                }
+
+                // Ajouter le TreeNode du dossier au TreeNode racine
+                rootFolderNode.Nodes.Add(folderNode);
+            }
+
+            // Ajouter le TreeNode racine au TreeView
+            treeView1.Nodes.Add(rootFolderNode);
+        }
+
+
 
 
         public Form1()
-            {
-            InitializeComponent();
+        {
+                InitializeComponent();
 
-            string appId = "Folder_Creator_Tool_V3";
+            /* string appId = "Folder_Creator_Tool_V3";
 
-            bool nouvelleInstance;
-            using (Mutex mutex = new Mutex(true, appId, out nouvelleInstance))
-            {
-                if (nouvelleInstance)
-                {
-                    Application.Run(new Form1());
-                }
-                else
-                {
-                    // Récupère l'instance existante et la met au premier plan.
-                    Process current = Process.GetCurrentProcess();
-                    foreach (Process process in Process.GetProcessesByName(current.ProcessName))
-                    {
-                        if (process.Id != current.Id)
-                        {
-                            SetForegroundWindow(process.MainWindowHandle);
-                            break;
-                        }
-                    }
-                }
-            }
+             bool nouvelleInstance = false;
+             using (Mutex mutex = new Mutex(true, appId, out nouvelleInstance))
+             {
+                 if (nouvelleInstance)
+                 {
+                     Application.Run(new Form1());
+                 }
+                 else
+                 {
+                     // Récupère l'instance existante et la met au premier plan.
+                     Process current = Process.GetCurrentProcess();
+                     foreach (Process process in Process.GetProcessesByName(current.ProcessName))
+                     {
+                         if (process.Id != current.Id)
+                         {
+                             SetForegroundWindow(process.MainWindowHandle);
+                             break;
+                         }
+                     }
+                 }
+             }
 
-            //Current project
+             //Current project
 
-            this.WindowState = FormWindowState.Normal;
-            this.Show();
-            this.TopMost = true;
+             this.WindowState = FormWindowState.Normal;
+             this.Show();
+             this.TopMost = true;*/
 
 
 
-            
+
 
 
             //-----------Connexion a TopSolid-----------------------------------------------------------------------------------------------------------------
@@ -359,36 +456,58 @@ namespace Folder_Creator_Tool_V3
 
             textBox8.Text = "A"; //Affichage de l'indice
 
+
             //Liste PDF--------------------------------
+
+            /* List<PdmObjectId> dossiers2Ds = new List<PdmObjectId>(); //Dossier "01-2D"
+             PdmObjectId dossiers2D = new  PdmObjectId();
+
+             try
+             {
+                 dossiers2Ds = TopSolidHost.Pdm.SearchFolderByName(CurrentProjectPdmId, "01-2D"); //Recherche du dossier "01-2D" dans le projet courant
+                 dossiers2D = dossiers2Ds[0];
+             }
+             catch (Exception ex)
+             {
+                 this.TopMost = false;
+                 MessageBox.Show(new Form { TopMost = true }, "Dossier '01-2D' introuvable" + ex.Message);
+             }
+
+                 List<PdmObjectId> FoldersInPDFFolder = new List<PdmObjectId>(); 
+                 PdmObjectId FolderInPDFFolder = new PdmObjectId();
+
+                 List<PdmObjectId> PDFIds = new List<PdmObjectId>();
+                 PdmObjectId PDFId = new PdmObjectId();
+
+                 DocumentId PDFDoc = new DocumentId();
+                 string PDFDocTxt = "";
+
+                 TopSolidHost.Pdm.GetConstituents(dossiers2D, out FoldersInPDFFolder, out PDFIds);
+
+             for (int i = 0; PDFIds.Count > i; i++)
+             {
+                 PDFId = PDFIds[i];
+                 PDFDocTxt = TopSolidHost.Pdm.GetName(PDFId);
+
+                 FolderInPDFFolder = FoldersInPDFFolder[i];
+
+
+                 checkedListBox1.Items.Add(PDFDocTxt);
+             }
+             return;
+            */
+
             
-            
-
-            List<PdmObjectId> dossiers2Ds = TopSolidHost.Pdm.SearchFolderByName(CurrentProjectPdmId, "01-2D");
-            PdmObjectId dossiers2D = dossiers2Ds[0];
-
-            List<PdmObjectId> PDFIds = new List<PdmObjectId>();
-            List<PdmObjectId> FoldersInPDFFolder = new List<PdmObjectId>();
-            PdmObjectId PDFId = new PdmObjectId();
-            DocumentId PDFDoc = new DocumentId();
-            string PDFDocTxt = "";
-
-            TopSolidHost.Pdm.GetConstituents(dossiers2D, out FoldersInPDFFolder, out PDFIds);
-
-            for (int i = 0; PDFIds.Count > i; i++)
-            {
-                PDFId = PDFIds[i];
-                PDFDocTxt = TopSolidHost.Pdm.GetName(PDFId);
-                checkedListBox1.Items.Add(PDFDocTxt);
-            }
-            return;
-
-
-
-
-
-
-
+            listePdf();
+            treeView1.ExpandAll();
         }
+
+
+
+
+
+
+
 
 
 
@@ -403,34 +522,45 @@ namespace Folder_Creator_Tool_V3
                 List<string> TxtCheckedItems = new List<string>();
                 string TxtCheckedItem = null;
                 List<PdmObjectId> CheckedItems = new List<PdmObjectId>();
-                List<PdmObjectId> CheckedItemCopie = new List<PdmObjectId>();
+                List<PdmObjectId> CheckedItemListeCopie = new List<PdmObjectId>();
                 List<PdmObjectId> CheckedItemsliste = new List<PdmObjectId>();
                 List<PdmObjectId> CheckedItemCopieListe = new List<PdmObjectId>();
+            
+            void AddCheckedNodesToList(TreeNodeCollection nodes, List<string> list)
+            {
+                foreach (TreeNode node in nodes)
+                {
+                    // Si le nœud est coché...
+                    if (node.Checked)
+                    {
+                        // Ajouter le nom du nœud à la liste
+                        list.Add(node.Text);
+                    }
+
+                    // Appeler récursivement la fonction pour les nœuds enfants
+                    AddCheckedNodesToList(node.Nodes, list);
+                }
+            }
+
             try
             {
+                // Parcourir tous les nœuds du TreeView
+                AddCheckedNodesToList(treeView1.Nodes, TxtCheckedItems);
 
-                foreach (object item in checkedListBox1.CheckedItems)
+                // Utilisez TxtCheckedItems comme vous le souhaitez.
+                for (int i = 0; TxtCheckedItems.Count > i; i++)
                 {
-                    TxtCheckedItems.Add(item.ToString());
-                }
-
-                // Utilisez checkedItems comme vous le souhaitez.
-                // Par exemple, vous pouvez l'afficher dans une MessageBox :
-                for (int i = 0; TxtCheckedItems.Count>i; i++)
-                {
-                
                     CheckedItems = TopSolidHost.Pdm.SearchDocumentByName(CurrentProjectPdmId, TxtCheckedItems[i]);
                     CheckedItemsliste.AddRange(CheckedItems);
                 }
-
             }
             catch (Exception ex)
             {
                 this.TopMost = false;
                 MessageBox.Show(new Form { TopMost = true }, "Echec de la récupération de la liste des PDF " + ex.Message);
-
-                return;
             }
+
+
 
 
 
@@ -477,7 +607,6 @@ namespace Folder_Creator_Tool_V3
                                         // Start modification.
                                         if (!TopSolidHost.Application.StartModification("My Action", false)) return;
                                         // Modify document.
-                                        //TopSolidHost.Application.StartModification("My Action", true);
 
                                         //Recuperation du PdmObjectId de la nouvelle revision du document apres passage a l'etat modification
 
@@ -486,17 +615,9 @@ namespace Folder_Creator_Tool_V3
                                         
                                         TopSolidHost.Documents.EnsureIsDirty(ref CurrentDocumentId);
                                        CurrentDocumentId = TopSolidHost.Documents.GetDocument(PdmObjectIdCurrentDocumentId);
-                                        //CurrentDocumentCommentaireId = TopSolidHost.Parameters.GetCommentParameter(CurrentDocumentId);   // Récupération du commentaire (Repère)
-                                        //CurrentDocumentDesignationId = TopSolidHost.Parameters.GetDescriptionParameter(CurrentDocumentId);   // Récupération de la désignation
-
-
-
 
                                         TopSolidHost.Parameters.SetTextValue(CurrentDocumentCommentaireId, TextBoxCommentaireValue);
                                         TopSolidHost.Parameters.SetTextValue(CurrentDocumentDesignationId, TextBoxDesignationValue);
-
-                                        //TopSolidHost.Pdm.SetComment(PdmObjectIdCurrentDocumentId, TextBoxCommentaireValue); //Edition du parametre commentaire
-                                        //TopSolidHost.Pdm.SetDescription(PdmObjectIdCurrentDocumentId, TextBoxDesignationValue); //Edition du designation commentaire
 
                                         TopSolidHost.Application.EndModification(true, true);
                                      }
@@ -563,61 +684,57 @@ namespace Folder_Creator_Tool_V3
                                                             {
                                                                 MessageBox.Show("les dossiers existe deja");
                                                     
-                                                    
                                                                 nomDocuIds = TopSolidHost.Pdm.SearchDocumentByName(CurrentProjectPdmId,nomDocu);
                                                                  if (nomDocuIds.Count==0)
                                                                  {
                                                                     MessageBox.Show(new Form { TopMost = true }, "Un fichier " + nomDocu + " existe deja dans le dossier");
-
                                                     
                                                                  }
-                                                 
                                         
                                                             }
                                                         }
-                                                        return;
-                                            
-
+                                                            DossierRepId = DossierExistantId;
+                                                            break;
                                                     }
 
                                                 }
-                                
-
                                             }
 
                                         }
 
                                     }
+                                    else
+                                    //Creation du dossier repere
+                                    DossierRepId = TopSolidHost.Pdm.CreateFolder(AtelierFolderId, TexteDossierRep);
 
-                    
+
+
+
+
+
                              }
                                 catch (Exception ex)
                              {
                                 this.TopMost = false;
                                 TopSolidHost.Application.EndModification(false, false);
                                 MessageBox.Show(new Form { TopMost = true }, "erreur" + ex.Message);
-
                              }
                     }
                     while (recommencer); // La boucle while recommencera si recommencer est true
                     
-                        //Creation du dossier repere
-                        DossierRepId = TopSolidHost.Pdm.CreateFolder(AtelierFolderId, TexteDossierRep);
-
 
                         //Creation du dosser indice
                         DossierIndiceId = TopSolidHost.Pdm.CreateFolder(DossierRepId, TexteIndiceFolder);
 
-            dossier3DGenereId = creationAutreDossiers(DossierIndiceId);
-                    
-                    //break;
+                        dossier3DGenereId = creationAutreDossiers(DossierIndiceId);
 
-
+            //break;
+            
 
 
             //--------------------- Dérivation et déplacement du fichier dérivé dans le dossier 3D -----------------------
 
-            
+
             try
             {
                 try
@@ -651,16 +768,19 @@ namespace Folder_Creator_Tool_V3
                 {
 
                     //Copie des pdf dans le dossier
-                    if (checkedListBox1.CheckedItems.Count > 0)
+                    if (CheckedItemsliste.Count > 0)
                     {
+                        for (int i = 0; i <CheckedItemsliste.Count; i++) 
+                        { 
+                            CheckedItemListeCopie = TopSolidHost.Pdm.CopySeveral(CheckedItemsliste, AuteurPdmObjectId); //Copie des pdf dans le dossier
+                            
 
-                        CheckedItemCopie = TopSolidHost.Pdm.CopySeveral(CheckedItemsliste, AuteurPdmObjectId); //Copie des pdf dans le dossier
-
-                        TopSolidHost.Pdm.MoveSeveral(CheckedItemCopie, dossier3DGenereId); //Déplacement du document dérivé et des PDF
+                        }
+                        
+                        TopSolidHost.Pdm.MoveSeveral(CheckedItemListeCopie, dossier3DGenereId); //Déplacement du document dérivé et des PDF
 
                     }
-
-                    TopSolidHost.Pdm.MoveSeveral(DerivéDocumentPdmObjectIds, dossier3DGenereId);
+                        TopSolidHost.Pdm.MoveSeveral(DerivéDocumentPdmObjectIds, dossier3DGenereId);
 
                 }
                 catch (Exception ex)
@@ -713,7 +833,6 @@ namespace Folder_Creator_Tool_V3
             this.TopMost = false;
             this.WindowState = FormWindowState.Minimized;
 
-            TopSolidHost.Pdm.ShowInProjectTree(DerivéDocumentPdmObjectId);
 
             //TopSolidHost.Application.InvokeCommand("TopSolid.Kernel.UI.D3.Frames.SmartFrameCommand"); 
 
