@@ -17,6 +17,8 @@ using TopSolid.Kernel.Automating;
 using System.Diagnostics;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.Button;
 using System.Xml.Linq;
+using System.Diagnostics.Eventing.Reader;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.TrackBar;
 
 
 
@@ -182,90 +184,82 @@ namespace Folder_Creator_Tool_V3
 
         void listePdf()
         {
-            List<PdmObjectId> dossiers2Ds = new List<PdmObjectId>(); //Dossier "01-2D"
+            // Initialisation des listes pour stocker les dossiers et les fichiers
+            List<PdmObjectId> dossiers2Ds = new List<PdmObjectId>();
             PdmObjectId dossiers2D = new PdmObjectId();
             List<PdmObjectId> FoldersInPDFFolder = new List<PdmObjectId>();
             List<PdmObjectId> PDFIds = new List<PdmObjectId>();
 
             try
             {
-                dossiers2Ds = TopSolidHost.Pdm.SearchFolderByName(CurrentProjectPdmId, "01-2D"); //Recherche du dossier "01-2D" dans le projet courant
+                // Recherche du dossier "01-2D" dans le projet courant
+                dossiers2Ds = TopSolidHost.Pdm.SearchFolderByName(CurrentProjectPdmId, "01-2D");
                 dossiers2D = dossiers2Ds[0];
             }
             catch (Exception ex)
             {
+                // Affichage d'un message d'erreur si le dossier "01-2D" n'est pas trouvé
                 this.TopMost = false;
                 MessageBox.Show(new Form { TopMost = true }, "Dossier '01-2D' introuvable" + ex.Message);
             }
 
-            // Obtenir le nom du dossier racine
+            // Obtention du nom du dossier racine et création d'un TreeNode pour le dossier racine
             string rootFolderName = TopSolidHost.Pdm.GetName(dossiers2D);
-
-            // Créer un nouveau TreeNode pour le dossier racine
             TreeNode rootFolderNode = new TreeNode(rootFolderName);
 
-            // Obtenir les dossiers et les fichiers dans le dossier "01-2D"
+            // Obtention des dossiers et des fichiers dans le dossier "01-2D"
             TopSolidHost.Pdm.GetConstituents(dossiers2D, out FoldersInPDFFolder, out PDFIds);
 
-            // Ajouter le gestionnaire d'événements AfterCheck
-            // Ajouter un indicateur pour savoir si l'événement a été déclenché par le code
+            // Initialisation de la variable pour gérer l'événement AfterCheck
             bool isEventTriggeredByCode = false;
 
-            // Ajouter le gestionnaire d'événements AfterCheck
+            // Gestion de l'événement AfterCheck pour empêcher la coche des dossiers
             treeView1.AfterCheck += (s, e) =>
             {
-                // Si l'événement a été déclenché par le code, ne rien faire
                 if (isEventTriggeredByCode)
                     return;
 
-                // Si le nœud est un dossier...
                 if (e.Node.Nodes.Count > 0)
                 {
-                    // Indiquer que l'événement est déclenché par le code
                     isEventTriggeredByCode = true;
-
-                    // Annuler la coche
                     e.Node.Checked = false;
-
-                    // Réinitialiser l'indicateur
                     isEventTriggeredByCode = false;
                 }
             };
 
-
-            // Parcourir chaque dossier
+            // Parcours de chaque dossier dans le dossier "01-2D"
             foreach (PdmObjectId folderId in FoldersInPDFFolder)
             {
-                // Obtenir le nom du dossier
+                // Obtention du nom du dossier et création d'un TreeNode pour le dossier
                 string folderName = TopSolidHost.Pdm.GetName(folderId);
-
-                // Créer un nouveau TreeNode pour le dossier
                 TreeNode folderNode = new TreeNode(folderName);
 
-                // Obtenir les fichiers dans le dossier
+                // Obtention des fichiers dans le dossier
                 List<PdmObjectId> fileIdsInFolder;
                 TopSolidHost.Pdm.GetConstituents(folderId, out _, out fileIdsInFolder);
 
-                // Parcourir chaque fichier dans le dossier
+                // Parcours de chaque fichier dans le dossier
                 foreach (PdmObjectId fileId in fileIdsInFolder)
                 {
-                    // Obtenir le nom du fichier
+                    // Obtention du nom du fichier et création d'un TreeNode pour le fichier
                     string fileName = TopSolidHost.Pdm.GetName(fileId);
-
-                    // Créer un nouveau TreeNode pour le fichier
                     TreeNode fileNode = new TreeNode(fileName);
 
-                    // Ajouter le TreeNode du fichier au TreeNode du dossier
+                    // Stockage du PdmObjectId dans le Tag du TreeNode
+                    fileNode.Tag = fileId;
+
+                    // Ajout du TreeNode du fichier au TreeNode du dossier
                     folderNode.Nodes.Add(fileNode);
                 }
 
-                // Ajouter le TreeNode du dossier au TreeNode racine
+                // Ajout du TreeNode du dossier au TreeNode racine
                 rootFolderNode.Nodes.Add(folderNode);
             }
 
-            // Ajouter le TreeNode racine au TreeView
+            // Ajout du TreeNode racine au TreeView
             treeView1.Nodes.Add(rootFolderNode);
         }
+
 
         //-----------Fonction Récupération ID Document courant----------------------------------------------------------------------------------------------------------------------------
         void DocumentCourant(out PdmObjectId PdmObjectIdCurrentDocumentId, out DocumentId CurrentDocumentId)
@@ -291,42 +285,6 @@ namespace Folder_Creator_Tool_V3
         public Form1()
         {
                 InitializeComponent();
-
-            /* string appId = "Folder_Creator_Tool_V3";
-
-             bool nouvelleInstance = false;
-             using (Mutex mutex = new Mutex(true, appId, out nouvelleInstance))
-             {
-                 if (nouvelleInstance)
-                 {
-                     Application.Run(new Form1());
-                 }
-                 else
-                 {
-                     // Récupère l'instance existante et la met au premier plan.
-                     Process current = Process.GetCurrentProcess();
-                     foreach (Process process in Process.GetProcessesByName(current.ProcessName))
-                     {
-                         if (process.Id != current.Id)
-                         {
-                             SetForegroundWindow(process.MainWindowHandle);
-                             break;
-                         }
-                     }
-                 }
-             }
-
-             //Current project
-
-             this.WindowState = FormWindowState.Normal;
-             this.Show();
-             this.TopMost = true;*/
-
-
-
-
-
-
             //-----------Connexion a TopSolid-----------------------------------------------------------------------------------------------------------------
 
             bool TSConnected = TopSolidDesignHost.IsConnected;
@@ -475,52 +433,46 @@ namespace Folder_Creator_Tool_V3
 
         private void button2_Click_1(object sender, EventArgs e)
         {
+            // Initialisation des listes
+            List<string> TxtCheckedItems = new List<string>();
+            string TxtCheckedItem = null;
+            List<string> CheckedItemsIdTxt = new List<string>();
+            List<PdmObjectId> CheckedItems = new List<PdmObjectId>();
+            List<PdmObjectId> CheckedItemListeCopie = new List<PdmObjectId>();
+            List<PdmObjectId> CheckedItemsliste = new List<PdmObjectId>();
+            List<PdmObjectId> CheckedItemCopieListe = new List<PdmObjectId>();
 
-                List<string> TxtCheckedItems = new List<string>();
-                string TxtCheckedItem = null;
-                List<PdmObjectId> CheckedItems = new List<PdmObjectId>();
-                List<PdmObjectId> CheckedItemListeCopie = new List<PdmObjectId>();
-                List<PdmObjectId> CheckedItemsliste = new List<PdmObjectId>();
-                List<PdmObjectId> CheckedItemCopieListe = new List<PdmObjectId>();
-            
-            void AddCheckedNodesToList(TreeNodeCollection nodes, List<string> list)
+            // Fonction pour ajouter les nœuds cochés à la liste
+            void AddCheckedNodesToList(TreeNodeCollection nodes, List<PdmObjectId> list)
             {
                 foreach (TreeNode node in nodes)
                 {
-                    // Si le nœud est coché...
+                    // Si le nœud est coché, ajoutez son PdmObjectId à la liste
                     if (node.Checked)
                     {
-                        // Ajouter le nom du nœud à la liste
-                        list.Add(node.Text);
+                        list.Add((PdmObjectId)node.Tag);
                     }
 
-                    // Appeler récursivement la fonction pour les nœuds enfants
+                    // Appel récursif pour les nœuds enfants
                     AddCheckedNodesToList(node.Nodes, list);
                 }
             }
 
             try
             {
-                // Parcourir tous les nœuds du TreeView
-                AddCheckedNodesToList(treeView1.Nodes, TxtCheckedItems);
+                // Ajout des nœuds cochés à la liste CheckedItems
+                AddCheckedNodesToList(treeView1.Nodes, CheckedItems);
 
-                // Utilisez TxtCheckedItems comme vous le souhaitez.
-                for (int i = 0; TxtCheckedItems.Count > i; i++)
+                // Parcours de la liste CheckedItems
+                for (int i = 0; CheckedItems.Count > i; i++)
                 {
                     string ExtentionTxtPdf = "";
-                    CheckedItems = TopSolidHost.Pdm.SearchDocumentByName(CurrentProjectPdmId, TxtCheckedItems[i]);
-                    for (int index = 0; index < CheckedItems.Count; index++)
+                    PdmObjectId CheckedItem = CheckedItems[i];
+                    PdmObjectType TypePDF = TopSolidHost.Pdm.GetType(CheckedItem, out ExtentionTxtPdf);
+                    // Si l'extension du fichier est .pdf, ajoutez-le à la liste CheckedItemsliste
+                    if (ExtentionTxtPdf == ".pdf")
                     {
-                        PdmObjectId CheckedItem = CheckedItems[index];
-                        PdmObjectType TypePDF = TopSolidHost.Pdm.GetType(CheckedItem, out ExtentionTxtPdf);
-                        if (ExtentionTxtPdf == ".pdf")
-                        {
-                            
-                            CheckedItemsliste.Add(CheckedItem);
-
-                        } 
-
-
+                        CheckedItemsliste.Add(CheckedItem);
                     }
                 }
             }
@@ -529,7 +481,6 @@ namespace Folder_Creator_Tool_V3
                 this.TopMost = false;
                 MessageBox.Show(new Form { TopMost = true }, "Echec de la récupération de la liste des PDF " + ex.Message);
             }
-
 
 
 
@@ -716,8 +667,6 @@ namespace Folder_Creator_Tool_V3
                     return;
                 }
 
-                //Dossier3DPdmObjectIds = TopSolidHost.Pdm.SearchFolderByName(CurrentProjectPdmId,"3D"); //Recuperation du PdmObjectId (liste) du dossier 3D
-
                 AuteurPdmObjectId = TopSolidHost.Pdm.GetOwner(PdmObjectIdCurrentDocumentId);
                 DerivéDocumentId = TopSolidDesignHost.Tools.CreateDerivedDocument(AuteurPdmObjectId, CurrentDocumentId,true); //Creation de la derivé et recuperation de document Id
             
@@ -735,25 +684,16 @@ namespace Folder_Creator_Tool_V3
                     //Copie des pdf dans le dossier
                     if (CheckedItemsliste.Count > 0)
                     {
-                        for (int i = 0; i <CheckedItemsliste.Count; i++) 
-                        { 
                             CheckedItemListeCopie = TopSolidHost.Pdm.CopySeveral(CheckedItemsliste, AuteurPdmObjectId); //Copie des pdf dans le dossier
-                            
-
-                        }
-                        
                         TopSolidHost.Pdm.MoveSeveral(CheckedItemListeCopie, dossier3DGenereId); //Déplacement du document dérivé et des PDF
-
                     }
                         TopSolidHost.Pdm.MoveSeveral(DerivéDocumentPdmObjectIds, dossier3DGenereId);
-
                 }
                 catch (Exception ex)
                 {
                     MessageBox.Show(new Form { TopMost = true }, "Erreur lors de la copie ou du deplacement du PDF dans le dossier 3D" + ex.Message);
                     return;
                 }
-
                     
                     if (!TopSolidHost.Application.StartModification("My Action", false)) return;
                 // Modify document.
@@ -776,46 +716,43 @@ namespace Folder_Creator_Tool_V3
                 return;
             }
 
-
+            //-------------- transfo sur rep abs ------------
 
             this.TopMost = false;
             this.WindowState = FormWindowState.Minimized;            
 
             TopSolidHost.Application.InvokeCommand("TopSolid.Kernel.UI.D3.Transforms.PositioningTransformCommand");
             MessageBox.Show(new Form { TopMost = true }, "Veuillez sélectionner ou créer le repère absolu puis selectionner le repère que vous avez créé comme repère d’origine et le repère absolu comme repère de destination, puis cliquez sur OK.");
-
-            List<ElementId> DocuOperationList = TopSolidHost.Operations.GetOperations(DerivéDocumentId); // dossier transform
             
-            List<ElementId> DocuElementsList = TopSolidHost.Elements.GetElements(DerivéDocumentId);
+            ElementId DossierTransfo = TopSolidHost.Elements.SearchByName(DerivéDocumentId,"$TopSolid.Kernel.DB.D3.Documents.ElementName.Transforms"); // dossier transform
+            List<ElementId> TransfoList = TopSolidHost.Elements.GetConstituents(DossierTransfo);
             
-
+            S
             Transform3D transfo =  new Transform3D();
-            
-            List<ElementId> PieceListe = new List<ElementId>();
+            List<ElementId> OperationListe = TopSolidHost.Operations.GetOperations(DerivéDocumentId);
+
             try
             {
-                for (int i = 0; i < DocuOperationList.Count ; i++)
-                {
-                    ElementId DocuOperation = DocuOperationList[i];
-                    string TypeOperationTxt = TopSolidHost.Elements.GetTypeFullName(DocuOperation);
+                bool TransfoIntrouvable = true;
 
-                    if (TypeOperationTxt == "TopSolid.Kernel.DB.D3.Transforms.TransformEntity") 
+                for (int i = 0 ; i < OperationListe.Count ; i ++)
+                {
+                    ElementId OperationId = OperationListe[i];
+                    string TypeOperationTxt = TopSolidHost.Elements.GetTypeFullName(OperationId);
+
+                    //if (TypeOperationTxt == "TopSolid.Kernel.DB.D3.Transforms.TransformEntity")
+                    if (TypeOperationTxt == "TopSolid.Kernel.DB.D3.Transforms.Operations.PositioningTransformCreation")
                     {
-                        transfo = TopSolidHost.Geometries3D.GetOccurrenceDefinitionTransform(DocuOperation);
+                       
+                        transfo.Equals(OperationId);
+                        TransfoIntrouvable = false;
                     }
                 }
-
-
-                for (int i = 0; i < DocuElementsList.Count; i++)
-                {
-                    ElementId DocuElement = DocuElementsList[i];
-                    string TypeElementTxt = TopSolidHost.Elements.GetTypeFullName(DocuElement);
-                    
-                    if (TypeElementTxt == "TopSolid.Kernel.DB.D3.Shapes.ShapeEntity") 
+                    if (TransfoIntrouvable)
                     {
-                        PieceListe.Add(DocuElement);
+                      MessageBox.Show("transfo introuvable");
+
                     }
-                }
             }
             catch (Exception ex)
             {
@@ -824,6 +761,9 @@ namespace Folder_Creator_Tool_V3
                 MessageBox.Show(new Form { TopMost = true }, "erreur lors de la recup de la transformation " + ex.Message);
                 return;
             }
+
+            ElementId DossierForme = TopSolidHost.Elements.SearchByName(DerivéDocumentId, "$TopSolid.Kernel.DB.D3.Shapes.Documents.ElementName.Shapes"); // dossier Formes
+            List<ElementId> FormesList = TopSolidHost.Elements.GetConstituents(DossierForme);
 
             try
             {
@@ -842,17 +782,11 @@ namespace Folder_Creator_Tool_V3
                     TopSolidHost.Documents.EnsureIsDirty(ref DerivéDocumentId);
                     DerivéDocumentId = TopSolidHost.Documents.EditedDocument;
 
-                IEntities maClasse = new MaClasse();
-
-                for (int i = 0; i < PieceListe.Count; i++)
+                for (int i = 0; i < FormesList.Count; i++)
                 {
-
-                    ElementId Piece = PieceListe[i];
-                    ElementId PieceTransfo = maClasse.Transform(Piece, transfo);
-
+                    TopSolidHost.Entities.Transform(FormesList[i], transfo);
 
                 }
-
                     TopSolidHost.Application.EndModification(true, true);
             }
             catch (Exception ex)
