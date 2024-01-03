@@ -19,6 +19,7 @@ using static System.Windows.Forms.VisualStyles.VisualStyleElement.Button;
 using System.Xml.Linq;
 using System.Diagnostics.Eventing.Reader;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.TrackBar;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.Window;
 
 
 
@@ -27,8 +28,12 @@ using static System.Windows.Forms.VisualStyles.VisualStyleElement.TrackBar;
 namespace Folder_Creator_Tool_V3
 {
 
+   
+
+
+
     public partial class Form1 : Form
-    {
+        {
 
             
 
@@ -281,9 +286,48 @@ namespace Folder_Creator_Tool_V3
             }
         }
 
+                class MyDocumentsEventsHost : IDocumentsEvents
+                {
+                    // Variable pour suivre l'état d'édition du document
+                    private bool isEditing = false;
+                    // Variable pour la boîte de dialogue
+                    public Form myDialog;
+
+
+                    public void OnDocumentEditingStarted(DocumentId inDocumentId)
+                            {
+                                string name = TopSolidHost.Documents.GetName(inDocumentId);
+
+                                // Le document est maintenant en mode d'édition
+                                isEditing = true;
+
+                                // Si le document est en mode d'édition, fermez la boîte de dialogue
+                                if (isEditing && myDialog != null)
+                                {
+                                    myDialog.Close();
+                                    myDialog = null;
+                                }
+                    }
+
+                            public void OnDocumentEditingEnded(DocumentId inDocumentId)
+                            {
+                                string name = TopSolidHost.Documents.GetName(inDocumentId);
+
+                                // Le document n'est plus en mode d'édition
+                                isEditing = false;
+                            }
+
+                            // Méthode pour afficher la boîte de dialogue
+                            public void ShowDialog()
+                            {
+                                myDialog = new Form { TopMost = true };
+                                myDialog.Show();
+                            }
+                }
 
         public Form1()
         {
+
                 InitializeComponent();
             //-----------Connexion a TopSolid-----------------------------------------------------------------------------------------------------------------
 
@@ -297,7 +341,7 @@ namespace Folder_Creator_Tool_V3
 
                 try
                 {
-                    TopSolidHost.Connect();  // Connection à TopSolid
+                    TopSolidHost.Connect("Folder Creator Tool");  // Connection à TopSolid
                     TopSolidDesignHost.Connect();    // Connection à TopSolidDesign
                 }
                 catch (Exception ex)
@@ -719,21 +763,75 @@ namespace Folder_Creator_Tool_V3
             //-------------- transfo sur rep abs ------------
 
             this.TopMost = false;
-            this.WindowState = FormWindowState.Minimized;            
+            this.WindowState = FormWindowState.Minimized;
 
-            TopSolidHost.Application.InvokeCommand("TopSolid.Kernel.UI.D3.Transforms.PositioningTransformCommand");
+            /*TopSolidHost.Application.InvokeCommand("TopSolid.Kernel.UI.D3.Transforms.PositioningTransformCommand");
             MessageBox.Show(new Form { TopMost = true }, "Veuillez sélectionner ou créer le repère absolu puis selectionner le repère que vous avez créé comme repère d’origine et le repère absolu comme repère de destination, puis cliquez sur OK.");
             
             ElementId DossierTransfo = TopSolidHost.Elements.SearchByName(DerivéDocumentId,"$TopSolid.Kernel.DB.D3.Documents.ElementName.Transforms"); // dossier transform
-            List<ElementId> TransfoList = TopSolidHost.Elements.GetConstituents(DossierTransfo);
-            
-            S
+            List<ElementId> TransfoList = TopSolidHost.Elements.GetConstituents(DossierTransfo);*/
+
+
+
+                    ElementId RepereUser = new ElementId();
+                SmartFrame3D PlanRepere = null;
+                while (PlanRepere == null)
+                {
+                    string titre = "Plan XY";
+                    string label = "merci de selectionner le plan XY du repere";
+                    UserQuestion QuestionPlan = new UserQuestion(titre, label);
+                    QuestionPlan.AllowsCreation = true;
+                    TopSolidHost.User.AskFrame3D(QuestionPlan, true, null, out PlanRepere);
+                    
+                }
+
+                        try
+                        {
+                            if (!TopSolidHost.IsConnected) return;
+
+                            if (DerivéDocumentId.IsEmpty) return;
+                            // Start modification.
+                            if (!TopSolidHost.Application.StartModification("My Action", false)) return;
+                            // Modify document.
+
+                            //Recuperation du PdmObjectId de la nouvelle revision du document apres passage a l'etat modification
+
+                            // Récupération ID Document courant
+
+
+                            TopSolidHost.Documents.EnsureIsDirty(ref DerivéDocumentId);
+                            DerivéDocumentId = TopSolidHost.Documents.EditedDocument;
+
+                            RepereUser = TopSolidHost.Geometries3D.CreateSmartFrame(DerivéDocumentId, PlanRepere);
+                        }
+                        catch (Exception ex)
+                        {
+                            this.TopMost = false;
+                            TopSolidHost.Application.EndModification(false, false);
+                            MessageBox.Show(new Form { TopMost = true }, "erreur lors de la transformation " + ex.Message);
+                            return;
+                        }
+
+
+            MessageBox.Show("plan ok");
+
+
+
+
+
+
+
+
+
+            //--------------------------------------------------------------------------------------------------
             Transform3D transfo =  new Transform3D();
             List<ElementId> OperationListe = TopSolidHost.Operations.GetOperations(DerivéDocumentId);
 
             try
             {
                 bool TransfoIntrouvable = true;
+
+                double transformR00 = new double();
 
                 for (int i = 0 ; i < OperationListe.Count ; i ++)
                 {
@@ -744,8 +842,11 @@ namespace Folder_Creator_Tool_V3
                     if (TypeOperationTxt == "TopSolid.Kernel.DB.D3.Transforms.Operations.PositioningTransformCreation")
                     {
                        
-                        transfo.Equals(OperationId);
+                       
+                        
+                        
                         TransfoIntrouvable = false;
+
                     }
                 }
                     if (TransfoIntrouvable)
@@ -871,7 +972,18 @@ public class MaClasse : IEntities
 
 
 
+class DocumentsEventsHost : IDocumentsEvents
+{
+    public void OnDocumentEditingStarted(DocumentId inDocumentId)
+    {
+        string name = TopSolidHost.Documents.GetName(inDocumentId); MessageBox.Show(name, "Start Editing");
+    }
 
+    public void OnDocumentEditingEnded(DocumentId inDocumentId)
+    {
+        string name = TopSolidHost.Documents.GetName(inDocumentId); MessageBox.Show(name, "End Editing");
+    }
+}
 
 
 
