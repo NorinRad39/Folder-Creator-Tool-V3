@@ -833,23 +833,35 @@ namespace Folder_Creator_Tool_V3
 
             //****************************************************************************************
 
+            ElementId AbsRepId = TopSolidHost.Geometries3D.GetAbsoluteFrame(DerivéDocumentId);
+            Frame3D AbsRep = TopSolidHost.Geometries3D.GetFrameGeometry(AbsRepId);
+            ElementId AxeAbsXId = TopSolidHost.Geometries3D.GetAbsoluteXAxis(DerivéDocumentId);
+            ElementId AxeAbsYId = TopSolidHost.Geometries3D.GetAbsoluteYAxis(DerivéDocumentId);
+            ElementId AxeAbsZId = TopSolidHost.Geometries3D.GetAbsoluteZAxis(DerivéDocumentId);
+
+            Axis3D AxeAbsX = TopSolidHost.Geometries3D.GetAxisGeometry(AxeAbsXId);
+            Axis3D AxeAbsY = TopSolidHost.Geometries3D.GetAxisGeometry(AxeAbsYId);
+            Axis3D AxeAbsZ = TopSolidHost.Geometries3D.GetAxisGeometry(AxeAbsZId);
+
             // Définir et initialiser les directions des axes de votre repère1
-            Vector3 dx = new Vector3(1, 0, 0); // Remplacez par vos valeurs
-            Vector3 dy = new Vector3(0, 1, 0); // Remplacez par vos valeurs
-            Vector3 dz = new Vector3(0, 0, 1); // Remplacez par vos valeurs
+            Direction3D dx = RepereUser.XDirection; // Remplacez par vos valeurs
+            Direction3D dy = RepereUser.YDirection; // Remplacez par vos valeurs
+            Direction3D dz = RepereUser.ZDirection; // Remplacez par vos valeurs
 
             // Définir et initialiser les coordonnées de votre repère1
-            double x = 0; // Remplacez par votre valeur
-            double y = 0; // Remplacez par votre valeur
-            double z = 0; // Remplacez par votre valeur
+            double x = PointOrigineRep.X; // Remplacez par votre valeur
+            double y = PointOrigineRep.Y; // Remplacez par votre valeur
+            double z = PointOrigineRep.Z; // Remplacez par votre valeur
 
             // Définir et initialiser les directions des axes de votre repère absolu
-            Vector3 ox = new Vector3(1, 0, 0); // Remplacez par vos valeurs
-            Vector3 oy = new Vector3(0, 1, 0); // Remplacez par vos valeurs
-            Vector3 oz = new Vector3(0, 0, 1); // Remplacez par vos valeurs
+            Direction3D ox = AxeAbsX.Direction; // Remplacez par vos valeurs
+            Direction3D oy = AxeAbsY.Direction; // Remplacez par vos valeurs
+            Direction3D oz = AxeAbsZ.Direction; // Remplacez par vos valeurs
 
             // Définir et initialiser les coordonnées de l'origine de votre repère absolu
-            double O = 0; // Remplacez par votre valeur
+            ElementId PointOrigineAbsId = TopSolidHost.Geometries3D.GetAbsoluteOriginPoint(DerivéDocumentId);
+            
+            double O = PointOrigineAbsId; // Remplacez par votre valeur
 
             // Créer la matrice de transformation
             Transform3D transform = new Transform3D(
