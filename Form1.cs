@@ -765,230 +765,150 @@ namespace Folder_Creator_Tool_V3
             this.TopMost = false;
             this.WindowState = FormWindowState.Minimized;
 
-            /*TopSolidHost.Application.InvokeCommand("TopSolid.Kernel.UI.D3.Transforms.PositioningTransformCommand");
-            MessageBox.Show(new Form { TopMost = true }, "Veuillez sélectionner ou créer le repère absolu puis selectionner le repère que vous avez créé comme repère d’origine et le repère absolu comme repère de destination, puis cliquez sur OK.");
-            
-            ElementId DossierTransfo = TopSolidHost.Elements.SearchByName(DerivéDocumentId,"$TopSolid.Kernel.DB.D3.Documents.ElementName.Transforms"); // dossier transform
-            List<ElementId> TransfoList = TopSolidHost.Elements.GetConstituents(DossierTransfo);*/
 
+            // Création des objets nécessaires pour définir un repère
+            Plane3D PlanOrigineRep = new Plane3D();
+            Point3D PointOrigineRep = new Point3D();
+            Axis3D intersectionAxisRep = new Axis3D();
+            Direction3D XDirectionRep = new Direction3D();
 
-                        Plane3D PlanOrigineRep = null;
-                        Point3D PointOrigineRep = new Point3D();
-                        Axis3D intersectionAxisRep = null;
-                        Direction3D XDirectionRep = null;
-                       
-                        SmartFrame3D ReponseRepereUser = null; //new SmartFrame3D (PlanOrigineRep, PointOrigineRep, intersectionAxisRep, XDirectionRep);
+            // Initialisation de la variable qui recevra le repère sélectionné par l'utilisateur
+            SmartFrame3D ReponseRepereUser = null;
 
-                        try
-                        {
-                            if (!TopSolidHost.IsConnected) return;
+            try
+            {
+                // Vérification de la connexion à TopSolidHost
+                if (!TopSolidHost.IsConnected) return;
 
-                            if (DerivéDocumentId.IsEmpty) return;
-                            // Start modification.
-                            if (!TopSolidHost.Application.StartModification("My Action", false)) return;
-                            // Modify document.
+                // Vérification de l'ID du document
+                if (DerivéDocumentId.IsEmpty) return;
 
-                            //Recuperation du PdmObjectId de la nouvelle revision du document apres passage a l'etat modification
+                // Démarrage de la modification du document
+                if (!TopSolidHost.Application.StartModification("My Action", false)) return;
 
-                            // Récupération ID Document courant
+                // Marquage du document comme modifié et récupération de l'ID du document en cours de modification
+                TopSolidHost.Documents.EnsureIsDirty(ref DerivéDocumentId);
+                DerivéDocumentId = TopSolidHost.Documents.EditedDocument;
 
+                // Boucle demandant à l'utilisateur de sélectionner le plan XY du repère jusqu'à obtenir une réponse
+                while (ReponseRepereUser == null)
+                {
+                    string titre = "Plan XY";
+                    string label = "Merci de sélectionner le plan XY du repère";
+                    UserQuestion QuestionPlan = new UserQuestion(titre, label);
+                    QuestionPlan.AllowsCreation = true;
+                    TopSolidHost.User.AskFrame3D(QuestionPlan, true, null, out ReponseRepereUser);
+                }
 
-                            TopSolidHost.Documents.EnsureIsDirty(ref DerivéDocumentId);
-                            DerivéDocumentId = TopSolidHost.Documents.EditedDocument;
-                            
-                    
+                // Fin de la modification du document
+                TopSolidHost.Application.EndModification(true, true);
+            }
+            catch (Exception ex)
+            {
+                // En cas d'erreur lors de la transformation, affichage d'un message d'erreur
+                this.TopMost = false;
+                TopSolidHost.Application.EndModification(false, false);
+                MessageBox.Show(new Form { TopMost = true }, "Erreur lors de la transformation " + ex.Message);
+                return;
+            }
 
-                            while (ReponseRepereUser == null)
-                            {
-                                string titre = "Plan XY";
-                                string label = "merci de selectionner le plan XY du repere";
-                                UserQuestion QuestionPlan = new UserQuestion(titre, label);
-                                QuestionPlan.AllowsCreation = true;
-                                TopSolidHost.User.AskFrame3D(QuestionPlan, true, null, out ReponseRepereUser);
-                    
-                            }
-                            TopSolidHost.Application.EndModification(true, true);
-
-                        }
-                        catch (Exception ex)
-                        {
-                            this.TopMost = false;
-                            TopSolidHost.Application.EndModification(false, false);
-                            MessageBox.Show(new Form { TopMost = true }, "erreur lors de la transformation " + ex.Message);
-                            return;
-                        }
-
+            // Création d'un Frame3D pour stocker le repère utilisateur
             Frame3D RepereUser = new Frame3D();
-            
+
+            // Si le repère utilisateur a une géométrie, récupération de cette géométrie
             if (ReponseRepereUser.Geometry.HasValue)
             {
                 RepereUser = ReponseRepereUser.Geometry.Value;
             }
-            PointOrigineRep = RepereUser.Origin;
 
-            string PointOrigineRepXTxt = PointOrigineRep.X.ToString();
-            string PointOrigineRepYTxt = PointOrigineRep.Y.ToString();
-            string PointOrigineRepZTxt = PointOrigineRep.Z.ToString();
-            MessageBox.Show(PointOrigineRepXTxt + " " +PointOrigineRepYTxt+ " " +PointOrigineRepZTxt);
+            // Récupération de l'origine du repère utilisateur
+            PointOrigineRep = RepereUser.Origin;
 
             //****************************************************************************************
 
+            // Récupération du repère absolu et de ses axes
             ElementId AbsRepId = TopSolidHost.Geometries3D.GetAbsoluteFrame(DerivéDocumentId);
             Frame3D AbsRep = TopSolidHost.Geometries3D.GetFrameGeometry(AbsRepId);
             ElementId AxeAbsXId = TopSolidHost.Geometries3D.GetAbsoluteXAxis(DerivéDocumentId);
             ElementId AxeAbsYId = TopSolidHost.Geometries3D.GetAbsoluteYAxis(DerivéDocumentId);
             ElementId AxeAbsZId = TopSolidHost.Geometries3D.GetAbsoluteZAxis(DerivéDocumentId);
 
+            // Récupération de la géométrie des axes absolus
             Axis3D AxeAbsX = TopSolidHost.Geometries3D.GetAxisGeometry(AxeAbsXId);
             Axis3D AxeAbsY = TopSolidHost.Geometries3D.GetAxisGeometry(AxeAbsYId);
             Axis3D AxeAbsZ = TopSolidHost.Geometries3D.GetAxisGeometry(AxeAbsZId);
 
-            // Définir et initialiser les directions des axes de votre repère1
-            Direction3D dx = RepereUser.XDirection; // Remplacez par vos valeurs
-            Direction3D dy = RepereUser.YDirection; // Remplacez par vos valeurs
-            Direction3D dz = RepereUser.ZDirection; // Remplacez par vos valeurs
+            // Récupération des directions des axes du repère utilisateur
+            Direction3D dx = RepereUser.XDirection;
+            Direction3D dy = RepereUser.YDirection;
+            Direction3D dz = RepereUser.ZDirection;
 
-            // Définir et initialiser les coordonnées de votre repère1
-            double x = PointOrigineRep.X; // Remplacez par votre valeur
-            double y = PointOrigineRep.Y; // Remplacez par votre valeur
-            double z = PointOrigineRep.Z; // Remplacez par votre valeur
+            // Récupération des coordonnées de l'origine du repère utilisateur
+            double x = PointOrigineRep.X;
+            double y = PointOrigineRep.Y;
+            double z = PointOrigineRep.Z;
 
-            // Définir et initialiser les directions des axes de votre repère absolu
-            Direction3D ox = AxeAbsX.Direction; // Remplacez par vos valeurs
-            Direction3D oy = AxeAbsY.Direction; // Remplacez par vos valeurs
-            Direction3D oz = AxeAbsZ.Direction; // Remplacez par vos valeurs
+            // Récupération des directions des axes du repère absolu
+            Direction3D ox = AxeAbsX.Direction;
+            Direction3D oy = AxeAbsY.Direction;
+            Direction3D oz = AxeAbsZ.Direction;
 
-            // Définir et initialiser les coordonnées de l'origine de votre repère absolu
+            // Récupération de l'ID du point d'origine absolu
             ElementId PointOrigineAbsId = TopSolidHost.Geometries3D.GetAbsoluteOriginPoint(DerivéDocumentId);
-            
-            double O = PointOrigineAbsId; // Remplacez par votre valeur
 
-            // Créer la matrice de transformation
+            // Création de la matrice de transformation
+            double R00, R01, R02, R10, R11, R12, R20, R21, R22, Si, Tx, Ty, Tz, Px, Py, Pz;
             Transform3D transform = new Transform3D(
-                dx.X, dy.X, dz.X, x,
-                dx.Y, dy.Y, dz.Y, y,
-                dx.Z, dy.Z, dz.Z, z,
-                ox.X, oy.X, oz.X, O
+                R00 = dx.X, R01 = dy.X, R02 = dz.X, Tx = x,
+                R10 = dx.Y, R11 = dy.Y, R12 = dz.Y, Ty = y,
+                R20 = dx.Z, R21 = dy.Z, R22 = dz.Z, Tz = z,
+                Px = ox.X, Py = oy.X, Pz = oz.X, Si = 1
             );
 
 
-
-
-
-
-
-
-
-
             //--------------------------------------------------------------------------------------------------
-            Transform3D transfo =  new Transform3D();
-            List<ElementId> OperationListe = TopSolidHost.Operations.GetOperations(DerivéDocumentId);
 
-            try
-            {
-                bool TransfoIntrouvable = true;
 
-                double transformR00 = new double();
+            // Recherche du dossier Formes dans le document
+            ElementId DossierForme = TopSolidHost.Elements.SearchByName(DerivéDocumentId, "$TopSolid.Kernel.DB.D3.Shapes.Documents.ElementName.Shapes");
 
-                for (int i = 0 ; i < OperationListe.Count ; i ++)
-                {
-                    ElementId OperationId = OperationListe[i];
-                    string TypeOperationTxt = TopSolidHost.Elements.GetTypeFullName(OperationId);
-
-                    //if (TypeOperationTxt == "TopSolid.Kernel.DB.D3.Transforms.TransformEntity")
-                    if (TypeOperationTxt == "TopSolid.Kernel.DB.D3.Transforms.Operations.PositioningTransformCreation")
-                    {
-                       
-                       
-                        
-                        
-                        TransfoIntrouvable = false;
-
-                    }
-                }
-                    if (TransfoIntrouvable)
-                    {
-                      MessageBox.Show("transfo introuvable");
-
-                    }
-            }
-            catch (Exception ex)
-            {
-                this.TopMost = false;
-                
-                MessageBox.Show(new Form { TopMost = true }, "erreur lors de la recup de la transformation " + ex.Message);
-                return;
-            }
-
-            ElementId DossierForme = TopSolidHost.Elements.SearchByName(DerivéDocumentId, "$TopSolid.Kernel.DB.D3.Shapes.Documents.ElementName.Shapes"); // dossier Formes
+            // Récupération de tous les éléments du dossier Formes
             List<ElementId> FormesList = TopSolidHost.Elements.GetConstituents(DossierForme);
 
             try
             {
-                    if (!TopSolidHost.IsConnected) return;
+                // Vérification de la connexion à TopSolidHost
+                if (!TopSolidHost.IsConnected) return;
 
-                    if (DerivéDocumentId.IsEmpty) return;
-                    // Start modification.
-                    if (!TopSolidHost.Application.StartModification("My Action", false)) return;
-                    // Modify document.
+                // Vérification de l'ID du document
+                if (DerivéDocumentId.IsEmpty) return;
 
-                    //Recuperation du PdmObjectId de la nouvelle revision du document apres passage a l'etat modification
+                // Démarrage de la modification du document
+                if (!TopSolidHost.Application.StartModification("My Action", false)) return;
 
-                    // Récupération ID Document courant
-                
+                // Marquage du document comme modifié et récupération de l'ID du document en cours de modification
+                TopSolidHost.Documents.EnsureIsDirty(ref DerivéDocumentId);
+                DerivéDocumentId = TopSolidHost.Documents.EditedDocument;
 
-                    TopSolidHost.Documents.EnsureIsDirty(ref DerivéDocumentId);
-                    DerivéDocumentId = TopSolidHost.Documents.EditedDocument;
-
+                // Boucle sur chaque forme dans la liste FormesList et application de la transformation
                 for (int i = 0; i < FormesList.Count; i++)
                 {
-                    TopSolidHost.Entities.Transform(FormesList[i], transfo);
-
+                    ElementId transformedElement = TopSolidHost.Entities.Transform(FormesList[i], transform);
+                    // Ici, 'transformedElement' est l'ElementId transformé.
+                    // Vous pouvez travailler avec 'transformedElement' comme vous le souhaitez.
                 }
-                    TopSolidHost.Application.EndModification(true, true);
+
+                // Fin de la modification du document
+                TopSolidHost.Application.EndModification(true, true);
             }
             catch (Exception ex)
             {
+                // En cas d'erreur lors de la transformation, affichage d'un message d'erreur
                 this.TopMost = false;
                 TopSolidHost.Application.EndModification(false, false);
-                MessageBox.Show(new Form { TopMost = true }, "erreur lors de la transformation " + ex.Message);
+                MessageBox.Show(new Form { TopMost = true }, "Erreur lors de la transformation " + ex.Message);
                 return;
             }
-
-
-
-
-
-
-
-
-
-            /*List<ElementId> TransformList = TopSolidHost.Elements.GetConstituents(TransformFolderId);
-            ElementId Transform = new ElementId();
-            Transform = TransformList[TransformList.Count - 1];
-
-            string TransformTxt = TopSolidHost.Elements.GetName(Transform);
-            MessageBox.Show(TransformTxt);
-
-
-
-
-
-
-
-
-
-
-
-            TopSolidHost.Application.InvokeCommand("TopSolid.Kernel.UI.D3.Transforms.TransformCommand");
-            MessageBox.Show(new Form { TopMost = true }, "Veuillez sélectionner la pièce et la transformation, puis cliquez sur OK.");
-
-            this.WindowState = FormWindowState.Normal;
-            this.Show();
-            this.TopMost = true;
-            MessageBox.Show("Opération réussie.");*/
-
-
 
         }
 
