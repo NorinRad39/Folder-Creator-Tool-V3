@@ -279,9 +279,9 @@ namespace Folder_Creator_Tool_V3
             catch (Exception ex)
             {
                 this.TopMost = false;
-                MessageBox.Show(new Form { TopMost = true }, "Echec de la récupération de l'id du document courant. Ouvrez un document puis cliquez sur Ok  " + ex.Message);
-
-                return;
+                MessageBox.Show(new Form { TopMost = true }, "Echec de la récupération de l'id du document courant. Ouvrez un document puis réessayez  " + ex.Message);
+                Environment.Exit(0);
+                //return;
 
             }
         }
@@ -772,18 +772,12 @@ namespace Folder_Creator_Tool_V3
             List<ElementId> TransfoList = TopSolidHost.Elements.GetConstituents(DossierTransfo);*/
 
 
-
-                    ElementId RepereUser = new ElementId();
-                SmartFrame3D PlanRepere = null;
-                while (PlanRepere == null)
-                {
-                    string titre = "Plan XY";
-                    string label = "merci de selectionner le plan XY du repere";
-                    UserQuestion QuestionPlan = new UserQuestion(titre, label);
-                    QuestionPlan.AllowsCreation = true;
-                    TopSolidHost.User.AskFrame3D(QuestionPlan, true, null, out PlanRepere);
-                    
-                }
+                        Plane3D PlanOrigineRep = null;
+                        Point3D PointOrigineRep = new Point3D();
+                        Axis3D intersectionAxisRep = null;
+                        Direction3D XDirectionRep = null;
+                       
+                        SmartFrame3D ReponseRepereUser = null; //new SmartFrame3D (PlanOrigineRep, PointOrigineRep, intersectionAxisRep, XDirectionRep);
 
                         try
                         {
@@ -801,8 +795,20 @@ namespace Folder_Creator_Tool_V3
 
                             TopSolidHost.Documents.EnsureIsDirty(ref DerivéDocumentId);
                             DerivéDocumentId = TopSolidHost.Documents.EditedDocument;
+                            
+                    
 
-                            RepereUser = TopSolidHost.Geometries3D.CreateSmartFrame(DerivéDocumentId, PlanRepere);
+                            while (ReponseRepereUser == null)
+                            {
+                                string titre = "Plan XY";
+                                string label = "merci de selectionner le plan XY du repere";
+                                UserQuestion QuestionPlan = new UserQuestion(titre, label);
+                                QuestionPlan.AllowsCreation = true;
+                                TopSolidHost.User.AskFrame3D(QuestionPlan, true, null, out ReponseRepereUser);
+                    
+                            }
+                            TopSolidHost.Application.EndModification(true, true);
+
                         }
                         catch (Exception ex)
                         {
@@ -812,8 +818,47 @@ namespace Folder_Creator_Tool_V3
                             return;
                         }
 
+            Frame3D RepereUser = new Frame3D();
+            
+            if (ReponseRepereUser.Geometry.HasValue)
+            {
+                RepereUser = ReponseRepereUser.Geometry.Value;
+            }
+            PointOrigineRep = RepereUser.Origin;
 
-            MessageBox.Show("plan ok");
+            string PointOrigineRepXTxt = PointOrigineRep.X.ToString();
+            string PointOrigineRepYTxt = PointOrigineRep.Y.ToString();
+            string PointOrigineRepZTxt = PointOrigineRep.Z.ToString();
+            MessageBox.Show(PointOrigineRepXTxt + " " +PointOrigineRepYTxt+ " " +PointOrigineRepZTxt);
+
+            //****************************************************************************************
+
+            // Définir et initialiser les directions des axes de votre repère1
+            Vector3 dx = new Vector3(1, 0, 0); // Remplacez par vos valeurs
+            Vector3 dy = new Vector3(0, 1, 0); // Remplacez par vos valeurs
+            Vector3 dz = new Vector3(0, 0, 1); // Remplacez par vos valeurs
+
+            // Définir et initialiser les coordonnées de votre repère1
+            double x = 0; // Remplacez par votre valeur
+            double y = 0; // Remplacez par votre valeur
+            double z = 0; // Remplacez par votre valeur
+
+            // Définir et initialiser les directions des axes de votre repère absolu
+            Vector3 ox = new Vector3(1, 0, 0); // Remplacez par vos valeurs
+            Vector3 oy = new Vector3(0, 1, 0); // Remplacez par vos valeurs
+            Vector3 oz = new Vector3(0, 0, 1); // Remplacez par vos valeurs
+
+            // Définir et initialiser les coordonnées de l'origine de votre repère absolu
+            double O = 0; // Remplacez par votre valeur
+
+            // Créer la matrice de transformation
+            Transform3D transform = new Transform3D(
+                dx.X, dy.X, dz.X, x,
+                dx.Y, dy.Y, dz.Y, y,
+                dx.Z, dy.Z, dz.Z, z,
+                ox.X, oy.X, oz.X, O
+            );
+
 
 
 
