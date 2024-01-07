@@ -20,6 +20,9 @@ using System.Xml.Linq;
 using System.Diagnostics.Eventing.Reader;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.TrackBar;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.Window;
+using System.Windows.Media;
+//using System.Windows.Media.Media3D;
+
 
 
 
@@ -28,7 +31,6 @@ using static System.Windows.Forms.VisualStyles.VisualStyleElement.Window;
 namespace Folder_Creator_Tool_V3
 {
 
-   
 
 
 
@@ -133,6 +135,7 @@ namespace Folder_Creator_Tool_V3
 
 
         //------------------------------------------------------------------
+        
 
         //Fonction de création des dossier apres ind
         static PdmObjectId creationAutreDossiers(PdmObjectId DossierIndiceIdFonction)
@@ -165,7 +168,7 @@ namespace Folder_Creator_Tool_V3
                 TopSolidHost.Pdm.CreateFolder(DossierElectrodeId, "Parallélisée");
                 TopSolidHost.Pdm.CreateFolder(DossierElectrodeId, "Plan brut");
                 TopSolidHost.Pdm.CreateFolder(DossierElectrodeId, "Usinage");
-                MessageBox.Show("Succés de la creation des dossiers");
+                //MessageBox.Show("Succés de la creation des dossiers");
 
             }
 
@@ -327,8 +330,9 @@ namespace Folder_Creator_Tool_V3
 
         public Form1()
         {
+            
 
-                InitializeComponent();
+            InitializeComponent();
             //-----------Connexion a TopSolid-----------------------------------------------------------------------------------------------------------------
 
             bool TSConnected = TopSolidDesignHost.IsConnected;
@@ -472,6 +476,12 @@ namespace Folder_Creator_Tool_V3
             listePdf();
             treeView1.ExpandAll();
         }
+
+        private double Dot(Direction3D a, Direction3D b)
+        {
+            return a.X * b.X + a.Y * b.Y + a.Z * b.Z;
+        }
+
 
         //------------------------------Bouton click dossier-------------
 
@@ -768,7 +778,7 @@ namespace Folder_Creator_Tool_V3
 
             // Création des objets nécessaires pour définir un repère
             Plane3D PlanOrigineRep = new Plane3D();
-            Point3D PointOrigineRep = new Point3D();
+            TopSolid.Kernel.Automating.Point3D PointOrigineRep = new TopSolid.Kernel.Automating.Point3D ();
             Axis3D intersectionAxisRep = new Axis3D();
             Direction3D XDirectionRep = new Direction3D();
 
@@ -793,8 +803,8 @@ namespace Folder_Creator_Tool_V3
                 // Boucle demandant à l'utilisateur de sélectionner le plan XY du repère jusqu'à obtenir une réponse
                 while (ReponseRepereUser == null)
                 {
-                    string titre = "Plan XY";
-                    string label = "Merci de sélectionner le plan XY du repère";
+                    string titre = "Repére";
+                    string label = "Créer repére";
                     UserQuestion QuestionPlan = new UserQuestion(titre, label);
                     QuestionPlan.AllowsCreation = true;
                     TopSolidHost.User.AskFrame3D(QuestionPlan, true, null, out ReponseRepereUser);
@@ -811,6 +821,7 @@ namespace Folder_Creator_Tool_V3
                 MessageBox.Show(new Form { TopMost = true }, "Erreur lors de la transformation " + ex.Message);
                 return;
             }
+            //****************************************************************************************
 
             // Création d'un Frame3D pour stocker le repère utilisateur
             Frame3D RepereUser = new Frame3D();
@@ -824,7 +835,6 @@ namespace Folder_Creator_Tool_V3
             // Récupération de l'origine du repère utilisateur
             PointOrigineRep = RepereUser.Origin;
 
-            //****************************************************************************************
 
             // Récupération du repère absolu et de ses axes
             ElementId AbsRepId = TopSolidHost.Geometries3D.GetAbsoluteFrame(DerivéDocumentId);
@@ -838,35 +848,56 @@ namespace Folder_Creator_Tool_V3
             Axis3D AxeAbsY = TopSolidHost.Geometries3D.GetAxisGeometry(AxeAbsYId);
             Axis3D AxeAbsZ = TopSolidHost.Geometries3D.GetAxisGeometry(AxeAbsZId);
 
-            // Récupération des directions des axes du repère utilisateur
-            Direction3D dx = RepereUser.XDirection;
-            Direction3D dy = RepereUser.YDirection;
-            Direction3D dz = RepereUser.ZDirection;
-
             // Récupération des coordonnées de l'origine du repère utilisateur
             double x = PointOrigineRep.X;
             double y = PointOrigineRep.Y;
             double z = PointOrigineRep.Z;
 
+            // Récupération des directions des axes du repère utilisateur
+            Direction3D dx = RepereUser.XDirection;
+            Direction3D dy = RepereUser.YDirection;
+            Direction3D dz = RepereUser.ZDirection;
+            //dx = -dx;
+            //dy = -dy;
+            //dz = -dz;
+
+            //// Vérification si les directions sont inversées par rapport aux axes absolus
+            //if (dx.X < 0) dx = -dx;
+            //if (dy.Y < 0) dy = -dy;
+            //if (dz.Z < 0) dz = -dz;
+
+            // Maintenant, dx, dy et dz sont positifs par rapport aux axes absolus
+
             // Récupération des directions des axes du repère absolu
             Direction3D ox = AxeAbsX.Direction;
             Direction3D oy = AxeAbsY.Direction;
             Direction3D oz = AxeAbsZ.Direction;
+            //oy = -oy;
+            //oz = -oz;
+            //ox = -ox; // Commenté car peut-être pas nécessaire
 
-            // Récupération de l'ID du point d'origine absolu
-            ElementId PointOrigineAbsId = TopSolidHost.Geometries3D.GetAbsoluteOriginPoint(DerivéDocumentId);
-
-            // Création de la matrice de transformation
-            double R00, R01, R02, R10, R11, R12, R20, R21, R22, Si, Tx, Ty, Tz, Px, Py, Pz;
-            Transform3D transform = new Transform3D(
-                R00 = dx.X, R01 = dy.X, R02 = dz.X, Tx = x,
-                R10 = dx.Y, R11 = dy.Y, R12 = dz.Y, Ty = y,
-                R20 = dx.Z, R21 = dy.Z, R22 = dz.Z, Tz = z,
-                Px = ox.X, Py = oy.X, Pz = oz.X, Si = 1
+            // Transformation de Translation suivant les axes du repère absolu
+            Transform3D transfo1 = new Transform3D(
+                1, 0, 0, -x,  // Translation sur l'axe X absolu
+                0, 1, 0, -y,  // Translation sur l'axe Y absolu
+                0, 0, 1, -z,  // Translation sur l'axe Z absolu
+                0, 0, 0, 1
             );
 
+            // Création de la matrice de rotation
+            Transform3D transfo2= new Transform3D(
+            dx.X, dy.X, dz.X, 0,
+            dx.Y, dy.Y, dz.Y, 0,
+            dx.Z, dy.Z, dz.Z, 0,
+            0, 0, 0, 1
+            );
+​
+  
+            // Combinaison des deux transformations
+            Transform3D combinedTransform = Transform3D.Multiply(transfo1, transfo2);
 
-            //--------------------------------------------------------------------------------------------------
+
+
 
 
             // Recherche du dossier Formes dans le document
@@ -893,9 +924,9 @@ namespace Folder_Creator_Tool_V3
                 // Boucle sur chaque forme dans la liste FormesList et application de la transformation
                 for (int i = 0; i < FormesList.Count; i++)
                 {
-                    ElementId transformedElement = TopSolidHost.Entities.Transform(FormesList[i], transform);
-                    // Ici, 'transformedElement' est l'ElementId transformé.
-                    // Vous pouvez travailler avec 'transformedElement' comme vous le souhaitez.
+                    ElementId transformedElement1 = TopSolidHost.Entities.Transform(FormesList[i], transfo1);
+                    ElementId transformedElement2 = TopSolidHost.Entities.Transform(FormesList[i], transfo2);
+                    //ElementId transformedElement = TopSolidHost.Entities.Transform(FormesList[i], combinedTransform);
                 }
 
                 // Fin de la modification du document
@@ -909,7 +940,6 @@ namespace Folder_Creator_Tool_V3
                 MessageBox.Show(new Form { TopMost = true }, "Erreur lors de la transformation " + ex.Message);
                 return;
             }
-
         }
 
         private void button1_Click_1(object sender, EventArgs e)
@@ -928,23 +958,23 @@ namespace Folder_Creator_Tool_V3
 
 
 
-public interface IEntities
-{
-    ElementId Transform(ElementId inElementId, Transform3D inTransform);
-}
+//public interface IEntities
+//{
+//    ElementId Transform(ElementId inElementId, Transform3D inTransform);
+//}
 
-public class MaClasse : IEntities
-{
-    public MaClasse()
-    {
-        // Initialisations nécessaires...
-    }
+//public class MaClasse : IEntities
+//{
+//    public MaClasse()
+//    {
+//        // Initialisations nécessaires...
+//    }
 
-    public ElementId Transform(ElementId inElementId, Transform3D inTransform)
-    {
-        return inElementId;
-    }
-}
+//    public ElementId Transform(ElementId inElementId, Transform3D inTransform)
+//    {
+//        return inElementId;
+//    }
+//}
 
 
 
@@ -961,33 +991,3 @@ class DocumentsEventsHost : IDocumentsEvents
         string name = TopSolidHost.Documents.GetName(inDocumentId); MessageBox.Show(name, "End Editing");
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
