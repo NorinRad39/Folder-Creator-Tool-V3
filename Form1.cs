@@ -876,8 +876,6 @@ namespace Folder_Creator_Tool_V3
                              $"Direction Y: {dy.Y.CompareTo(oy.Y)}\n" +
                              $"Direction Z: {dz.Y.CompareTo(oy.Z)}";
 
-            MessageBox.Show(message, "Informations sur les Axes");
-
             //Transform3D transfo1 = new Transform3D(
             //1, 0, 0, x,  // Translation sur l'axe X absolu
             //0, 1, 0, y,  // Translation sur l'axe Y absolu
@@ -892,9 +890,6 @@ namespace Folder_Creator_Tool_V3
             //dx.Z, dy.Z, dz.Z, 0,
             //0, 0, 0, 1
             //);
-
-            MessageBox.Show(message, "Informations sur les Axes");
-
 
             Transform3D transfoFinal = new Transform3D(
             ox.X * dx.X + oy.X * dy.X + oz.X * dz.X,
@@ -915,9 +910,6 @@ namespace Folder_Creator_Tool_V3
             0, 0, 0, 1
         );
 
-            MessageBox.Show(message, "Informations sur les Axes");
-
-
             // Recherche du dossier Formes dans le document
             ElementId DossierForme = TopSolidHost.Elements.SearchByName(DerivéDocumentId, "$TopSolid.Kernel.DB.D3.Shapes.Documents.ElementName.Shapes");
 
@@ -926,7 +918,7 @@ namespace Folder_Creator_Tool_V3
 
             try
             {
-                // Vérification de la connexion à TopSolidHost
+                // Vérification de la connexion à TopSolidHost   
                 if (!TopSolidHost.IsConnected) return;
 
                 // Vérification de l'ID du document
