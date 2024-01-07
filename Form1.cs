@@ -43,35 +43,36 @@ namespace Folder_Creator_Tool_V3
         [return: MarshalAs(UnmanagedType.Bool)]
         static extern bool SetForegroundWindow(IntPtr hWnd);
 
-        PdmObjectId CurrentProjectPdmId; //Id du projet courant
-        string CurrentProjectName; //Nom du projet courent
+        PdmObjectId CurrentProjectPdmId = new PdmObjectId(); //Id du projet courant
+        string CurrentProjectName = ""; //Nom du projet courent
 
-        DocumentId CurrentDocumentId; //Id du document courant
-        PdmObjectId PdmObjectIdCurrentDocumentId;
+        DocumentId CurrentDocumentId = new DocumentId(); //Id du document courant
+        PdmObjectId PdmObjectIdCurrentDocumentId = new PdmObjectId();
+        DocumentId CurrentDocumentIdLastRev;
 
-        string TextCurrentDocumentName; //Nom du document courant
+        string TextCurrentDocumentName = ""; //Nom du document courant
 
         List<PdmObjectId> FolderIds = new List<PdmObjectId>(); //Liste des dossiers contenu dans le projet courant
         List<PdmObjectId> DocumentsIds = new List<PdmObjectId>(); //Liste des documents contenu dans le projet courant
 
-        ElementId CurrentDocumentCommentaireId; //Id du commentaire du document courant
+        ElementId CurrentDocumentCommentaireId = new ElementId(); //Id du commentaire du document courant
         string TextCurrentDocumentCommentaire; //Texte du commentaire du document courant
-        ElementId CurrentDocumentDesignationId;//Id de la designation du document courant
-        string TextCurrentDocumentDesignation;//Texte de la designation du document courant
+        ElementId CurrentDocumentDesignationId = new ElementId();//Id de la designation du document courant
+        string TextCurrentDocumentDesignation = "";//Texte de la designation du document courant
 
-        string TextBoxProjectName; //Nom du projet affiché dans la textbox
+        string TextBoxProjectName =""; //Nom du projet affiché dans la textbox
 
-        string TextBoxDesignationValue;//Texte afficher dans la textbox designation
-        string TextBoxCommentaireValue; //Texte afficher dans la textbox Commentaire
-        string TextBoxIndiceValue;//Texte afficher dans la textbox Indice
+        string TextBoxDesignationValue="";//Texte afficher dans la textbox designation
+        string TextBoxCommentaireValue=""; //Texte afficher dans la textbox Commentaire
+        string TextBoxIndiceValue = "";//Texte afficher dans la textbox Indice
         string TextBoxNomMouleValue;//Texte afficher dans la textbox NomMoule
 
-        string ConstituantFolderName;
+        string ConstituantFolderName = "";
         List<string> ConstituantFolderNames = new List<string>();
 
         List<string> ListFoldersNames = new List<string>();
 
-        string TexteDossierRep; //Nom du dossier repere a creer
+        string TexteDossierRep = ""; //Nom du dossier repere a creer
 
         bool test00; //Creation bool pour tester la presence des dossiers a creer dans le projet
         bool test01;
@@ -82,27 +83,27 @@ namespace Folder_Creator_Tool_V3
         List<PdmObjectId> DocumentsInIndiceFolder = new List<PdmObjectId>(); //Liste document fictive pour recuperation dossier indice
         List<PdmObjectId> IndiceFolderIds = new List<PdmObjectId>(); //Liste des Id de dossier indice
 
-        PdmObjectId DossierExistantId; //Id du dossier existant
+        PdmObjectId DossierExistantId =new PdmObjectId(); //Id du dossier existant
 
-        string IndiceFolderName;
+        string IndiceFolderName = "";
 
-        PdmObjectId AtelierFolderId; //Id du dossier atelier
-
-
-
-        string CommentaireTxtFormat00; //Different format de commantaire
-        string CommentaireTxtFormat01;
-        string IndiceTxtFormat00; //Different format d'indice
-        string IndiceTxtFormat01;
-
-        List<PdmObjectId> AtelierFolderIds;
-
-        PdmObjectId DossierRepId; //Recuperation de l'Id du dossier rep pour creation du rep indice
+        PdmObjectId AtelierFolderId = new PdmObjectId(); //Id du dossier atelier
 
 
 
+        string CommentaireTxtFormat00 = ""; //Different format de commantaire
+        string CommentaireTxtFormat01 = "";
+        string IndiceTxtFormat00 = ""; //Different format d'indice
+        string IndiceTxtFormat01 = "";
 
-        string TexteIndiceFolder;
+        List<PdmObjectId> AtelierFolderIds = new List<PdmObjectId>();
+
+        PdmObjectId DossierRepId = new PdmObjectId(); //Recuperation de l'Id du dossier rep pour creation du rep indice
+
+
+
+
+        string TexteIndiceFolder = "";
         List<PdmObjectId> DocuDossierIndiceIds = new List<PdmObjectId>();
 
 
@@ -122,12 +123,12 @@ namespace Folder_Creator_Tool_V3
 
         List<PdmObjectId> DerivéDocumentPdmObjectIds = new List<PdmObjectId>(); //Creation liste du PdmObjectId du document dérivé
 
-        PdmObjectId DossierIndiceId; //Recuperation de l'Id du dossier Indice pour creation du reste des dossiers
+        PdmObjectId DossierIndiceId = new PdmObjectId(); //Recuperation de l'Id du dossier Indice pour creation du reste des dossiers
 
         //PdmObjectId dossier3DId; //Recuperation de l'Id du dossier Indice pour creation du reste des dossiers
 
         String nomDocu = "";
-        List<PdmObjectId> nomDocuIds;
+        List<PdmObjectId> nomDocuIds = new List<PdmObjectId>();
 
         PdmObjectId dossier3DGenereId = new PdmObjectId();
 
@@ -270,13 +271,16 @@ namespace Folder_Creator_Tool_V3
 
 
         //-----------Fonction Récupération ID Document courant----------------------------------------------------------------------------------------------------------------------------
-        void DocumentCourant(out PdmObjectId PdmObjectIdCurrentDocumentId, out DocumentId CurrentDocumentId)
+        void DocumentCourant(out PdmObjectId PdmObjectIdCurrentDocumentId, out DocumentId CurrentDocumentId, out DocumentId CurrentDocumentIdLastRev)
         {
            
             try
             {
                 CurrentDocumentId = TopSolidHost.Documents.EditedDocument;  // Récupération ID Document courant
                 PdmObjectIdCurrentDocumentId = TopSolidHost.Documents.GetPdmObject(CurrentDocumentId);
+                PdmMinorRevisionId DerniereRev = TopSolidHost.Pdm.GetFinalMinorRevision(PdmObjectIdCurrentDocumentId);
+                CurrentDocumentIdLastRev = TopSolidHost.Documents.GetMinorRevisionDocument(DerniereRev);
+
 
             }
             catch (Exception ex)
@@ -288,6 +292,28 @@ namespace Folder_Creator_Tool_V3
 
             }
         }
+
+        void RecupCommentaire(in DocumentId CurrentDocumentId, out ElementId CurrentDocumentCommentaireId , out string TextCurrentDocumentCommentaire)
+        {
+            CurrentDocumentCommentaireId = new ElementId(); // Initialisation avant le bloc try
+            TextCurrentDocumentCommentaire = "";
+            try
+            {
+                CurrentDocumentCommentaireId = TopSolidHost.Parameters.GetCommentParameter(CurrentDocumentId);   // Récupération du commentaire (Repère)
+                TextCurrentDocumentCommentaire = TopSolidHost.Parameters.GetTextLocalizedValue(CurrentDocumentCommentaireId);
+
+                textBox2.Text = TextCurrentDocumentCommentaire; //Affichage du commentaire (Repère) dans la case texte
+            }
+            catch (Exception ex)
+            {
+                this.TopMost = false;
+                MessageBox.Show(new Form { TopMost = true }, "Echec de la récupération du Commentaire " + ex.Message);
+            }
+        }
+
+
+
+
 
                 class MyDocumentsEventsHost : IDocumentsEvents
                 {
@@ -365,7 +391,7 @@ namespace Folder_Creator_Tool_V3
             
             
 
-            DocumentCourant(out PdmObjectIdCurrentDocumentId,out CurrentDocumentId);
+            DocumentCourant(out PdmObjectIdCurrentDocumentId,out CurrentDocumentId, out DocumentId CurrentDocumentIdLastRev);
 
 
             //----------- Récupération du nom du document courant----------------------------------------------------------------------------------------------------------------------------         
@@ -432,21 +458,7 @@ namespace Folder_Creator_Tool_V3
 
             //------------- Récupération du commentaire (Repère) du document courant----------------------------------------------------------------------------------------------------------------------------
 
-            try
-            {
-                CurrentDocumentCommentaireId = TopSolidHost.Parameters.GetCommentParameter(CurrentDocumentId);   // Récupération du commentaire (Repère)
-                TextCurrentDocumentCommentaire = TopSolidHost.Parameters.GetTextLocalizedValue(CurrentDocumentCommentaireId);
-
-                textBox2.Text = TextCurrentDocumentCommentaire; //Affichage du commentaire (Repère) dans la case texte
-
-
-                
-            }
-            catch (Exception ex)
-            {
-                this.TopMost = false;
-                MessageBox.Show(new Form { TopMost = true }, "Echec de la récupération du Commentaire " + ex.Message);
-            }
+            RecupCommentaire(in CurrentDocumentId, out CurrentDocumentCommentaireId, out TextCurrentDocumentCommentaire);
 
             //----------- Récupération de la désignation du document courant----------------------------------------------------------------------------------------------------------------------------
 
@@ -552,7 +564,7 @@ namespace Folder_Creator_Tool_V3
                     {
 
 
-                                        DocumentCourant(out PdmObjectIdCurrentDocumentId, out CurrentDocumentId);
+                                        DocumentCourant(out PdmObjectIdCurrentDocumentId, out CurrentDocumentId, out DocumentId CurrentDocumentIdLastRev);
 
                                         //Recuperation du texte modifié par l'utilisateur pour nommer les dossiers.
                                         TextBoxCommentaireValue = textBox2.Text; //Repere de la piece
@@ -582,14 +594,17 @@ namespace Folder_Creator_Tool_V3
                                         if (!TopSolidHost.Application.StartModification("My Action", false)) return;
                                         // Modify document.
 
-                                        //Recuperation du PdmObjectId de la nouvelle revision du document apres passage a l'etat modification
+                                        ////Recuperation du PdmObjectId de la nouvelle revision du document apres passage a l'etat modification
+                                        //DocumentCourant(out PdmObjectIdCurrentDocumentId, out CurrentDocumentId);
 
-                                        DocumentCourant(out PdmObjectIdCurrentDocumentId, out CurrentDocumentId);
-                                        // Récupération ID Document courant
-                                        PdmObjectIdCurrentDocumentId = TopSolidHost.Documents.GetPdmObject(CurrentDocumentId); // Récupération PdmObjectId Document courant
-                                        
                                         TopSolidHost.Documents.EnsureIsDirty(ref CurrentDocumentId);
-                                       CurrentDocumentId = TopSolidHost.Documents.GetDocument(PdmObjectIdCurrentDocumentId);
+
+                                        DocumentCourant(out PdmObjectIdCurrentDocumentId, out CurrentDocumentId, out CurrentDocumentIdLastRev);
+                                        RecupCommentaire(in CurrentDocumentIdLastRev, out CurrentDocumentCommentaireId, out TextCurrentDocumentCommentaire);
+                                        // Récupération ID Document courant
+                                        //PdmObjectIdCurrentDocumentId = TopSolidHost.Documents.GetPdmObject(CurrentDocumentId); // Récupération PdmObjectId Document courant
+                                        //CurrentDocumentId = TopSolidHost.Documents.GetDocument(PdmObjectIdCurrentDocumentId);
+
 
                                         TopSolidHost.Parameters.SetTextValue(CurrentDocumentCommentaireId, TextBoxCommentaireValue);
                                         TopSolidHost.Parameters.SetTextValue(CurrentDocumentDesignationId, TextBoxDesignationValue);
@@ -710,7 +725,7 @@ namespace Folder_Creator_Tool_V3
             {
                 try
                 {
-                    DocumentCourant(out PdmObjectIdCurrentDocumentId, out CurrentDocumentId);
+                    DocumentCourant(out PdmObjectIdCurrentDocumentId, out CurrentDocumentId, out CurrentDocumentIdLastRev);
 
                 }
                 catch (Exception ex)
@@ -822,82 +837,85 @@ namespace Folder_Creator_Tool_V3
                 return;
             }
             //****************************************************************************************
+          
+            ElementId RepereUserId = ReponseRepereUser.ElementId;
 
             // Création d'un Frame3D pour stocker le repère utilisateur
             Frame3D RepereUser = new Frame3D();
-
-            // Si le repère utilisateur a une géométrie, récupération de cette géométrie
-            if (ReponseRepereUser.Geometry.HasValue)
-            {
-                RepereUser = ReponseRepereUser.Geometry.Value;
-            }
-
-            // Récupération de l'origine du repère utilisateur
-            PointOrigineRep = RepereUser.Origin;
-
+            RepereUser = TopSolidHost.Geometries3D.GetFrameGeometry(RepereUserId);
 
             // Récupération du repère absolu et de ses axes
             ElementId AbsRepId = TopSolidHost.Geometries3D.GetAbsoluteFrame(DerivéDocumentId);
             Frame3D AbsRep = TopSolidHost.Geometries3D.GetFrameGeometry(AbsRepId);
-            ElementId AxeAbsXId = TopSolidHost.Geometries3D.GetAbsoluteXAxis(DerivéDocumentId);
-            ElementId AxeAbsYId = TopSolidHost.Geometries3D.GetAbsoluteYAxis(DerivéDocumentId);
-            ElementId AxeAbsZId = TopSolidHost.Geometries3D.GetAbsoluteZAxis(DerivéDocumentId);
 
-            // Récupération de la géométrie des axes absolus
-            Axis3D AxeAbsX = TopSolidHost.Geometries3D.GetAxisGeometry(AxeAbsXId);
-            Axis3D AxeAbsY = TopSolidHost.Geometries3D.GetAxisGeometry(AxeAbsYId);
-            Axis3D AxeAbsZ = TopSolidHost.Geometries3D.GetAxisGeometry(AxeAbsZId);
+            // Récupération des directions des axes du repère absolu
+            Direction3D ox = Direction3D.DX;
+            Direction3D oy = Direction3D.DY;
+            Direction3D oz = Direction3D.DZ;
 
             // Récupération des coordonnées de l'origine du repère utilisateur
-            double x = PointOrigineRep.X;
-            double y = PointOrigineRep.Y;
-            double z = PointOrigineRep.Z;
+            Point3D origin = RepereUser.Origin;
+            double x = RepereUser.Origin.X;
+            double y = RepereUser.Origin.Y;
+            double z = RepereUser.Origin.Z;
+            x=-x; y=-y; z=-z;
 
             // Récupération des directions des axes du repère utilisateur
             Direction3D dx = RepereUser.XDirection;
             Direction3D dy = RepereUser.YDirection;
             Direction3D dz = RepereUser.ZDirection;
-            //dx = -dx;
-            //dy = -dy;
-            //dz = -dz;
 
-            //// Vérification si les directions sont inversées par rapport aux axes absolus
-            //if (dx.X < 0) dx = -dx;
-            //if (dy.Y < 0) dy = -dy;
-            //if (dz.Z < 0) dz = -dz;
+            string dxTxt = dx.X.ToString();
+            string dyTxt = dy.Y.ToString();
+            string dzTxt = dz.Z.ToString();
 
-            // Maintenant, dx, dy et dz sont positifs par rapport aux axes absolus
+            // Utilisation des informations sur les axes
+            // Affichage des informations dans une MessageBox
+            string message = $"Origine: {origin}\n" +
+                             $"Direction X: {dx.X.CompareTo(ox.X)}\n" +
+                             $"Direction Y: {dy.Y.CompareTo(oy.Y)}\n" +
+                             $"Direction Z: {dz.Y.CompareTo(oy.Z)}";
 
-            // Récupération des directions des axes du repère absolu
-            Direction3D ox = AxeAbsX.Direction;
-            Direction3D oy = AxeAbsY.Direction;
-            Direction3D oz = AxeAbsZ.Direction;
-            //oy = -oy;
-            //oz = -oz;
-            //ox = -ox; // Commenté car peut-être pas nécessaire
+            MessageBox.Show(message, "Informations sur les Axes");
 
-            // Transformation de Translation suivant les axes du repère absolu
-            Transform3D transfo1 = new Transform3D(
-                1, 0, 0, -x,  // Translation sur l'axe X absolu
-                0, 1, 0, -y,  // Translation sur l'axe Y absolu
-                0, 0, 1, -z,  // Translation sur l'axe Z absolu
-                0, 0, 0, 1
-            );
+            //Transform3D transfo1 = new Transform3D(
+            //1, 0, 0, x,  // Translation sur l'axe X absolu
+            //0, 1, 0, y,  // Translation sur l'axe Y absolu
+            //0, 0, 1, z,  // Translation sur l'axe Z absolu
+            //0, 0, 0, 1
+            // );
 
-            // Création de la matrice de rotation
-            Transform3D transfo2= new Transform3D(
-            dx.X, dy.X, dz.X, 0,
-            dx.Y, dy.Y, dz.Y, 0,
-            dx.Z, dy.Z, dz.Z, 0,
+            //// Création de la matrice de rotation
+            //Transform3D transfo2 = new Transform3D(
+            //dx.X, dy.X, dz.X, 0,
+            //dx.Y, dy.Y, dz.Y, 0,
+            //dx.Z, dy.Z, dz.Z, 0,
+            //0, 0, 0, 1
+            //);
+
+            MessageBox.Show(message, "Informations sur les Axes");
+
+
+            Transform3D transfoFinal = new Transform3D(
+            ox.X * dx.X + oy.X * dy.X + oz.X * dz.X,
+            ox.X * dx.Y + oy.X * dy.Y + oz.X * dz.Y,
+            ox.X * dx.Z + oy.X * dy.Z + oz.X * dz.Z,
+            x,
+
+            ox.Y * dx.X + oy.Y * dy.X + oz.Y * dz.X,
+            ox.Y * dx.Y + oy.Y * dy.Y + oz.Y * dz.Y,
+            ox.Y * dx.Z + oy.Y * dy.Z + oz.Y * dz.Z,
+            y,
+
+            ox.Z * dx.X + oy.Z * dy.X + oz.Z * dz.X,
+            ox.Z * dx.Y + oy.Z * dy.Y + oz.Z * dz.Y,
+            ox.Z * dx.Z + oy.Z * dy.Z + oz.Z * dz.Z,
+            z,
+
             0, 0, 0, 1
-            );
-​
-  
-            // Combinaison des deux transformations
-            Transform3D combinedTransform = Transform3D.Multiply(transfo1, transfo2);
+        );
 
-
-
+            MessageBox.Show(message, "Informations sur les Axes");
 
 
             // Recherche du dossier Formes dans le document
@@ -924,9 +942,9 @@ namespace Folder_Creator_Tool_V3
                 // Boucle sur chaque forme dans la liste FormesList et application de la transformation
                 for (int i = 0; i < FormesList.Count; i++)
                 {
-                    ElementId transformedElement1 = TopSolidHost.Entities.Transform(FormesList[i], transfo1);
-                    ElementId transformedElement2 = TopSolidHost.Entities.Transform(FormesList[i], transfo2);
-                    //ElementId transformedElement = TopSolidHost.Entities.Transform(FormesList[i], combinedTransform);
+                   //ElementId transformedElement1 = TopSolidHost.Entities.Transform(FormesList[i], transfo1);
+                   //ElementId transformedElement2 = TopSolidHost.Entities.Transform(FormesList[i], transfo2);
+                    ElementId transformedElement = TopSolidHost.Entities.Transform(FormesList[i], transfoFinal);
                 }
 
                 // Fin de la modification du document
@@ -940,6 +958,7 @@ namespace Folder_Creator_Tool_V3
                 MessageBox.Show(new Form { TopMost = true }, "Erreur lors de la transformation " + ex.Message);
                 return;
             }
+            Application.Restart();
         }
 
         private void button1_Click_1(object sender, EventArgs e)
@@ -955,27 +974,6 @@ namespace Folder_Creator_Tool_V3
        
     }
 }
-
-
-
-//public interface IEntities
-//{
-//    ElementId Transform(ElementId inElementId, Transform3D inTransform);
-//}
-
-//public class MaClasse : IEntities
-//{
-//    public MaClasse()
-//    {
-//        // Initialisations nécessaires...
-//    }
-
-//    public ElementId Transform(ElementId inElementId, Transform3D inTransform)
-//    {
-//        return inElementId;
-//    }
-//}
-
 
 
 
