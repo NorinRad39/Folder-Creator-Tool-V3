@@ -857,20 +857,33 @@ namespace Folder_Creator_Tool_V3
             Axis3D ayAbs = new Axis3D(originAbs, dyAbs);
             Vector3D vyAbs = AbsRepFrame.YDirection;
             Direction3D dzAbs = AbsRepFrame.ZDirection;
-            Axis3D azAbs = new Axis3D(originAbs, dzAbs);
+            Axis3D azAbs = new Axis3D(originAbs, -dzAbs);
             Vector3D vzAbs = AbsRepFrame.ZDirection;
 
             // Calcul du produit scalaire (dot product)
-            double dotProductZ = dzUser * dzAbs; // dxUser . dxAbs
-
-            // Calcul de l'angle en radians
-            double angleZ = Math.Acos(dotProductZ);
-
-            // Calcul du produit scalaire (dot product)
-            double dotProductY = dyUser * dyAbs; // dyUser . dyAbs
+            double dotProductY = dyUser * dyAbs; // dzUser . dzAbs
 
             // Calcul de l'angle en radians
             double angleY = Math.Acos(dotProductY);
+
+            // Vérification du sens de l'axe
+            if (dotProductY < 0)
+            {
+                angleY = -angleY;
+            }
+
+            // Calcul du produit scalaire (dot product)
+            double dotProductX = dxUser * dxAbs; // dyUser . dyAbs
+
+            // Calcul de l'angle en radians
+            double angleX = Math.Acos(dotProductX);
+
+            // Vérification du sens de l'axe
+            if (dotProductX < 0)
+            {
+                angleX = -angleX;
+            }
+
 
 
             // Construction de la matrice de transformation
@@ -906,24 +919,20 @@ namespace Folder_Creator_Tool_V3
                 DocumentCourant(out PdmObjectIdCurrentDocumentId, out CurrentDocumentId, out CurrentDocumentIdLastRev);
                 // Boucle sur chaque forme dans la liste FormesList et application de la transformation
 
-
-
-                // Vérification de l'alignement des axes
-
-                
                 if (AligneOrigineXOk)
                 {
                     for (int i = 0; i < FormesList.Count; i++)
                     {
-                            TSH.Entities.Transform(FormesList[i], AligneOrigine);
+                        TSH.Entities.Transform(FormesList[i], AligneOrigine);
                     }
-                }          
-                
-                bool AligneAxeYOk = false;
+                }
 
+                // Vérification de l'alignement des axes
+
+                bool AligneAxeYOk = false;
                 if (Math.Abs(angleY) > 1e-6) // Si l'angle est supérieur à une petite valeur proche de zéro
                 {
-                    AligneAxeY.SetRotation(axAbs, -angleZ);
+                    AligneAxeY.SetRotation(azAbs, -angleY);
                     AligneAxeYOk = true;
                 }
                 if (AligneAxeYOk)
@@ -935,13 +944,11 @@ namespace Folder_Creator_Tool_V3
                 }   
                 
                 bool AligneAxeXOk = false;
-
-                if (Math.Abs(angleY) > 1e-6) // Si l'angle est supérieur à une petite valeur proche de zéro
+                if (Math.Abs(angleX) > 1e-6) // Si l'angle est supérieur à une petite valeur proche de zéro
                 {
-                    AligneAxeX.SetRotation(azAbs, angleY);
+                    AligneAxeX.SetRotation(ayAbs, -angleX);
                     AligneAxeXOk = true;
                 }
-
                 if (AligneAxeXOk)
                 {
                     for (int i = 0; i < FormesList.Count; i++)
@@ -949,6 +956,8 @@ namespace Folder_Creator_Tool_V3
                         TSH.Entities.Transform(FormesList[i], AligneAxeX);
                     }
                 }
+               
+                
 
 
 
