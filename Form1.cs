@@ -786,197 +786,120 @@ namespace Folder_Creator_Tool_V3
             this.TopMost = false;
             this.WindowState = FormWindowState.Minimized;
 
-            //// Variables pour la création de repères et de transformations en 2D
-            //Point2D PointOrigineRep = new Point2D();
-            //Direction2D XDirectionRep = new Direction2D();
-            //Direction2D YDirectionRep = new Direction2D();
-            //SmartFrame3D ReponseRepereUser = null;
-
-            //try
-            //{
-            //    DocumentCourant(out PdmObjectIdCurrentDocumentId, out CurrentDocumentId, out CurrentDocumentIdLastRev);
-            //    modifActif(CurrentDocumentIdLastRev);
-            //    DocumentCourant(out PdmObjectIdCurrentDocumentId, out CurrentDocumentId, out CurrentDocumentIdLastRev);
-            //    while (ReponseRepereUser == null)
-            //    {
-            //        string titre = "Repère";
-            //        string label = "Créer repère";
-            //        UserQuestion QuestionPlan = new UserQuestion(titre, label);
-            //        QuestionPlan.AllowsCreation = true;
-            //        TSH.User.AskFrame3D(QuestionPlan, true, null, out ReponseRepereUser); // Utilisation de AskFrame2D pour un repère en 2D
-            //    }
-            //    TSH.Application.EndModification(true, true);
-            //}
-            //catch (Exception ex)
-            //{
-            //    this.TopMost = false;
-            //    TSH.Application.EndModification(false, false);
-            //    MessageBox.Show(new Form { TopMost = true }, "Erreur lors de la transformation " + ex.Message);
-            //    return;
-            //}
-
-            //Nullable<Frame3D> RepereUser = ReponseRepereUser.Geometry; // Récupération de la géométrie du repère utilisateur en 2D
-            //Frame3D RepereUserFrame = RepereUser.Value;
-
-
-
-            //Frame3D AbsRepFrame = new Frame3D();
-            //try
-            //{
-            //    AbsRepFrame = Frame3D.OXYZ;
-                
-               
-                                  
-            //}
-            //catch (Exception ex)
-            //{
-            //    this.TopMost = false;
-            //    MessageBox.Show(new Form { TopMost = true }, "Erreur repere transformation " + ex.Message);
-            //    return;
-            //}
-
-            //// Récupération de l'origine et des directions des axes du repère utilisateur
-            //Point3D originUser = RepereUserFrame.Origin;
-
-            //// Création et paramétrage des axes avec intercalation des directions
-            //Direction3D dxUser = RepereUserFrame.XDirection;
-            //Axis3D axUser = new Axis3D(originUser, dxUser);
-            //Vector3D vxUser = RepereUserFrame.XDirection;
-            //Direction3D dyUser = RepereUserFrame.YDirection;
-            //Axis3D ayUser = new Axis3D(originUser, dyUser);
-            //Vector3D vyUser = RepereUserFrame.YDirection;
-            //Direction3D dzUser = RepereUserFrame.ZDirection;
-            //Axis3D azUser = new Axis3D(originUser, dzUser);
-            //Vector3D vzUser = RepereUserFrame.ZDirection;
-
-            //// Récupération de l'origine et des directions des axes du repère absolu
-            //Point3D originAbs = AbsRepFrame.Origin;
-
-            //Direction3D dxAbs = AbsRepFrame.XDirection;
-            //Axis3D axAbs = new Axis3D(originAbs, dxAbs);
-            //Vector3D vxAbs = AbsRepFrame.XDirection;
-            //Direction3D dyAbs = AbsRepFrame.YDirection;
-            //Axis3D ayAbs = new Axis3D(originAbs, dyAbs);
-            //Vector3D vyAbs = AbsRepFrame.YDirection;
-            //Direction3D dzAbs = AbsRepFrame.ZDirection;
-            //Axis3D azAbs = new Axis3D(originAbs, -dzAbs);
-            //Vector3D vzAbs = AbsRepFrame.ZDirection;
-
-            //// Calcul du produit scalaire (dot product)
-            //double dotProductY = dyUser * dyAbs; // dzUser . dzAbs
-
-            //// Calcul de l'angle en radians
-            //double angleY = Math.Acos(dotProductY);
-
-            //// Vérification du sens de l'axe
-            //if (dotProductY < 0)
-            //{
-            //    angleY = -angleY;
-            //}
-
-            //// Calcul du produit scalaire (dot product)
-            //double dotProductX = dxUser * dxAbs; // dyUser . dyAbs
-
-            //// Calcul de l'angle en radians
-            //double angleX = Math.Acos(dotProductX);
-
-            //// Vérification du sens de l'axe
-            //if (dotProductX < 0)
-            //{
-            //    angleX = -angleX;
-            //}
-
-
-
-            //// Construction de la matrice de transformation
-            //Transform3D AligneOrigine = new Transform3D();
-            //Transform3D AligneAxeX = new Transform3D();
-            //Transform3D AligneAxeY = new Transform3D();
-              
-            //// Calcul du vecteur de translation
-            //Vector3D translationVector = new Vector3D(
-            //originAbs.X - originUser.X,
-            //originAbs.Y - originUser.Y,
-            //originAbs.Z - originUser.Z);
-
-            //bool AligneOrigineXOk = false;
-
-            //// Vérification de la nécessité de la translation
-            //if (translationVector.Norm > 1e-6) // Si la norme du vecteur de translation est supérieure à une petite valeur proche de zéro
-            //{
-            //    // Configuration de la transformation
-            //    AligneOrigine.SetTranslation(translationVector);
-            //    AligneOrigineXOk = true;
-            //}
-
-            //// Recherche du dossier Formes dans le document
-            //ElementId DossierForme = TSH.Elements.SearchByName(CurrentDocumentIdLastRev, "$TopSolid.Kernel.DB.D3.Shapes.Documents.ElementName.Shapes");
+            //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
             
-            //// Récupération de tous les éléments du dossier Formes
-            //List<ElementId> FormesList = TSH.Elements.GetConstituents(DossierForme);
-            //try
-            //{
-            //    DocumentCourant(out PdmObjectIdCurrentDocumentId, out CurrentDocumentId, out CurrentDocumentIdLastRev);
-            //    modifActif(CurrentDocumentIdLastRev);
-            //    DocumentCourant(out PdmObjectIdCurrentDocumentId, out CurrentDocumentId, out CurrentDocumentIdLastRev);
-            //    // Boucle sur chaque forme dans la liste FormesList et application de la transformation
 
-            //    if (AligneOrigineXOk)
-            //    {
-            //        for (int i = 0; i < FormesList.Count; i++)
-            //        {
-            //            TSH.Entities.Transform(FormesList[i], AligneOrigine);
-            //        }
-            //    }
+            // Initialisation de la variable qui recevra le repère sélectionné par l'utilisateur
+            SmartFrame3D ReponseRepereUser = null;
 
-            //    // Vérification de l'alignement des axes
-
-            //    bool AligneAxeYOk = false;
-            //    if (Math.Abs(angleY) > 1e-6) // Si l'angle est supérieur à une petite valeur proche de zéro
-            //    {
-            //        AligneAxeY.SetRotation(azAbs, -angleY);
-            //        AligneAxeYOk = true;
-            //    }
-            //    if (AligneAxeYOk)
-            //    {
-            //        for (int i = 0; i < FormesList.Count; i++)
-            //        {    
-            //        TSH.Entities.Transform(FormesList[i], AligneAxeY);
-            //        }
-            //    }   
-                
-            //    bool AligneAxeXOk = false;
-            //    if (Math.Abs(angleX) > 1e-6) // Si l'angle est supérieur à une petite valeur proche de zéro
-            //    {
-            //        AligneAxeX.SetRotation(ayAbs, -angleX);
-            //        AligneAxeXOk = true;
-            //    }
-            //    if (AligneAxeXOk)
-            //    {
-            //        for (int i = 0; i < FormesList.Count; i++)
-            //        { 
-            //            TSH.Entities.Transform(FormesList[i], AligneAxeX);
-            //        }
-            //    }
-               
-                
+            try
+            {
+                //DocumentCourant(out PdmObjectIdCurrentDocumentId, out CurrentDocumentId, out CurrentDocumentIdLastRev);
+                modifActif(CurrentDocumentIdLastRev);
+                DocumentCourant(out PdmObjectIdCurrentDocumentId, out CurrentDocumentId, out CurrentDocumentIdLastRev);
 
 
+                // Boucle demandant à l'utilisateur de sélectionner le plan XY du repère jusqu'à obtenir une réponse
+                while (ReponseRepereUser == null)
+                {
+                    string titre = "Repére";
+                    string label = "Créer repére";
+                    UserQuestion QuestionPlan = new UserQuestion(titre, label);
+                    QuestionPlan.AllowsCreation = true;
+                    TopSolidHost.User.AskFrame3D(QuestionPlan, true, null, out ReponseRepereUser);
+                }
+
+                // Fin de la modification du document
+                TopSolidHost.Application.EndModification(true, true);
+            }
+            catch (Exception ex)
+            {
+                // En cas d'erreur lors de la transformation, affichage d'un message d'erreur
+                this.TopMost = false;
+                TopSolidHost.Application.EndModification(false, false);
+                MessageBox.Show(new Form { TopMost = true }, "Erreur lors de la transformation " + ex.Message);
+                return;
+            }
 
 
+            ElementId RepereUserId = ReponseRepereUser.ElementId;
 
-            //    // Fin de la modification du document
-            //    TSH.Application.EndModification(true, true);
-            //}
-            //catch (Exception ex)
-            //{
-            //    // En cas d'erreur lors de la transformation, affichage d'un message d'erreur
-            //    this.TopMost = false;
-            //    TSH.Application.EndModification(false, false);
-            //    MessageBox.Show(new Form { TopMost = true }, "Erreur lors de la transformation " + ex.Message);
-            //    return;
-            //}
-            //Application.Restart();
+            // Création d'un Frame3D pour stocker le repère utilisateur
+            Frame3D RepereUser = TopSolidHost.Geometries3D.GetFrameGeometry(RepereUserId);
+
+            // Récupération du repère absolu
+            ElementId AbsRepId = TopSolidHost.Geometries3D.GetAbsoluteFrame(DerivéDocumentId);
+            Frame3D AbsRep = TopSolidHost.Geometries3D.GetFrameGeometry(AbsRepId);
+
+            Direction3D dxABS = AbsRep.XDirection;
+            Direction3D dyABS = AbsRep.YDirection;
+            Direction3D dzABS = new Direction3D(AbsRep.ZDirection.X, AbsRep.ZDirection.Y, AbsRep.ZDirection.Z);
+
+            // Récupération des directions des axes du repère utilisateur
+            Direction3D dx = RepereUser.XDirection;
+            Direction3D dy = RepereUser.YDirection;
+            Direction3D dz = new Direction3D(RepereUser.ZDirection.X, RepereUser.ZDirection.X, RepereUser.ZDirection.X);
+
+            // Calcul de la différence de position entre les repères
+            Point3D originUser = RepereUser.Origin;
+            Point3D originAbs = AbsRep.Origin;
+
+            double Tx = originAbs.X - originUser.X;
+            double Ty = originAbs.Y - originUser.Y;
+            double Tz = originAbs.Z - originUser.Z;
+
+            // Translation pour ramener l'origine du repère utilisateur à l'origine du repère absolu
+            Transform3D translation = new Transform3D(
+                dxABS.X, 0, 0, Tx,
+                0, dyABS.Y, 0, Ty,
+                0, 0, dzABS.Z, Tz,
+                0, 0, 0, 1
+                );
+
+            // Rotation pour ramener les axes paralelles
+            Transform3D Rotation = new Transform3D(
+                dx.X, dx.Y, dx.Z, 0,
+                dy.X, dy.Y, dy.Z, 0,
+                dz.X, dz.Y, dz.Z, 0,
+                0, 0, 0, 1
+            );
+
+            //--------------------------------------------------------------------------------------------------
+
+            // Recherche du dossier Formes dans le document
+            ElementId DossierForme = TopSolidHost.Elements.SearchByName(DerivéDocumentId, "$TopSolid.Kernel.DB.D3.Shapes.Documents.ElementName.Shapes");
+
+            // Récupération de tous les éléments du dossier Formes
+            List<ElementId> FormesList = TopSolidHost.Elements.GetConstituents(DossierForme);
+
+            try
+            {
+                //DocumentCourant(out PdmObjectIdCurrentDocumentId, out CurrentDocumentId, out CurrentDocumentIdLastRev);
+                modifActif(CurrentDocumentIdLastRev);
+                DocumentCourant(out PdmObjectIdCurrentDocumentId, out CurrentDocumentId, out CurrentDocumentIdLastRev);
+
+                // Boucle sur chaque forme dans la liste FormesList et application de la transformation
+                for (int i = 0; i < FormesList.Count; i++)
+                {
+                    TopSolidHost.Entities.Transform(FormesList[i], translation);
+                    TopSolidHost.Entities.Transform(FormesList[i], Rotation);
+
+                    // Ici, 'transformedElement' est l'ElementId transformé.
+                    // Vous pouvez travailler avec 'transformedElement' comme vous le souhaitez.
+                }
+
+                // Fin de la modification du document
+                TopSolidHost.Application.EndModification(true, true);
+            }
+            catch (Exception ex)
+            {
+                // En cas d'erreur lors de la transformation, affichage d'un message d'erreur
+                this.TopMost = false;
+                TopSolidHost.Application.EndModification(false, false);
+                MessageBox.Show(new Form { TopMost = true }, "Erreur lors de la transformation " + ex.Message);
+                return;
+            }
+         Application.Restart();
         }
 
         private void button1_Click_1(object sender, EventArgs e)
