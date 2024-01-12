@@ -674,26 +674,21 @@ namespace Folder_Creator_Tool_V3
                                                 }
                                                 return;
                                             }
-                                        
                                         }
                                         DossierRepId = TSH.Pdm.CreateFolder(AtelierFolderId, TexteDossierRep);
                                         break;
-
-
                                     }
-                                    
-                                            //DossierRepId = DossierExistantId;
+                                    DossierRepId = TSH.Pdm.CreateFolder(AtelierFolderId, TexteDossierRep);
                                     break;
                                 }
-
-                                //else
-                                //Creation du dossier repere
-                                DossierRepId = TSH.Pdm.CreateFolder(AtelierFolderId, TexteDossierRep);
+                                ////else
+                                ////Creation du dossier repere
+                                //DossierRepId = TSH.Pdm.CreateFolder(AtelierFolderId, TexteDossierRep);
                                 break;
                             }
                         }
                         //Creation du dossier repere
-                        DossierRepId = TSH.Pdm.CreateFolder(AtelierFolderId, TexteDossierRep);
+                        //DossierRepId = TSH.Pdm.CreateFolder(AtelierFolderId, TexteDossierRep);
                         break;
                     }
                     else
