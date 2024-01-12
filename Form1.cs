@@ -673,22 +673,32 @@ namespace Folder_Creator_Tool_V3
                                                     
                                                 }
                                                 return;
-                                        
                                             }
+                                        
                                         }
-                                        DossierRepId = DossierExistantId;
+                                        DossierRepId = TSH.Pdm.CreateFolder(AtelierFolderId, TexteDossierRep);
                                         break;
-                                    }
 
+
+                                    }
+                                    
+                                            //DossierRepId = DossierExistantId;
+                                    break;
                                 }
 
-                            //else
-                            //Creation du dossier repere
+                                //else
+                                //Creation du dossier repere
                                 DossierRepId = TSH.Pdm.CreateFolder(AtelierFolderId, TexteDossierRep);
                                 break;
                             }
                         }
+                        //Creation du dossier repere
+                        DossierRepId = TSH.Pdm.CreateFolder(AtelierFolderId, TexteDossierRep);
+                        break;
                     }
+                    else
+                    DossierRepId = TSH.Pdm.CreateFolder(AtelierFolderId, TexteDossierRep);
+                    
                 }
                 catch (Exception ex)
                 {
@@ -697,8 +707,6 @@ namespace Folder_Creator_Tool_V3
                 MessageBox.Show(new Form { TopMost = true }, "erreur" + ex.Message);
                 }
                
-                //Creation du dossier repere
-                DossierRepId = TSH.Pdm.CreateFolder(AtelierFolderId, TexteDossierRep);
             
             }
             while (recommencer); // La boucle while recommencera si recommencer est true
@@ -912,7 +920,7 @@ namespace Folder_Creator_Tool_V3
                         TSH.Entities.Transform(FormesList[i], Rotation);
                     }
                 }
-                if (areDirectionsParallelAndSameDirection && areOriginsIdentical)
+                if (!areDirectionsParallelAndSameDirection && !areOriginsIdentical)
                 {
                     for (int i = 0; i < FormesList.Count; i++)
                     {
