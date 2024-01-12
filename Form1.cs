@@ -135,6 +135,7 @@ namespace Folder_Creator_Tool_V3
         PdmObjectId dossier3DGenereId = new PdmObjectId();
 
         ElementId CurrentNameParameterId = new ElementId();
+        bool areDirectionsEqual = false;
 
 
         //------------------------------------------------------------------
@@ -680,12 +681,12 @@ namespace Folder_Creator_Tool_V3
                                     }
 
                                 }
-                            }
 
-                            else
+                            //else
                             //Creation du dossier repere
-                            DossierRepId = TSH.Pdm.CreateFolder(AtelierFolderId, TexteDossierRep);
-                            break;
+                                DossierRepId = TSH.Pdm.CreateFolder(AtelierFolderId, TexteDossierRep);
+                                break;
+                            }
                         }
                     }
                          else
@@ -833,12 +834,27 @@ namespace Folder_Creator_Tool_V3
 
             Direction3D dxABS = AbsRep.XDirection;
             Direction3D dyABS = AbsRep.YDirection;
-            Direction3D dzABS = new Direction3D(AbsRep.ZDirection.X, AbsRep.ZDirection.Y, AbsRep.ZDirection.Z);
+            Direction3D dzABS = AbsRep.ZDirection;
+            //Direction3D dzABS = new Direction3D(AbsRep.ZDirection.X, AbsRep.ZDirection.Y, AbsRep.ZDirection.Z);
 
             // Récupération des directions des axes du repère utilisateur
             Direction3D dx = RepereUser.XDirection;
             Direction3D dy = RepereUser.YDirection;
-            Direction3D dz = new Direction3D(RepereUser.ZDirection.X, RepereUser.ZDirection.X, RepereUser.ZDirection.X);
+            Direction3D dz = RepereUser.ZDirection;
+            //Direction3D dz = new Direction3D(RepereUser.ZDirection.X, RepereUser.ZDirection.X, RepereUser.ZDirection.X);
+
+            bool isXParallelAndSameDirection = false;
+            bool isYParallelAndSameDirection = false;
+            bool isZParallelAndSameDirection = false;
+            bool areDirectionsParallelAndSameDirection = false;
+
+            // Vérification si les directions du repère utilisateur sont parallèles et dans le même sens que les directions du repère absolu
+            isXParallelAndSameDirection = dx.IsParallelTo(dxABS, true);
+            isYParallelAndSameDirection = dy.IsParallelTo(dyABS, true);
+            isZParallelAndSameDirection = dz.IsParallelTo(dzABS, true);
+
+            areDirectionsParallelAndSameDirection = isXParallelAndSameDirection && isYParallelAndSameDirection && isZParallelAndSameDirection;
+
 
             // Calcul de la différence de position entre les repères
             Point3D originUser = RepereUser.Origin;
@@ -847,6 +863,10 @@ namespace Folder_Creator_Tool_V3
             double Tx = originAbs.X - originUser.X;
             double Ty = originAbs.Y - originUser.Y;
             double Tz = originAbs.Z - originUser.Z;
+
+            // Vérification si les origines sont identiques
+            bool areOriginsIdentical = (originUser.X == originAbs.X) && (originUser.Y == originAbs.Y) && (originUser.Z == originAbs.Z);
+
 
             // Translation pour ramener l'origine du repère utilisateur à l'origine du repère absolu
             Transform3D translation = new Transform3D(
@@ -867,39 +887,89 @@ namespace Folder_Creator_Tool_V3
             //--------------------------------------------------------------------------------------------------
 
             // Recherche du dossier Formes dans le document
-            ElementId DossierForme = TopSolidHost.Elements.SearchByName(DerivéDocumentId, "$TopSolid.Kernel.DB.D3.Shapes.Documents.ElementName.Shapes");
+            ElementId DossierForme = TSH.Elements.SearchByName(DerivéDocumentId, "$TopSolid.Kernel.DB.D3.Shapes.Documents.ElementName.Shapes");
 
             // Récupération de tous les éléments du dossier Formes
-            List<ElementId> FormesList = TopSolidHost.Elements.GetConstituents(DossierForme);
+            List<ElementId> FormesList = TSH.Elements.GetConstituents(DossierForme);
 
             try
             {
-                //DocumentCourant(out PdmObjectIdCurrentDocumentId, out CurrentDocumentId, out CurrentDocumentIdLastRev);
                 modifActif(CurrentDocumentIdLastRev);
                 DocumentCourant(out PdmObjectIdCurrentDocumentId, out CurrentDocumentId, out CurrentDocumentIdLastRev);
 
-                // Boucle sur chaque forme dans la liste FormesList et application de la transformation
-                for (int i = 0; i < FormesList.Count; i++)
+                // Utiliser cette condition pour déterminer si la rotation doit être appliquée
+                if (areDirectionsParallelAndSameDirection && !areOriginsIdentical )
                 {
-                    TopSolidHost.Entities.Transform(FormesList[i], translation);
-                    TopSolidHost.Entities.Transform(FormesList[i], Rotation);
-
-                    // Ici, 'transformedElement' est l'ElementId transformé.
-                    // Vous pouvez travailler avec 'transformedElement' comme vous le souhaitez.
+                    for (int i = 0; i < FormesList.Count; i++)
+                    {
+                        TSH.Entities.Transform(FormesList[i], translation);
+                    }
+                }
+                if (!areDirectionsParallelAndSameDirection && areOriginsIdentical)
+                {
+                    for (int i = 0; i < FormesList.Count; i++)
+                    {
+                        TSH.Entities.Transform(FormesList[i], Rotation);
+                    }
+                }
+                else
+                {
+                    for (int i = 0; i < FormesList.Count; i++)
+                    {
+                        TSH.Entities.Transform(FormesList[i], translation);
+                        TSH.Entities.Transform(FormesList[i], Rotation);
+                    }
                 }
 
                 // Fin de la modification du document
-                TopSolidHost.Application.EndModification(true, true);
+                TSH.Application.EndModification(true, true);
             }
             catch (Exception ex)
             {
                 // En cas d'erreur lors de la transformation, affichage d'un message d'erreur
                 this.TopMost = false;
-                TopSolidHost.Application.EndModification(false, false);
+                TSH.Application.EndModification(false, false);
                 MessageBox.Show(new Form { TopMost = true }, "Erreur lors de la transformation " + ex.Message);
                 return;
             }
-         Application.Restart();
+
+            try
+            {
+
+                //modifActif(CurrentDocumentIdLastRev);
+                DocumentCourant(out PdmObjectIdCurrentDocumentId, out CurrentDocumentId, out CurrentDocumentIdLastRev);
+
+                List<ElementId> TotalElementIds = TSH.Elements.GetElements(CurrentDocumentIdLastRev);
+
+                for (int i = 0; i < TotalElementIds.Count; i++)
+                {
+                    TSH.Elements.Hide(TotalElementIds[i]);
+                }
+
+                for (int i = 0; i < FormesList.Count; i++)
+                {
+                    TSH.Elements.Show(FormesList[i]);
+                }
+
+                int CameraPerpsecitveId = TSH.Visualization3D.GetActiveView(CurrentDocumentIdLastRev);
+
+                ElementId CameraPerpsecitveElementId = TSH.Visualization3D.GetPerspectiveCamera(CurrentDocumentIdLastRev);
+                CameraPerpsecitveId = CameraPerpsecitveElementId.Id;
+                TSH.Visualization3D.RedrawView(CurrentDocumentIdLastRev, CameraPerpsecitveId);
+                //TSH.Visualization3D.SetActiveView(CurrentDocumentIdLastRev, cameraIdInt);
+                //TSH.Application.EndModification(true, true);
+            }
+              catch (Exception ex)
+            {
+                // En cas d'erreur lors de la recup de la vu
+                this.TopMost = false;
+                TSH.Application.EndModification(false, false);
+                MessageBox.Show(new Form { TopMost = true }, "Erreur lors de la transformation " + ex.Message);
+                return;
+            }
+
+
+            Application.Restart();
         }
 
         private void button1_Click_1(object sender, EventArgs e)
