@@ -590,7 +590,7 @@ namespace Folder_Creator_Tool_V3
                 {
                     DocumentCourant(out PdmObjectIdCurrentDocumentId, out CurrentDocumentId, out CurrentDocumentIdLastRev);
 
-                    modifActif(CurrentDocumentId);
+                    modifActif(CurrentDocumentIdLastRev);
 
                     DocumentCourant(out PdmObjectIdCurrentDocumentId, out CurrentDocumentId, out CurrentDocumentIdLastRev);
                     //RecupCommentaire(in CurrentDocumentId, out CurrentDocumentCommentaireId, out TextCurrentDocumentCommentaire);
@@ -612,8 +612,8 @@ namespace Folder_Creator_Tool_V3
                 return;
                 }
                                        
+                    TSH.Pdm.GetConstituents(AtelierFolderId, out FolderIds, out DocumentsIds);
 
-                TSH.Pdm.GetConstituents(AtelierFolderId, out FolderIds, out DocumentsIds);
 
                 try
                 {
@@ -689,10 +689,6 @@ namespace Folder_Creator_Tool_V3
                             }
                         }
                     }
-                         else
-                            //Creation du dossier repere
-                            DossierRepId = TSH.Pdm.CreateFolder(AtelierFolderId, TexteDossierRep);
-
                 }
                 catch (Exception ex)
                 {
@@ -700,6 +696,10 @@ namespace Folder_Creator_Tool_V3
                 TSH.Application.EndModification(false, false);
                 MessageBox.Show(new Form { TopMost = true }, "erreur" + ex.Message);
                 }
+               
+                //Creation du dossier repere
+                DossierRepId = TSH.Pdm.CreateFolder(AtelierFolderId, TexteDossierRep);
+            
             }
             while (recommencer); // La boucle while recommencera si recommencer est true
                                  //////////////////////////////////////////////////////////////////                  
@@ -912,7 +912,7 @@ namespace Folder_Creator_Tool_V3
                         TSH.Entities.Transform(FormesList[i], Rotation);
                     }
                 }
-                else
+                if (areDirectionsParallelAndSameDirection && areOriginsIdentical)
                 {
                     for (int i = 0; i < FormesList.Count; i++)
                     {
@@ -935,7 +935,7 @@ namespace Folder_Creator_Tool_V3
 
             try
             {
-
+                modifActif(CurrentDocumentIdLastRev);
                 //modifActif(CurrentDocumentIdLastRev);
                 DocumentCourant(out PdmObjectIdCurrentDocumentId, out CurrentDocumentId, out CurrentDocumentIdLastRev);
 
@@ -953,11 +953,11 @@ namespace Folder_Creator_Tool_V3
 
                 int CameraPerpsecitveId = TSH.Visualization3D.GetActiveView(CurrentDocumentIdLastRev);
 
-                ElementId CameraPerpsecitveElementId = TSH.Visualization3D.GetPerspectiveCamera(CurrentDocumentIdLastRev);
-                CameraPerpsecitveId = CameraPerpsecitveElementId.Id;
-                TSH.Visualization3D.RedrawView(CurrentDocumentIdLastRev, CameraPerpsecitveId);
+                //ElementId CameraPerpsecitveElementId = TSH.Visualization3D.GetPerspectiveCamera(CurrentDocumentIdLastRev);
+                //CameraPerpsecitveId = CameraPerpsecitveElementId.Id;
+                //TSH.Visualization3D.RedrawView(CurrentDocumentIdLastRev, CameraPerpsecitveId);
                 //TSH.Visualization3D.SetActiveView(CurrentDocumentIdLastRev, cameraIdInt);
-                //TSH.Application.EndModification(true, true);
+                TSH.Application.EndModification(true, true);
             }
               catch (Exception ex)
             {
