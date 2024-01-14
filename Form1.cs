@@ -436,13 +436,16 @@ namespace Folder_Creator_Tool_V3
         }
 
 
-        void CréaetionParam(string inTextBoxValue,in string NomParamTxt, in DocumentId document)
+        void CréaetionParam(ElementId ParamSytemElementId, in string NomParamTxt, in DocumentId document)
         {
             // Creation parametre 'Commentaire' et publication
-            SmartText inTextBoxValueSmartTxt = new SmartText(inTextBoxValue);
+            SmartText inTextBoxValueSmartTxt = new SmartText(ParamSytemElementId);
             ElementId inTextBoxValueParamId = TSH.Parameters.CreateSmartTextParameter(document, inTextBoxValueSmartTxt);
             TSH.Elements.SetName(inTextBoxValueParamId, NomParamTxt);
-            TSH.Parameters.PublishText(document, NomParamTxt, inTextBoxValueSmartTxt);
+            ElementId parametrePublieId = TSH.Parameters.PublishText(document, NomParamTxt, inTextBoxValueSmartTxt);
+            SmartText NomParamTxtSmartTxt = new SmartText(NomParamTxt);
+            TSH.Parameters.SetTextPublishingDefinition(parametrePublieId, NomParamTxtSmartTxt);
+
         }
 
 
@@ -590,7 +593,18 @@ namespace Folder_Creator_Tool_V3
             List<PdmObjectId> CheckedItemsliste = new List<PdmObjectId>();
             List<PdmObjectId> CheckedItemCopieListe = new List<PdmObjectId>();
 
+            DialogResult resulta = MessageBox.Show("Voulez vous simplifier la piece", "Confirmation", MessageBoxButtons.YesNo);
+
+            if (resulta == DialogResult.Yes)
+            {
+                
+                TSH.Application.InvokeCommand("TopSolid.Kernel.UI.D3.Shapes.Healing.HealCommand");
+                // Redémarre l'application
+                Environment.Exit(0);
+            }
            
+
+
             // Ajout des nœuds cochés à la liste CheckedItems
             try
             {               
@@ -625,7 +639,6 @@ namespace Folder_Creator_Tool_V3
             do
             {
 
-
                 //DocumentCourant(out PdmObjectIdCurrentDocumentId, out CurrentDocumentId, out DocumentId CurrentDocumentIdLastRev);
 
                 //Recuperation du texte modifié par l'utilisateur pour nommer les dossiers.
@@ -650,7 +663,7 @@ namespace Folder_Creator_Tool_V3
                 {
                     // Récupération des informations du document actuel et activation des modifications
                     DocumentCourant(out PdmObjectIdCurrentDocumentId, out CurrentDocumentId, out CurrentDocumentIdLastRev);
-                    modifActif(CurrentDocumentIdLastRev);
+                    modifActif(CurrentDocumentId);
 
                     // Récupération à nouveau des informations du document actuel (peut-être redondant)
                     DocumentCourant(out PdmObjectIdCurrentDocumentId, out CurrentDocumentId, out CurrentDocumentIdLastRev);
@@ -678,11 +691,14 @@ namespace Folder_Creator_Tool_V3
 
                 try
                 {
+                    bool aucunDossierProjet = true;
                     bool FichierExiste = false;
                     bool BesoinDeTousLesDossier = false;
                     //int i = 0; // index
                     if (FolderIds.Count != 0) //
                     {
+                        aucunDossierProjet = false;
+
                         for (int i = 0; i < FolderIds.Count; i++) //Boucle de décompte
                         {
                             // Obtention du nom du dossier actuel dans la boucle
@@ -739,19 +755,21 @@ namespace Folder_Creator_Tool_V3
                                     //DossierRepId = TSH.Pdm.CreateFolder(AtelierFolderId, TexteDossierRep);
                                     DossierIndiceId = TSH.Pdm.CreateFolder(DossierExistantId, TexteIndiceFolder);
                                     dossier3DGenereId = creationAutreDossiers(DossierIndiceId);
+                                    DossierRepId = DossierExistantId;
                                     break;
                                 }
                                 else
                                     return;
                             } 
-                            else 
-                            {
-                                BesoinDeTousLesDossier = true;
-                            }
+                            //else 
+                            //{
+                            //    BesoinDeTousLesDossier = true;
+                            //}
 
                         }
+                        
                     }
-                    else if ((!test00 && !test01) || BesoinDeTousLesDossier)
+                    if ((!test00 && !test01) || BesoinDeTousLesDossier || aucunDossierProjet)
                     {
                         DossierRepId = TSH.Pdm.CreateFolder(AtelierFolderId, TexteDossierRep);
                         DossierIndiceId = TSH.Pdm.CreateFolder(DossierRepId, TexteIndiceFolder);
@@ -788,6 +806,7 @@ namespace Folder_Creator_Tool_V3
                     TSH.Documents.Close(CurrentDocumentId, false, false);
                     // Ouverture du document dérivé
                     TSH.Documents.Open(ref DerivéDocumentId);
+                    PdmObjectId DerivéDocumentPdmId = TSH.Documents.GetPdmObject(DerivéDocumentId);
                 }
                 catch (Exception ex)
                 {
@@ -798,6 +817,51 @@ namespace Folder_Creator_Tool_V3
                 }
 
                 try
+                {
+                    //DocumentCourant(out PdmObjectIdCurrentDocumentId, out CurrentDocumentId, out CurrentDocumentIdLastRev);
+                    modifActif(CurrentDocumentId);
+                    DocumentCourant(out PdmObjectIdCurrentDocumentId, out CurrentDocumentId, out CurrentDocumentIdLastRev);
+                    List<ElementId> OtherSystemParameters = new List<ElementId>();
+                    TopSolidDesignHost.Tools.SetDerivationInheritances(
+                                       CurrentDocumentIdLastRev, // Identifiant de la dernière révision du document courant
+                                       false, // Hériter de la configuration générale (ou non)
+                                       true,  // Hériter de la configuration des matériaux
+                                       true,  // Hériter de la configuration des couleurs
+                                       true,  // Hériter des paramètres de l'arbre de construction
+                                       true,  // Hériter des paramètres de l'environnement
+                                       true,  // Hériter des paramètres des esquisses
+                                       true,  // Hériter des paramètres de l'assemblage
+                                       true,  // Hériter des paramètres de la mise en plan
+                                       OtherSystemParameters,  // Hériter des paramètres de conception (null signifie la valeur par défaut)
+                                       true,  // Hériter des paramètres de la tôlerie
+                                       true,  // Hériter des paramètres des moules
+                                       true,  // Hériter des paramètres des mécanismes
+                                       true,  // Hériter des paramètres des câbles
+                                       true,  // Hériter des paramètres des tubes
+                                       true,  // Hériter des paramètres des fils électriques
+                                       true,  // Hériter des paramètres des surfaces
+                                       true,  // Hériter des paramètres des textes
+                                       true,  // Hériter des paramètres des images
+                                       true,  // Hériter des paramètres des ombres
+                                       true,  // Hériter des paramètres de visualisation
+                                       true,  // Hériter des paramètres des annotations
+                                       true,  // Hériter des autres paramètres spécifiques (non listés ici)
+                                       false  // Hériter des paramètres de camera
+                                   );
+
+                TSH.Application.EndModification(true, true);
+            }
+            catch (Exception ex)
+            {
+                this.TopMost = false;
+                // Affichage d'un message d'erreur en cas d'échec de la dérivation
+                MessageBox.Show(new Form { TopMost = true }, "Erreur a l'edition des parametre de derivation" + ex.Message);
+                // Annulation des modifications en cas d'erreur
+                TSH.Application.EndModification(false, false);
+                return;
+            }
+
+            try
                 {
                     // Copie des PDF dans le dossier si la liste n'est pas vide
                     if (CheckedItemsliste.Count > 0)
@@ -819,54 +883,41 @@ namespace Folder_Creator_Tool_V3
 
                 // Récupération des informations du document actuel et activation des modifications
                 DocumentCourant(out PdmObjectIdCurrentDocumentId, out CurrentDocumentId, out CurrentDocumentIdLastRev);
-                modifActif(CurrentDocumentIdLastRev);
+                modifActif(CurrentDocumentId);
+                DocumentCourant(out PdmObjectIdCurrentDocumentId, out CurrentDocumentId, out CurrentDocumentIdLastRev);
 
-                // Récupération de l'ID du document dérivé en cours de modification
-                DerivéDocumentId = TSH.Documents.EditedDocument;
+                TSH.Documents.SetName(CurrentDocumentIdLastRev, nomDocu);
 
+                // Définition du texte pour le paramètre "Indice 3D"
+                string Indice3DNomParamTxt = "Indice 3D";
+                // Création d'un objet SmartText avec le texte défini
+                SmartText Indice3DNomParam = new SmartText(Indice3DNomParamTxt);
+                // Création d'un paramètre de texte intelligent dans le document actuel et récupération de son identifiant
+                ElementId Indice3DNomParamId = TSH.Parameters.CreateSmartTextParameter(CurrentDocumentId, Indice3DNomParam);
+                // Appel de la méthode de création de paramètre avec l'identifiant et le texte du paramètre
+                CréaetionParam(Indice3DNomParamId, in Indice3DNomParamTxt, in CurrentDocumentId);
 
-                //// Creation parametre 'Commentaire' et publication
-                //SmartText Indice3DSmartTxt = new SmartText(TextBoxIndiceValue);
-                //ElementId Indice3DParamId = TSH.Parameters.CreateSmartTextParameter(DerivéDocumentId, Indice3DSmartTxt);
-                //TSH.Elements.SetName(Indice3DParamId, "Indice 3D");
-                //TSH.Parameters.PublishText(DerivéDocumentId, "Indice 3D", Indice3DSmartTxt);
-                
-                string Indice3DNomParam = "Indice 3D";
-                CréaetionParam(TextBoxIndiceValue, in Indice3DNomParam, in CurrentDocumentIdLastRev);
-
+                // Récupération de l'identifiant du paramètre de description du système
+                ElementId DesignationSystemeId = TSH.Parameters.GetDescriptionParameter(CurrentDocumentId);
+                // Définition du nom du paramètre de description
                 string DesignationNomParam = "Designation";
-                string NomSystemDesignation = "$Désignation";
-                CréaetionParam(NomSystemDesignation, in Indice3DNomParam, in CurrentDocumentIdLastRev);
+                // Création du paramètre de description avec l'identifiant récupéré
+                CréaetionParam(DesignationSystemeId, in DesignationNomParam, in CurrentDocumentId);
 
+                // Récupération de l'identifiant du paramètre de commentaire du système
+                ElementId CommentaireSystemeId = TSH.Parameters.GetCommentParameter(CurrentDocumentId);
+                // Définition du nom du paramètre de commentaire
                 string CommentaireNomParam = "Commentaire";
-                string NomSystemCommentaire = "$Commentaire";
-                CréaetionParam(NomSystemCommentaire, in Indice3DNomParam, in CurrentDocumentIdLastRev);
+                // Création du paramètre de commentaire avec l'identifiant récupéré
+                CréaetionParam(CommentaireSystemeId, in CommentaireNomParam, in CurrentDocumentId);
 
+                // Récupération de l'identifiant du paramètre de nom du document
+                ElementId Nom_docu = TSH.Parameters.GetNameParameter(CurrentDocumentId);
+                // Définition du nom du paramètre de nom du document
                 string NomDocuNomParam = "Nom_docu";
-                string NomSystemNomDocu = "$Nom";
-                CréaetionParam(NomSystemCommentaire, in Indice3DNomParam, in CurrentDocumentIdLastRev);
+                // Création du paramètre de nom du document avec l'identifiant récupéré
+                CréaetionParam(Nom_docu, in NomDocuNomParam, in CurrentDocumentId);
 
-
-
-
-                //// Creation parametre 'Commentaire' et publication
-                //SmartText DesignationSmartTxt = new SmartText(TextBoxDesignationValue);
-                //ElementId DesignationParamId = TSH.Parameters.CreateSmartTextParameter(DerivéDocumentId, DesignationSmartTxt);
-                //TSH.Elements.SetName(DesignationParamId, "Indice 3D");
-                //TSH.Parameters.PublishText(DerivéDocumentId, "Indice 3D", DesignationSmartTxt);
-
-
-
-
-
-                // Récupération de l'ID du paramètre de nom et mise à jour de sa valeur
-                CurrentNameParameterId = TSH.Parameters.GetNameParameter(DerivéDocumentId);
-                TSH.Parameters.SetTextValue(CurrentNameParameterId, nomDocu);
-
-                //ElementId NumMouleRelauy =  new ElementId(); //TSH.Elements.SearchByName(DerivéDocumentId, "$TopSolid.Kernel.TX.Properties.Name"); // Récupération du paramètre relai externe nom de projet
-                //SmartText NumMouleTxt= new SmartText("");
-                //ElementId NumMoule = NumMouleTxt.ElementId;
-                //TSH.Parameters.SetRelayedParameter(NumMoule, NumMouleRelauy);
 
                 // Fin des modifications avec sauvegarde des changements
                 TSH.Application.EndModification(true, true);
@@ -874,10 +925,10 @@ namespace Folder_Creator_Tool_V3
             catch (Exception ex)
             {
                 this.TopMost = false;
-                // Annulation des modifications en cas d'erreur
-                TSH.Application.EndModification(false, false);
                 // Affichage d'un message d'erreur en cas d'échec de la dérivation
                 MessageBox.Show(new Form { TopMost = true }, "Erreur lors de la dérivation" + ex.Message);
+                // Annulation des modifications en cas d'erreur
+                TSH.Application.EndModification(false, false);
                 return;
             }
 
@@ -893,7 +944,7 @@ namespace Folder_Creator_Tool_V3
             try
             {
                 //DocumentCourant(out PdmObjectIdCurrentDocumentId, out CurrentDocumentId, out CurrentDocumentIdLastRev);
-                modifActif(CurrentDocumentIdLastRev);
+                modifActif(CurrentDocumentId);
                 DocumentCourant(out PdmObjectIdCurrentDocumentId, out CurrentDocumentId, out CurrentDocumentIdLastRev);
 
 
@@ -915,7 +966,7 @@ namespace Folder_Creator_Tool_V3
                 // En cas d'erreur lors de la transformation, affichage d'un message d'erreur
                 this.TopMost = false;
                 TopSolidHost.Application.EndModification(false, false);
-                MessageBox.Show(new Form { TopMost = true }, "Erreur lors de la transformation " + ex.Message);
+                MessageBox.Show(new Form { TopMost = true }, "Erreur lors de la creation du repere " + ex.Message);
                 return;
             }
 
@@ -991,26 +1042,33 @@ namespace Folder_Creator_Tool_V3
 
             try
             {
-                modifActif(CurrentDocumentIdLastRev);
+                // Activation de la modification du document courant
+                modifActif(CurrentDocumentId);
+                // Récupération des identifiants du document courant
                 DocumentCourant(out PdmObjectIdCurrentDocumentId, out CurrentDocumentId, out CurrentDocumentIdLastRev);
 
-                // Utiliser cette condition pour déterminer si la rotation doit être appliquée
-                if (areDirectionsParallelAndSameDirection && !areOriginsIdentical )
+                // Si les directions sont parallèles et dans le même sens mais que les origines ne sont pas identiques
+                if (areDirectionsParallelAndSameDirection && !areOriginsIdentical)
                 {
+                    // Appliquer une translation à chaque forme de la liste
                     for (int i = 0; i < FormesList.Count; i++)
                     {
                         TSH.Entities.Transform(FormesList[i], translation);
                     }
                 }
+                // Si les directions ne sont pas parallèles mais que les origines sont identiques
                 if (!areDirectionsParallelAndSameDirection && areOriginsIdentical)
                 {
+                    // Appliquer une rotation à chaque forme de la liste
                     for (int i = 0; i < FormesList.Count; i++)
                     {
                         TSH.Entities.Transform(FormesList[i], Rotation);
                     }
                 }
+                // Si les directions ne sont pas parallèles et que les origines ne sont pas identiques
                 if (!areDirectionsParallelAndSameDirection && !areOriginsIdentical)
                 {
+                    // Appliquer une translation suivie d'une rotation à chaque forme de la liste
                     for (int i = 0; i < FormesList.Count; i++)
                     {
                         TSH.Entities.Transform(FormesList[i], translation);
@@ -1018,82 +1076,174 @@ namespace Folder_Creator_Tool_V3
                     }
                 }
 
-                // Fin de la modification du document
+                // Terminer la modification du document avec succès
                 TSH.Application.EndModification(true, true);
             }
             catch (Exception ex)
             {
-                // En cas d'erreur lors de la transformation, affichage d'un message d'erreur
+                // En cas d'erreur lors de la transformation, terminer la modification sans sauvegarder et afficher un message d'erreur
                 this.TopMost = false;
                 TSH.Application.EndModification(false, false);
-                MessageBox.Show(new Form { TopMost = true }, "Erreur lors de la transformation " + ex.Message);
+                MessageBox.Show(new Form { TopMost = true }, "Erreur lors de la transformation : " + ex.Message);
                 return;
             }
 
+
             try
             {
-                modifActif(CurrentDocumentIdLastRev);
-                //modifActif(CurrentDocumentIdLastRev);
+                // Active la modification du document actuel
+                modifActif(CurrentDocumentId);
+
+                // Récupère les identifiants du document actuel
                 DocumentCourant(out PdmObjectIdCurrentDocumentId, out CurrentDocumentId, out CurrentDocumentIdLastRev);
 
-                List<ElementId> TotalElementIds = TSH.Elements.GetElements(CurrentDocumentIdLastRev);
+                // Récupère tous les identifiants d'éléments du document actuel
+                List<ElementId> TotalElementIds = TSH.Elements.GetElements(CurrentDocumentId);
 
+                // Cache tous les éléments du document
                 for (int i = 0; i < TotalElementIds.Count; i++)
                 {
                     TSH.Elements.Hide(TotalElementIds[i]);
                 }
 
+                // Affiche uniquement les éléments spécifiés dans FormesList
                 for (int i = 0; i < FormesList.Count; i++)
                 {
                     TSH.Elements.Show(FormesList[i]);
                 }
 
-                int CameraPerpsecitveId = TSH.Visualization3D.GetActiveView(CurrentDocumentIdLastRev);
-
-                //ElementId CameraPerpsecitveElementId = TSH.Visualization3D.GetPerspectiveCamera(CurrentDocumentIdLastRev);
-                //CameraPerpsecitveId = CameraPerpsecitveElementId.Id;
-                //TSH.Visualization3D.RedrawView(CurrentDocumentIdLastRev, CameraPerpsecitveId);
-                //TSH.Visualization3D.SetActiveView(CurrentDocumentIdLastRev, cameraIdInt);
+                // Termine la modification avec succès
                 TSH.Application.EndModification(true, true);
             }
-              catch (Exception ex)
+            catch (Exception ex)
             {
-                // En cas d'erreur lors de la recup de la vu
+                // En cas d'erreur lors de la transformation
                 this.TopMost = false;
+                MessageBox.Show(new Form { TopMost = true }, "Erreur lors de voir seulement " + ex.Message);
+
+                // Termine la modification sans sauvegarder les changements
                 TSH.Application.EndModification(false, false);
-                MessageBox.Show(new Form { TopMost = true }, "Erreur lors de la transformation " + ex.Message);
                 return;
             }
 
 
-            Application.Restart();
+            try
+            {
+                // Active la modification du document actuel
+                modifActif(CurrentDocumentId);
+
+                // Récupère les identifiants du document actuel
+                DocumentCourant(out PdmObjectIdCurrentDocumentId, out CurrentDocumentId, out CurrentDocumentIdLastRev);
+
+                // Obtient l'identifiant de la vue graphique active
+                int VueActiveInt = TSH.Visualization3D.GetActiveView(CurrentDocumentId);
+
+                // Récupère les paramètres actuels de la caméra de perspective
+                ElementId PerspectiveCamera = TSH.Visualization3D.GetPerspectiveCamera(CurrentDocumentId);
+                Point3D outEyePosition = new Point3D();
+                Direction3D outLookAtDirection = new Direction3D();
+                Direction3D outUpDirection = new Direction3D();
+                double outFieldAngle = new double();
+                double outFieldRadius = new double();
+                TSH.Visualization3D.GetCameraDefinition(PerspectiveCamera,
+                                                        out outEyePosition,
+                                                        out outLookAtDirection,
+                                                        out outUpDirection,
+                                                        out outFieldAngle,
+                                                        out outFieldRadius);
+
+                // Définit la caméra de la vue active avec les paramètres récupérés
+                TSH.Visualization3D.SetViewCamera(CurrentDocumentId,
+                                                    VueActiveInt,
+                                                    outEyePosition,
+                                                    outLookAtDirection,
+                                                    outUpDirection,
+                                                    outFieldAngle,
+                                                    outFieldRadius);
+
+                // Effectue un zoom pour adapter la vue à l'écran
+                TSH.Visualization3D.ZoomToFitView(CurrentDocumentId, VueActiveInt);
+
+                // Termine la modification avec succès
+                TSH.Application.EndModification(true, true);
+            }
+            catch (Exception ex)
+            {
+                // En cas d'erreur lors de la récupération ou de la mise à jour de la vue
+                this.TopMost = false;
+                MessageBox.Show(new Form { TopMost = true }, "Erreur camera " + ex.Message);
+
+                // Termine la modification sans sauvegarder les changements
+                TSH.Application.EndModification(false, false);
+                return;
+            }
+
+
+
+
+            try
+            {
+                // Active la modification du document actuel
+                modifActif(CurrentDocumentId);
+
+                // Récupère les identifiants du document actuel
+                DocumentCourant(out PdmObjectIdCurrentDocumentId, out CurrentDocumentId, out CurrentDocumentIdLastRev);
+                bool Updatenecessaire = TSH.Pdm.NeedsUpdating(PdmObjectIdCurrentDocumentId);
+                if (Updatenecessaire)
+                {
+                    TSH.Documents.Update(CurrentDocumentId, true);
+                }
+                // Termine la modification avec succès
+                TSH.Application.EndModification(true, true);
+                PdmMinorRevisionId minorRevisionId = TSH.Pdm.GetFinalMinorRevision(PdmObjectIdCurrentDocumentId);
+
+                // Sauvegarde du document actuel
+                TSH.Documents.Save(CurrentDocumentId);
+
+                // Met à jour les références du document
+                TSH.Pdm.UpdateDocumentReferences(minorRevisionId);
+
+                // Enregistre le document dans le dossier de stockage
+                TSH.Pdm.CheckIn(DossierRepId, true);
+
+                // Définit l'état du cycle de vie du document sur "Validé"
+                TSH.Pdm.SetLifeCycleMainState(PdmObjectIdCurrentDocumentId, PdmLifeCycleMainState.Validated);
+
+                // Affiche le document dans l'arborescence du projet TopSolid
+                TSH.Pdm.ShowInProjectTree(PdmObjectIdCurrentDocumentId);
+
+                // Quitte l'application
+                Environment.Exit(0);
+            }
+            catch (Exception ex)
+            {
+                // En cas d'erreur, affiche un message et termine la modification sans sauvegarder
+                this.TopMost = false;
+                MessageBox.Show(new Form { TopMost = true }, "Erreur Update, Mise au coffre ou validation " + ex.Message);
+
+                // Termine la modification sans sauvegarder les changements
+                TSH.Application.EndModification(false, false);
+                return;
+            }
+
+
         }
 
+        // Fonction appelée lorsque le bouton 'button1' est cliqué
         private void button1_Click_1(object sender, EventArgs e)
         {
+            // Redémarre l'application
+            Environment.Exit(0);
+        }
+
+        // Fonction appelée lorsque l'option de menu 'quitterToolStripMenuItem' est cliquée
+        private void quitterToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            // Ferme l'application
             Application.Restart();
         }
 
-        private void quitterToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            Application.Exit(); 
-        }
-
-       
-    }
-}
 
 
-
-class DocumentsEventsHost : IDocumentsEvents
-{
-    public void OnDocumentEditingStarted(DocumentId inDocumentId)
-    {
-        string name = TSH.Documents.GetName(inDocumentId); MessageBox.Show(name, "Start Editing");
-    }
-
-    public void OnDocumentEditingEnded(DocumentId inDocumentId)
-    {
-        string name = TSH.Documents.GetName(inDocumentId); MessageBox.Show(name, "End Editing");
     }
 }
