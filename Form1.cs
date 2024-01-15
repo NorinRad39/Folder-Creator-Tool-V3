@@ -388,7 +388,7 @@ namespace Folder_Creator_Tool_V3
             // Initialisation de la variable de sortie
             FichierExiste = false;
             bool existePas = true;
-            nomDocu = textBox2.Text + " Ind " + textBox8.Text + " " + textBox10.Text;
+            nomDocu = textBox2.Text + " Ind " + textBoxIndice.Text + " " + textBox10.Text;
 
             // Vérification si la liste des IDs de dossier n'est pas vide
             if (IndiceFolderIds.Count != 0)
@@ -562,7 +562,7 @@ namespace Folder_Creator_Tool_V3
             //----------- Variable des differents façon de nommer le dossier indice----------------------------------------------------------------------------------------------------------------------------
 
 
-            textBox8.Text = "A"; //Affichage de l'indice
+            textBoxIndice.Text = "A"; //Affichage de l'indice
 
 
             //Liste PDF--------------------------------
@@ -643,20 +643,20 @@ namespace Folder_Creator_Tool_V3
 
                 //Recuperation du texte modifié par l'utilisateur pour nommer les dossiers.
                 TextBoxCommentaireValue = textBox2.Text; //Repere de la piece
-                TextBoxIndiceValue = textBox8.Text; //Indice de la piece
+                TextBoxIndiceValue = textBoxIndice.Text; //Indice de la piece
                 TextBoxDesignationValue = textBox3.Text; //Designation de la piece
                 TextBoxNomMouleValue = textBox10.Text; //Numero du moule
                 TexteIndiceFolder = "Ind " + TextBoxIndiceValue;
                 TexteDossierRep = textBox2.Text + " - " + textBox3.Text; //Nom du dossier repere
 
-                IndiceTxtFormat00 = "Ind" + textBox8.Text;
-                IndiceTxtFormat01 = "Ind " + textBox8.Text;
+                IndiceTxtFormat00 = "Ind" + textBoxIndice.Text;
+                IndiceTxtFormat01 = "Ind " + textBoxIndice.Text;
 
 
                 CommentaireTxtFormat00 = textBox2.Text + "-";
                 CommentaireTxtFormat01 = textBox2.Text + " ";
 
-                nomDocu = textBox2.Text + " Ind " + textBox8.Text + " " + textBox10.Text;
+                nomDocu = textBox2.Text + " Ind " + textBoxIndice.Text + " " + textBox10.Text;
 
 
                 try
@@ -1199,6 +1199,7 @@ namespace Folder_Creator_Tool_V3
 
                 // Sauvegarde du document actuel
                 TSH.Documents.Save(CurrentDocumentId);
+                    
 
                 // Met à jour les références du document
                 TSH.Pdm.UpdateDocumentReferences(minorRevisionId);
@@ -1232,18 +1233,27 @@ namespace Folder_Creator_Tool_V3
         // Fonction appelée lorsque le bouton 'button1' est cliqué
         private void button1_Click_1(object sender, EventArgs e)
         {
-            // Redémarre l'application
-            Environment.Exit(0);
+            // exit l'application
+            Application.Restart();
         }
 
         // Fonction appelée lorsque l'option de menu 'quitterToolStripMenuItem' est cliquée
         private void quitterToolStripMenuItem_Click(object sender, EventArgs e)
         {
             // Ferme l'application
-            Application.Restart();
+            Environment.Exit(0);
         }
 
+        private void Form1_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            Properties.Settings.Default.TextBoxIndiceText = textBoxIndice.Text;
+            Properties.Settings.Default.Save();
+        }
 
+        private void Form1_Load(object sender, EventArgs e)
+        {
+            textBoxIndice.Text = Properties.Settings.Default.TextBoxIndiceText;
 
+        }
     }
 }
