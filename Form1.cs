@@ -36,7 +36,7 @@ namespace Folder_Creator_Tool_V3
 
 
 
-    public partial class Form1 : Form
+    public partial class Form3D_PDF : Form
         {
 
             
@@ -457,7 +457,7 @@ namespace Folder_Creator_Tool_V3
 
 
 
-        public Form1()
+        public Form3D_PDF()
         {
             
 

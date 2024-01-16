@@ -2,7 +2,7 @@
 
 namespace Folder_Creator_Tool_V3
 {
-    partial class Form1
+    partial class Form3D_PDF
     {
         /// <summary>
         /// Variable nécessaire au concepteur.
@@ -30,7 +30,7 @@ namespace Folder_Creator_Tool_V3
         /// </summary>
         private void InitializeComponent()
         {
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form3D_PDF));
             this.textBox1 = new System.Windows.Forms.TextBox();
             this.label1 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
@@ -52,6 +52,7 @@ namespace Folder_Creator_Tool_V3
             this.treeView1 = new System.Windows.Forms.TreeView();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
             this.groupBox3 = new System.Windows.Forms.GroupBox();
+            this.checkBoxSimplifier = new System.Windows.Forms.CheckBox();
             this.menuStrip1.SuspendLayout();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
@@ -169,7 +170,7 @@ namespace Folder_Creator_Tool_V3
             // 
             // button1
             // 
-            this.button1.Location = new System.Drawing.Point(20, 254);
+            this.button1.Location = new System.Drawing.Point(6, 71);
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(385, 47);
             this.button1.TabIndex = 22;
@@ -209,7 +210,7 @@ namespace Folder_Creator_Tool_V3
             // 
             this.groupBox1.Controls.Add(this.treeView1);
             this.groupBox1.Controls.Add(this.label4);
-            this.groupBox1.Location = new System.Drawing.Point(13, 319);
+            this.groupBox1.Location = new System.Drawing.Point(12, 352);
             this.groupBox1.Name = "groupBox1";
             this.groupBox1.Size = new System.Drawing.Size(400, 359);
             this.groupBox1.TabIndex = 26;
@@ -219,7 +220,7 @@ namespace Folder_Creator_Tool_V3
             // 
             this.treeView1.CheckBoxes = true;
             this.treeView1.Location = new System.Drawing.Point(7, 31);
-            this.treeView1.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.treeView1.Margin = new System.Windows.Forms.Padding(2);
             this.treeView1.Name = "treeView1";
             this.treeView1.Size = new System.Drawing.Size(387, 317);
             this.treeView1.TabIndex = 29;
@@ -247,26 +248,37 @@ namespace Folder_Creator_Tool_V3
             // groupBox3
             // 
             this.groupBox3.Controls.Add(this.button2);
-            this.groupBox3.Location = new System.Drawing.Point(13, 183);
+            this.groupBox3.Controls.Add(this.button1);
+            this.groupBox3.Location = new System.Drawing.Point(12, 216);
             this.groupBox3.Name = "groupBox3";
             this.groupBox3.Size = new System.Drawing.Size(400, 130);
             this.groupBox3.TabIndex = 28;
             this.groupBox3.TabStop = false;
             // 
-            // Form1
+            // checkBoxSimplifier
+            // 
+            this.checkBoxSimplifier.AutoSize = true;
+            this.checkBoxSimplifier.Location = new System.Drawing.Point(23, 192);
+            this.checkBoxSimplifier.Name = "checkBoxSimplifier";
+            this.checkBoxSimplifier.Size = new System.Drawing.Size(67, 17);
+            this.checkBoxSimplifier.TabIndex = 29;
+            this.checkBoxSimplifier.Text = "Simplifier";
+            this.checkBoxSimplifier.UseVisualStyleBackColor = true;
+            // 
+            // Form3D_PDF
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.AutoSize = true;
-            this.ClientSize = new System.Drawing.Size(425, 691);
+            this.ClientSize = new System.Drawing.Size(425, 720);
+            this.Controls.Add(this.checkBoxSimplifier);
             this.Controls.Add(this.groupBox2);
-            this.Controls.Add(this.button1);
             this.Controls.Add(this.menuStrip1);
             this.Controls.Add(this.groupBox3);
             this.Controls.Add(this.groupBox1);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.Fixed3D;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
-            this.Name = "Form1";
+            this.Name = "Form3D_PDF";
             this.Text = "Folders Créator Tool";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Form1_FormClosing);
             this.Load += new System.EventHandler(this.Form1_Load);
@@ -320,6 +332,7 @@ namespace Folder_Creator_Tool_V3
         private System.Windows.Forms.GroupBox groupBox2;
         private System.Windows.Forms.GroupBox groupBox3;
         private System.Windows.Forms.TreeView treeView1;
+        private System.Windows.Forms.CheckBox checkBoxSimplifier;
     }
 }
 
