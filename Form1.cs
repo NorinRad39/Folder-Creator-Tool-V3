@@ -204,24 +204,30 @@ namespace Folder_Creator_Tool_V3
         }
 
         //----------------------------------------Fonction treeview-----------------------------------
+        // Cette fonction ajoute les nœuds cochés à une liste.
         void AddCheckedNodesToList(TreeNodeCollection nodes, List<PdmObjectId> list)
         {
+            // Parcourir tous les nœuds dans la collection de nœuds donnée.
             foreach (TreeNode node in nodes)
             {
-                // Si le nœud est coché, ajoutez son PdmObjectId à la liste
+                // Si le nœud est coché...
                 if (node.Checked)
                 {
+                    // Ajouter l'identifiant de l'objet PDM associé au nœud à la liste.
                     list.Add((PdmObjectId)node.Tag);
                 }
-                // Appel récursif pour les nœuds enfants
+                // Appeler cette fonction de manière récursive pour tous les nœuds enfants du nœud actuel.
                 AddCheckedNodesToList(node.Nodes, list);
             }
         }
+
+
         //-------------------------------Fonction de recupéaration des pdf-------------------
 
+        // Cette fonction liste les fichiers PDF dans un dossier spécifique.
         void listePdf()
         {
-            // Initialisation des listes pour stocker les dossiers et les fichiers
+            // Initialisation des listes pour stocker les identifiants des objets PDM.
             List<PdmObjectId> dossiers2Ds = new List<PdmObjectId>();
             PdmObjectId dossiers2D = new PdmObjectId();
             List<PdmObjectId> FoldersInPDFFolder = new List<PdmObjectId>();
@@ -229,28 +235,28 @@ namespace Folder_Creator_Tool_V3
 
             try
             {
-                // Recherche du dossier "01-2D" dans le projet courant
+                // Recherche du dossier "01-2D" dans le projet courant.
                 dossiers2Ds = TSH.Pdm.SearchFolderByName(CurrentProjectPdmId, "01-2D");
                 dossiers2D = dossiers2Ds[0];
             }
             catch (Exception ex)
             {
-                // Affichage d'un message d'erreur si le dossier "01-2D" n'est pas trouvé
+                // Affichage d'un message d'erreur si le dossier "01-2D" n'est pas trouvé.
                 this.TopMost = false;
                 MessageBox.Show(new Form { TopMost = true }, "Dossier '01-2D' introuvable" + ex.Message);
             }
 
-            // Obtention du nom du dossier racine et création d'un TreeNode pour le dossier racine
+            // Obtention du nom du dossier racine et création d'un TreeNode pour le dossier racine.
             string rootFolderName = TSH.Pdm.GetName(dossiers2D);
             TreeNode rootFolderNode = new TreeNode(rootFolderName);
 
-            // Obtention des dossiers et des fichiers dans le dossier "01-2D"
+            // Obtention des dossiers et des fichiers dans le dossier "01-2D".
             TSH.Pdm.GetConstituents(dossiers2D, out FoldersInPDFFolder, out PDFIds);
 
-            // Initialisation de la variable pour gérer l'événement AfterCheck
+            // Initialisation de la variable pour gérer l'événement AfterCheck.
             bool isEventTriggeredByCode = false;
 
-            // Gestion de l'événement AfterCheck pour empêcher la coche des dossiers
+            // Gestion de l'événement AfterCheck pour empêcher la coche des dossiers.
             treeView1.AfterCheck += (s, e) =>
             {
                 if (isEventTriggeredByCode)
@@ -264,38 +270,55 @@ namespace Folder_Creator_Tool_V3
                 }
             };
 
-            // Parcours de chaque dossier dans le dossier "01-2D"
+            // Parcours de chaque dossier dans le dossier "01-2D".
             foreach (PdmObjectId folderId in FoldersInPDFFolder)
             {
-                // Obtention du nom du dossier et création d'un TreeNode pour le dossier
-                string folderName = TSH.Pdm.GetName(folderId);
-                TreeNode folderNode = new TreeNode(folderName);
-
-                // Obtention des fichiers dans le dossier
-                List<PdmObjectId> fileIdsInFolder;
-                TSH.Pdm.GetConstituents(folderId, out _, out fileIdsInFolder);
-
-                // Parcours de chaque fichier dans le dossier
-                foreach (PdmObjectId fileId in fileIdsInFolder)
-                {
-                    // Obtention du nom du fichier et création d'un TreeNode pour le fichier
-                    string fileName = TSH.Pdm.GetName(fileId);
-                    TreeNode fileNode = new TreeNode(fileName);
-
-                    // Stockage du PdmObjectId dans le Tag du TreeNode
-                    fileNode.Tag = fileId;
-
-                    // Ajout du TreeNode du fichier au TreeNode du dossier
-                    folderNode.Nodes.Add(fileNode);
-                }
-
-                // Ajout du TreeNode du dossier au TreeNode racine
-                rootFolderNode.Nodes.Add(folderNode);
+                // Appel de la fonction récursive pour chaque dossier.
+                ProcessFolder(folderId, rootFolderNode);
             }
 
-            // Ajout du TreeNode racine au TreeView
+            // Ajout du TreeNode racine au TreeView.
             treeView1.Nodes.Add(rootFolderNode);
         }
+
+
+        // Cette fonction traite un dossier en obtenant ses fichiers et ses sous-dossiers.
+        void ProcessFolder(PdmObjectId folderId, TreeNode parentNode)
+        {
+            // Obtention du nom du dossier et création d'un TreeNode pour le dossier.
+            string folderName = TSH.Pdm.GetName(folderId);
+            TreeNode folderNode = new TreeNode(folderName);
+
+            // Obtention des fichiers et des sous-dossiers dans le dossier.
+            List<PdmObjectId> subFolderIds;
+            List<PdmObjectId> fileIdsInFolder;
+            TSH.Pdm.GetConstituents(folderId, out subFolderIds, out fileIdsInFolder);
+
+            // Parcours de chaque fichier dans le dossier.
+            foreach (PdmObjectId fileId in fileIdsInFolder)
+            {
+                // Obtention du nom du fichier et création d'un TreeNode pour le fichier.
+                string fileName = TSH.Pdm.GetName(fileId);
+                TreeNode fileNode = new TreeNode(fileName);
+
+                // Stockage de l'identifiant de l'objet PDM dans le Tag du TreeNode.
+                fileNode.Tag = fileId;
+
+                // Ajout du TreeNode du fichier au TreeNode du dossier.
+                folderNode.Nodes.Add(fileNode);
+            }
+
+            // Parcours de chaque sous-dossier dans le dossier.
+            foreach (PdmObjectId subFolderId in subFolderIds)
+            {
+                // Appel récursif pour chaque sous-dossier.
+                ProcessFolder(subFolderId, folderNode);
+            }
+
+            // Ajout du TreeNode du dossier au TreeNode parent.
+            parentNode.Nodes.Add(folderNode);
+        }
+
 
 
         //-----------Fonction Récupération ID Document courant----------------------------------------------------------------------------------------------------------------------------
@@ -1233,14 +1256,15 @@ namespace Folder_Creator_Tool_V3
         private void button1_Click_1(object sender, EventArgs e)
         {
             // Redémarre l'application
-            Environment.Exit(0);
+            Application.Restart();
         }
 
         // Fonction appelée lorsque l'option de menu 'quitterToolStripMenuItem' est cliquée
         private void quitterToolStripMenuItem_Click(object sender, EventArgs e)
         {
             // Ferme l'application
-            Application.Restart();
+            Environment.Exit(0);
+            
         }
 
 
