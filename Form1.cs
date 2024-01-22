@@ -459,17 +459,22 @@ namespace Folder_Creator_Tool_V3
         }
 
 
-        void CréaetionParam(ElementId ParamSytemElementId, in string NomParamTxt, in DocumentId document)
+        void CréaetionParam(ElementId parametrePubliedId, in ElementId ParamSytemElementId, in string NomParamTxt, in DocumentId document)
         {
-            // Creation parametre 'Commentaire' et publication
-            SmartText inTextBoxValueSmartTxt = new SmartText(ParamSytemElementId);
-            ElementId inTextBoxValueParamId = TSH.Parameters.CreateSmartTextParameter(document, inTextBoxValueSmartTxt);
-            TSH.Elements.SetName(inTextBoxValueParamId, NomParamTxt);
-            ElementId parametrePublieId = TSH.Parameters.PublishText(document, NomParamTxt, inTextBoxValueSmartTxt);
-            SmartText NomParamTxtSmartTxt = new SmartText(NomParamTxt);
-            TSH.Parameters.SetTextPublishingDefinition(parametrePublieId, NomParamTxtSmartTxt);
+            // Récupère la valeur du paramètre système en texte à partir de son identifiant
+            string parametreValueTxt = TSH.Parameters.GetTextValue(ParamSytemElementId);
+
+            // Crée un objet SmartText avec la valeur récupérée
+            SmartText parametreValueSmartTxt = new SmartText(parametreValueTxt);
+
+            // Publie le paramètre texte dans le document spécifié avec le nom et la valeur fournis
+            parametrePubliedId = TSH.Parameters.PublishText(document, NomParamTxt, parametreValueSmartTxt);
+
+            // Attribue le nom spécifié à l'identifiant du paramètre publié
+            TSH.Elements.SetName(parametrePubliedId, NomParamTxt);
 
         }
+
 
 
 
@@ -596,12 +601,6 @@ namespace Folder_Creator_Tool_V3
 
 
         }
-
-        //private double Dot(Direction3D a, Direction3D b)
-        //{
-        //    return a.X * b.X + a.Y * b.Y + a.Z * b.Z;
-        //}
-
 
         //------------------------------Bouton click dossier-------------
 
@@ -847,32 +846,32 @@ namespace Folder_Creator_Tool_V3
                     List<ElementId> OtherSystemParameters = new List<ElementId>();
                     TopSolidDesignHost.Tools.SetDerivationInheritances(
                                        CurrentDocumentIdLastRev, // Identifiant de la dernière révision du document courant
-                                       false, // Hériter de la configuration générale (ou non)
-                                       true,  // Hériter de la configuration des matériaux
-                                       true,  // Hériter de la configuration des couleurs
-                                       true,  // Hériter des paramètres de l'arbre de construction
-                                       true,  // Hériter des paramètres de l'environnement
-                                       true,  // Hériter des paramètres des esquisses
-                                       true,  // Hériter des paramètres de l'assemblage
-                                       true,  // Hériter des paramètres de la mise en plan
-                                       OtherSystemParameters,  // Hériter des paramètres de conception (null signifie la valeur par défaut)
-                                       true,  // Hériter des paramètres de la tôlerie
-                                       true,  // Hériter des paramètres des moules
-                                       true,  // Hériter des paramètres des mécanismes
-                                       true,  // Hériter des paramètres des câbles
-                                       true,  // Hériter des paramètres des tubes
-                                       true,  // Hériter des paramètres des fils électriques
-                                       true,  // Hériter des paramètres des surfaces
-                                       true,  // Hériter des paramètres des textes
-                                       true,  // Hériter des paramètres des images
-                                       true,  // Hériter des paramètres des ombres
-                                       true,  // Hériter des paramètres de visualisation
-                                       true,  // Hériter des paramètres des annotations
-                                       true,  // Hériter des autres paramètres spécifiques (non listés ici)
-                                       false  // Hériter des paramètres de camera
-                                   );
+                                        false, // inName
+                                        true,  // inDescription
+                                        false,  // inCode
+                                        true,  // inPartNumber
+                                        false,  // IinComplementaryPartNumber
+                                        false,  // inManufacturer
+                                        true,  //inManufacturerPartNumber
+                                        true,  // inComment
+                                        OtherSystemParameters,  // Inherit design parameters (null means default value)
+                                        false,  // inNonSystemParameters
+                                        false,  // inPoints
+                                        false,  // inAxes
+                                        false,  // inPlanes
+                                        false,  // inFrames
+                                        false,  // inSketches
+                                        true,  // inShapes
+                                        true,  // inPublishings
+                                        false,  // inFunctions
+                                        false,  // inSymmetries
+                                        false,  // inUnsectionabilities
+                                        true,  // inRepresentations
+                                        false,  // inSets
+                                        false  // inCameras
+                                    );
 
-                TSH.Application.EndModification(true, true);
+                    TSH.Application.EndModification(true, true);
             }
             catch (Exception ex)
             {
@@ -906,40 +905,59 @@ namespace Folder_Creator_Tool_V3
 
                 // Récupération des informations du document actuel et activation des modifications
                 DocumentCourant(out PdmObjectIdCurrentDocumentId, out CurrentDocumentId, out CurrentDocumentIdLastRev);
+                // Appelle une méthode personnalisée pour récupérer les identifiants du document actuel, 
+                // y compris l'identifiant de la dernière révision du document.
+
                 modifActif(CurrentDocumentId);
+                // Active les modifications sur le document actuel.
+
                 DocumentCourant(out PdmObjectIdCurrentDocumentId, out CurrentDocumentId, out CurrentDocumentIdLastRev);
+                // Répète l'appel à la méthode pour mettre à jour les informations du document.
 
                 TSH.Documents.SetName(CurrentDocumentIdLastRev, nomDocu);
+                // Change le nom du document (dernière révision) avec la nouvelle valeur fournie par 'nomDocu'.
 
-                // Définition du texte pour le paramètre "Indice 3D"
                 string Indice3DNomParamTxt = "Indice 3D";
-                // Création d'un objet SmartText avec le texte défini
-                SmartText Indice3DNomParam = new SmartText(Indice3DNomParamTxt);
-                // Création d'un paramètre de texte intelligent dans le document actuel et récupération de son identifiant
-                ElementId Indice3DNomParamId = TSH.Parameters.CreateSmartTextParameter(CurrentDocumentId, Indice3DNomParam);
-                // Appel de la méthode de création de paramètre avec l'identifiant et le texte du paramètre
-                CréaetionParam(Indice3DNomParamId, in Indice3DNomParamTxt, in CurrentDocumentId);
+                // Définit une chaîne de caractères pour le nom du paramètre texte.
+
+                SmartText Indice3DNomParam = new SmartText(TextBoxIndiceValue);
+                // Crée un objet SmartText à partir de la valeur contenue dans 'TextBoxIndiceValue'.
+
+                ElementId Indice3DNomParamId = TSH.Parameters.CreateTextParameter(CurrentDocumentId, TextBoxIndiceValue);
+                // Crée un paramètre texte dans le document actuel avec la valeur spécifiée et stocke son identifiant.
+
+                TSH.Elements.SetName(Indice3DNomParamId, Indice3DNomParamTxt);
+                // Attribue un nom au paramètre texte créé précédemment.
+
+                ElementId publishedIndice3DNomParamId = TSH.Parameters.PublishText(CurrentDocumentId, Indice3DNomParamTxt, Indice3DNomParam);
+                // Publie le paramètre texte 'Indice 3D' dans le document actuel et récupère l'identifiant de l'entité publiée.
+
+                TSH.Elements.SetName(publishedIndice3DNomParamId, Indice3DNomParamTxt);
+                // Attribue le nom 'Indice 3D' à l'entité publiée.
 
                 // Récupération de l'identifiant du paramètre de description du système
                 ElementId DesignationSystemeId = TSH.Parameters.GetDescriptionParameter(CurrentDocumentId);
                 // Définition du nom du paramètre de description
                 string DesignationNomParam = "Designation";
                 // Création du paramètre de description avec l'identifiant récupéré
-                CréaetionParam(DesignationSystemeId, in DesignationNomParam, in CurrentDocumentId);
+                ElementId PubliedDesignationSystemeId = new ElementId();
+                CréaetionParam(PubliedDesignationSystemeId, in DesignationSystemeId, in DesignationNomParam, in CurrentDocumentId);
 
                 // Récupération de l'identifiant du paramètre de commentaire du système
                 ElementId CommentaireSystemeId = TSH.Parameters.GetCommentParameter(CurrentDocumentId);
                 // Définition du nom du paramètre de commentaire
                 string CommentaireNomParam = "Commentaire";
                 // Création du paramètre de commentaire avec l'identifiant récupéré
-                CréaetionParam(CommentaireSystemeId, in CommentaireNomParam, in CurrentDocumentId);
+                ElementId PubliedCommentaireSystemeId = new ElementId();
+                CréaetionParam(PubliedCommentaireSystemeId, in CommentaireSystemeId,in CommentaireNomParam, in CurrentDocumentId);
 
                 // Récupération de l'identifiant du paramètre de nom du document
                 ElementId Nom_docu = TSH.Parameters.GetNameParameter(CurrentDocumentId);
                 // Définition du nom du paramètre de nom du document
                 string NomDocuNomParam = "Nom_docu";
                 // Création du paramètre de nom du document avec l'identifiant récupéré
-                CréaetionParam(Nom_docu, in NomDocuNomParam, in CurrentDocumentId);
+                ElementId PubliedNom_docu = new ElementId();
+                CréaetionParam(PubliedNom_docu, in Nom_docu, in NomDocuNomParam, in CurrentDocumentId);
 
 
                 // Fin des modifications avec sauvegarde des changements
