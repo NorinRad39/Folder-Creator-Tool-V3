@@ -23,6 +23,7 @@ using static System.Windows.Forms.VisualStyles.VisualStyleElement.Window;
 using TS = TopSolid.Kernel.Automating;
 using TSH = TopSolid.Kernel.Automating.TopSolidHost;
 using System.Windows.Media;
+using System.IO;
 
 
 
@@ -453,11 +454,47 @@ namespace Folder_Creator_Tool_V3
             
             // Retour de la valeur de FichierExiste après la fin de la boucle
             
-         
-
-
-
         }
+
+        private void FindParasolidExporterIndex(out int X_TExporterIndex)
+        {
+            //search the Parasolid exporter index
+
+            X_TExporterIndex = -1;
+            for (int i = 0; i < TopSolidHost.Application.ExporterCount; i++)
+            {
+                TopSolidHost.Application.GetExporterFileType(i, out string fileTypeName, out string[] outFileExtensions);
+                if (fileTypeName != "Parasolid") { continue; }
+
+                else
+                {
+                    X_TExporterIndex = i;
+                    break;
+                }
+            }
+
+
+
+            //int exporterCount = TSH.Application.ExporterCount;
+            //string fileType;
+            //string[] fileExtensions;
+
+            //for (ExporterXtId = 0; ExporterXtId < exporterCount; ExporterXtId++)
+            //{
+            //    TSH.Application.GetExporterFileType(ExporterXtId, out fileType, out fileExtensions);
+            //    if (fileType == "Parasolid" && fileExtensions.Contains(".x_t"))
+            //    {
+            //        Console.WriteLine($"Index de l'exportateur pour Parasolid avec extension .x_t: {ExporterXtId}");
+            //        // Vous pouvez également stocker cet index pour l'utiliser plus tard
+            //        break;
+            //    }
+            //}
+        }
+
+
+
+
+
 
 
         void CréaetionParam(ElementId parametrePubliedId, in ElementId ParamSytemElementId, in string NomParamTxt, in DocumentId document)
@@ -620,17 +657,17 @@ namespace Folder_Creator_Tool_V3
 
             if (resulta == DialogResult.Yes)
             {
-                
+
                 TSH.Application.InvokeCommand("TopSolid.Kernel.UI.D3.Shapes.Healing.HealCommand");
                 // Redémarre l'application
                 Environment.Exit(0);
             }
-           
+
 
 
             // Ajout des nœuds cochés à la liste CheckedItems
             try
-            {               
+            {
                 AddCheckedNodesToList(treeView1.Nodes, CheckedItems);
 
                 // Parcours de la liste CheckedItems
@@ -653,11 +690,11 @@ namespace Folder_Creator_Tool_V3
             }
 
             ConstituantFolderNames.Clear();
-            ListFoldersNames.Clear(); 
+            ListFoldersNames.Clear();
 
             bool recommencer;
             recommencer = false; // Réinitialisez recommencer à false à chaque début de boucle
-                                //Récuperation des noms de dossiers
+                                 //Récuperation des noms de dossiers
 
             do
             {
@@ -669,7 +706,7 @@ namespace Folder_Creator_Tool_V3
                 TextBoxIndiceValue = textBox8.Text; //Indice de la piece
                 TextBoxDesignationValue = textBox3.Text; //Designation de la piece
                 TextBoxNomMouleValue = textBox10.Text; //Numero du moule
-                TexteIndiceFolder = "Ind " + TextBoxIndiceValue;
+            TexteIndiceFolder = "Ind " + TextBoxIndiceValue;
                 TexteDossierRep = textBox2.Text + " - " + textBox3.Text; //Nom du dossier repere
 
                 IndiceTxtFormat00 = "Ind" + textBox8.Text;
@@ -684,11 +721,10 @@ namespace Folder_Creator_Tool_V3
 
                 try
                 {
-                    // Récupération des informations du document actuel et activation des modifications
-                    DocumentCourant(out PdmObjectIdCurrentDocumentId, out CurrentDocumentId, out CurrentDocumentIdLastRev);
+                    //Activation des modifications
                     modifActif(CurrentDocumentId);
 
-                    // Récupération à nouveau des informations du document actuel (peut-être redondant)
+                    // Récupération à nouveau des informations du document actuel
                     DocumentCourant(out PdmObjectIdCurrentDocumentId, out CurrentDocumentId, out CurrentDocumentIdLastRev);
 
                     // Mise à jour des valeurs de commentaire et de désignation du document
@@ -769,8 +805,8 @@ namespace Folder_Creator_Tool_V3
                                     VerifDossierIndice(IndiceFolderIds, out FichierExiste);
                                 }
                                 if (FichierExiste)
-                                { 
-                                return;
+                                {
+                                    return;
                                 }
                                 // Si le fichier n'existe pas, crée un nouveau dossier
                                 if (!FichierExiste)
@@ -783,14 +819,14 @@ namespace Folder_Creator_Tool_V3
                                 }
                                 else
                                     return;
-                            } 
+                            }
                             //else 
                             //{
                             //    BesoinDeTousLesDossier = true;
                             //}
 
                         }
-                        
+
                     }
                     if ((!test00 && !test01) || BesoinDeTousLesDossier || aucunDossierProjet)
                     {
@@ -801,11 +837,11 @@ namespace Folder_Creator_Tool_V3
                 }
                 catch (Exception ex)
                 {
-                this.TopMost = false;
-                MessageBox.Show(new Form { TopMost = true }, "erreur" + ex.Message);
+                    this.TopMost = false;
+                    MessageBox.Show(new Form { TopMost = true }, "erreur" + ex.Message);
                 }
-               
-            
+
+
             }
             while (recommencer); // La boucle while recommencera si recommencer est true
 
@@ -873,18 +909,18 @@ namespace Folder_Creator_Tool_V3
                                     );
 
                     TSH.Application.EndModification(true, true);
-            }
-            catch (Exception ex)
-            {
-                this.TopMost = false;
-                // Affichage d'un message d'erreur en cas d'échec de la dérivation
-                MessageBox.Show(new Form { TopMost = true }, "Erreur a l'edition des parametre de derivation" + ex.Message);
-                // Annulation des modifications en cas d'erreur
-                TSH.Application.EndModification(false, false);
-                return;
-            }
+                }
+                catch (Exception ex)
+                {
+                    this.TopMost = false;
+                    // Affichage d'un message d'erreur en cas d'échec de la dérivation
+                    MessageBox.Show(new Form { TopMost = true }, "Erreur a l'edition des parametre de derivation" + ex.Message);
+                    // Annulation des modifications en cas d'erreur
+                    TSH.Application.EndModification(false, false);
+                    return;
+                }
 
-            try
+                try
                 {
                     // Copie des PDF dans le dossier si la liste n'est pas vide
                     if (CheckedItemsliste.Count > 0)
@@ -950,7 +986,7 @@ namespace Folder_Creator_Tool_V3
                 string CommentaireNomParam = "Commentaire";
                 // Création du paramètre de commentaire avec l'identifiant récupéré
                 ElementId PubliedCommentaireSystemeId = new ElementId();
-                CréaetionParam(PubliedCommentaireSystemeId, in CommentaireSystemeId,in CommentaireNomParam, in CurrentDocumentId);
+                CréaetionParam(PubliedCommentaireSystemeId, in CommentaireSystemeId, in CommentaireNomParam, in CurrentDocumentId);
 
                 // Récupération de l'identifiant du paramètre de nom du document
                 ElementId Nom_docu = TSH.Parameters.GetNameParameter(CurrentDocumentId);
@@ -1255,7 +1291,7 @@ namespace Folder_Creator_Tool_V3
                 TSH.Pdm.ShowInProjectTree(PdmObjectIdCurrentDocumentId);
 
                 // Quitte l'application
-                Environment.Exit(0);
+                //Environment.Exit(0);
             }
             catch (Exception ex)
             {
@@ -1267,6 +1303,150 @@ namespace Folder_Creator_Tool_V3
                 TSH.Application.EndModification(false, false);
                 return;
             }
+
+            /////////Export////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            ///
+
+
+            // Initialisation de la variable qui indique si le dossier Atelier existe sur le serveur
+            bool DossierAtelierServeurExiste = false;
+
+            // Initialisation du tableau qui contiendra les chemins des dossiers trouvés
+            string[] directories = new string[0];
+
+            // Initialisation du tableau qui contiendra les chemins des dossiers commençant par DossierRep
+            string[] startDirectories = new string[0];
+
+            // Affichage d'une boîte de dialogue demandant à l'utilisateur s'il souhaite exporter les fichiers
+            DialogResult dialogResult = MessageBox.Show("Souhaitez vous exporter les fichiers dans le dossier Atelier", "Confirmation", MessageBoxButtons.YesNo);
+
+                // Définition du chemin du dossier Atelier sur le serveur
+                string DossierAtelierServeur = @"\\jbtec-be\meca$\atelier";
+
+                // Récupération du nom du dossier à partir de la TextBox
+                string folderName = TextBoxNomMouleValue;
+
+            bool ExporterFichiers = false;
+            string path3D = "";
+            if (dialogResult == DialogResult.Yes)
+            {
+                // Si l'utilisateur choisit "Oui", le code d'exportation des fichiers est exécuté
+
+
+                // Recherche du dossier dans le chemin spécifié
+                directories = System.IO.Directory.GetDirectories(DossierAtelierServeur, folderName, System.IO.SearchOption.AllDirectories);
+
+                if (directories.Length > 0)
+                {
+                    // Si le dossier est trouvé, DossierAtelierServeurExiste est défini sur true
+                    DossierAtelierServeurExiste = true;
+                }
+                else
+                {
+                    // Création du dossier principal
+                    System.IO.Directory.CreateDirectory(DossierAtelierServeur + "\\" + folderName);
+
+                    // Création du dossier repere
+                    System.IO.Directory.CreateDirectory(DossierAtelierServeur + "\\" + folderName + "\\" + TexteDossierRep);
+
+                    // Création du sous-dossier "TexteIndiceFolder"
+                    System.IO.Directory.CreateDirectory(DossierAtelierServeur + "\\" + folderName + "\\" + TexteDossierRep + "\\" + TexteIndiceFolder);
+
+                    // Création du sous-dossier "3D" dans "TexteIndiceFolder"
+                    path3D = DossierAtelierServeur + "\\" + folderName + "\\" + TexteDossierRep + "\\" + TexteIndiceFolder + "\\3D";
+                    System.IO.Directory.CreateDirectory(path3D);
+
+                    // Ouverture du dossier "3D"
+                    System.Diagnostics.Process.Start("explorer.exe", path3D);
+
+                    ExporterFichiers = true;
+                }
+            }
+            else if (dialogResult == DialogResult.No)
+            {
+                // Si l'utilisateur choisit "Non", le programme est terminé
+                Environment.Exit(0);
+            }
+
+
+            bool DossierRepExiste = false;
+            if (DossierAtelierServeurExiste)
+            {
+                // Le dossier a été trouvé
+                string DossierRep = TextBoxCommentaireValue;
+
+                // Recherche du dossier qui commence par DossierRep dans le dossier trouvé précédemment
+                startDirectories = System.IO.Directory.GetDirectories(directories[0], DossierRep + "*", System.IO.SearchOption.AllDirectories);
+
+                if (startDirectories.Length > 0)
+                {
+                    // Si le dossier est trouvé, DossierRepExiste est défini sur true
+                    DossierRepExiste = true;
+                }
+                else
+                {
+                    // Création du sous-dossier "TexteIndiceFolder"
+                    System.IO.Directory.CreateDirectory(DossierAtelierServeur + "\\" + folderName + "\\" + TexteIndiceFolder);
+
+                    // Création du sous-dossier "3D" dans "TexteIndiceFolder"
+                    path3D = DossierAtelierServeur + "\\" + folderName + "\\" + TexteIndiceFolder + "\\3D";
+                    System.IO.Directory.CreateDirectory(path3D);
+
+                    // Ouverture du dossier "3D"
+                    System.Diagnostics.Process.Start("explorer.exe", path3D);
+
+                    ExporterFichiers = false;
+                }
+
+
+
+            }
+
+            bool indiceDirectoriesExiste = false;
+            if (DossierRepExiste)
+            {
+                // Le dossier DossierRep a été trouvé
+                string DossierIndice = TexteIndiceFolder;
+
+                // Recherche du dossier qui a le même nom que DossierIndice dans le dossier DossierRep trouvé précédemment
+                string[] indiceDirectories = System.IO.Directory.GetDirectories(startDirectories[0], DossierIndice, System.IO.SearchOption.AllDirectories);
+
+                if (indiceDirectories.Length > 0)
+                {
+                    // Le dossier avec le nom DossierIndice a été trouvé
+                    MessageBox.Show(this, "Il semble que le dossier existe", "Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    System.Diagnostics.Process.Start(indiceDirectories[0]); // Ouvre le dossier dans l'explorateur de fichiers
+                }
+                else
+                {
+                    // Le dossier avec le nom DossierIndice n'a pas été trouvé
+                    MessageBox.Show(this, $"Aucun dossier avec le nom '{DossierIndice}' n'a été trouvé", "Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+            }
+
+
+            FindParasolidExporterIndex(out int X_TExporterIndex);
+
+            if (ExporterFichiers)
+            {
+                try
+                {
+                    TSH.Documents.Export(X_TExporterIndex, CurrentDocumentId, path3D);
+
+                    Console.WriteLine("Exportation réussie.");
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("Erreur lors de l'exportation : " + ex.Message);
+                }
+            }
+
+
+
+
+
+
+
 
 
         }
