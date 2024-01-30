@@ -169,6 +169,7 @@ namespace Folder_Creator_Tool_V3
 
                 //Creation des dossiers dans le dossier Electrode
 
+                TSH.Pdm.CreateFolder(DossierElectrodeId, "Air projetée");
                 TSH.Pdm.CreateFolder(DossierElectrodeId, "Parallélisée");
                 TSH.Pdm.CreateFolder(DossierElectrodeId, "Plan brut");
                 TSH.Pdm.CreateFolder(DossierElectrodeId, "Usinage");
