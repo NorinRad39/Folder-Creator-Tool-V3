@@ -321,6 +321,114 @@ namespace Folder_Creator_Tool_V3
             parentNode.Nodes.Add(folderNode);
         }
 
+        //Fonction recuperation de l'indice pour valeur par defaut formulaire------------------------------------------------
+
+
+
+        // Fonction principale pour rechercher le dossier contenant le document en cours d'édition
+        // Fonction principale pour rechercher le dossier contenant le document en cours d'édition
+        void ChercherDossierDocumentEnCours(PdmObjectId PdmObjectIdCurrentDocumentId, out string IndiceTxtBox)
+        {
+            IndiceTxtBox = "";
+
+            List<PdmObjectId> dossiers3Ds = new List<PdmObjectId>();
+            PdmObjectId dossiers3D = new PdmObjectId();
+            try
+            {
+                // Recherche du dossier "02-3D" dans le projet courant
+                dossiers3Ds = TSH.Pdm.SearchFolderByName(CurrentProjectPdmId, "02-3D");
+                dossiers3D = dossiers3Ds[0];
+            }
+            catch (Exception ex)
+            {
+                // Affiche un message d'erreur si le dossier "02-3D" n'est pas trouvé
+                MessageBox.Show(new Form { TopMost = true }, "Dossier '02-3D' introuvable : " + ex.Message);
+                return;
+            }
+
+            // Recherche récursive du dossier contenant le document en cours d'édition
+            ChercherDossier(dossiers3D, PdmObjectIdCurrentDocumentId, out IndiceTxtBox);
+        }
+
+        // Fonction récursive pour rechercher le dossier contenant le document en cours d'édition
+        bool ChercherDossier(PdmObjectId dossierActuel, PdmObjectId documentIdRecherche, out string IndiceTxtBox)
+        {
+            IndiceTxtBox = "";
+
+            List<PdmObjectId> sousDossiers = new List<PdmObjectId>();
+            List<PdmObjectId> documents = new List<PdmObjectId>();
+            TSH.Pdm.GetConstituents(dossierActuel, out sousDossiers, out documents);
+
+            // Si le dossier actuel contient le document recherché, vérifie le nom et remonte si nécessaire
+            if (documents.Contains(documentIdRecherche))
+            {
+                string nomDossier = TSH.Pdm.GetName(dossierActuel).ToLower();
+                if (nomDossier.StartsWith("ind "))
+                {
+                    char derniereLettre = nomDossier[nomDossier.Length - 1];
+                    IndiceTxtBox = derniereLettre.ToString().ToUpper();
+                    return true;
+                }
+                else
+                {
+                    // Continue de rechercher dans les dossiers parents de façon récursive
+                    foreach (PdmObjectId sousDossier in sousDossiers)
+                    {
+                        if (RemonterJusquAuDossierInd(sousDossier, out IndiceTxtBox))
+                        {
+                            return true;
+                        }
+                    }
+                }
+            }
+
+            // Recherche récursive dans les sous-dossiers
+            foreach (PdmObjectId sousDossier in sousDossiers)
+            {
+                if (ChercherDossier(sousDossier, documentIdRecherche, out IndiceTxtBox))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        // Fonction récursive pour remonter jusqu'à un dossier qui commence par "Ind"
+        bool RemonterJusquAuDossierInd(PdmObjectId dossierActuel, out string IndiceTxtBox)
+        {
+            IndiceTxtBox = "";
+
+            string nomDossier = TSH.Pdm.GetName(dossierActuel).ToLower();
+            if (nomDossier.StartsWith("ind "))
+            {
+                char derniereLettre = nomDossier[nomDossier.Length - 1];
+                IndiceTxtBox = derniereLettre.ToString().ToUpper();
+                return true;
+            }
+
+            // Continuer à rechercher dans les sous-dossiers de façon récursive
+            List<PdmObjectId> sousDossiers = new List<PdmObjectId>();
+            List<PdmObjectId> documents = new List<PdmObjectId>();
+            TSH.Pdm.GetConstituents(dossierActuel, out sousDossiers, out documents);
+
+            foreach (PdmObjectId sousDossier in sousDossiers)
+            {
+                if (RemonterJusquAuDossierInd(sousDossier, out IndiceTxtBox))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+
+
+
+
+
+
 
 
         //-----------Fonction Récupération ID Document courant----------------------------------------------------------------------------------------------------------------------------
@@ -547,6 +655,20 @@ namespace Folder_Creator_Tool_V3
 
             DocumentCourant(out PdmObjectIdCurrentDocumentId,out CurrentDocumentId, out DocumentId CurrentDocumentIdLastRev);
 
+            // Variable pour stocker la dernière lettre du nom du dossier
+            string IndiceTxtBox = "";
+
+
+           
+
+
+
+                // Appel de la fonction pour chercher le dossier contenant
+                ChercherDossierDocumentEnCours(PdmObjectIdCurrentDocumentId, out IndiceTxtBox);
+
+               
+            
+
             //----------- Récupération du nom du document courant----------------------------------------------------------------------------------------------------------------------------         
             try
             {
@@ -627,9 +749,9 @@ namespace Folder_Creator_Tool_V3
 
             //----------- Variable des differents façon de nommer le dossier indice----------------------------------------------------------------------------------------------------------------------------
 
+           
 
-            textBox8.Text = "A"; //Affichage de l'indice
-
+            textBox8.Text = IndiceTxtBox; //Affichage de l'indice
 
             //Liste PDF--------------------------------
 
