@@ -326,7 +326,6 @@ namespace Folder_Creator_Tool_V3
 
 
         // Fonction principale pour rechercher le dossier contenant le document en cours d'édition
-        // Fonction principale pour rechercher le dossier contenant le document en cours d'édition
         void ChercherDossierDocumentEnCours(PdmObjectId PdmObjectIdCurrentDocumentId, out string IndiceTxtBox)
         {
             IndiceTxtBox = "";
@@ -363,7 +362,7 @@ namespace Folder_Creator_Tool_V3
             if (documents.Contains(documentIdRecherche))
             {
                 string nomDossier = TSH.Pdm.GetName(dossierActuel).ToLower();
-                if (nomDossier.StartsWith("ind "))
+                if (nomDossier.StartsWith("ind"))
                 {
                     char derniereLettre = nomDossier[nomDossier.Length - 1];
                     IndiceTxtBox = derniereLettre.ToString().ToUpper();
@@ -419,8 +418,8 @@ namespace Folder_Creator_Tool_V3
                     return true;
                 }
             }
-
             return false;
+
         }
 
 
@@ -659,12 +658,9 @@ namespace Folder_Creator_Tool_V3
             string IndiceTxtBox = "";
 
 
-           
 
 
 
-                // Appel de la fonction pour chercher le dossier contenant
-                ChercherDossierDocumentEnCours(PdmObjectIdCurrentDocumentId, out IndiceTxtBox);
 
                
             
@@ -710,6 +706,12 @@ namespace Folder_Creator_Tool_V3
                 this.TopMost = false;
                 MessageBox.Show(new Form { TopMost = true }, "Echec de la récupération de l'id du projet courant " + ex.Message);
             }
+           
+            
+            // Appel de la fonction pour chercher le dossier contenant
+            ChercherDossierDocumentEnCours(PdmObjectIdCurrentDocumentId, out IndiceTxtBox);
+
+
 
             //-------------Creation de la variable pour la recherche du dossier atelier-------------------------------------------------------------------------------------------------------------------
 
