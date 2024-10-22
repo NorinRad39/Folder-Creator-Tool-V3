@@ -1432,138 +1432,138 @@ namespace Folder_Creator_Tool_V3
             ///
 
 
-            // Initialisation de la variable qui indique si le dossier Atelier existe sur le serveur
-            bool DossierAtelierServeurExiste = false;
+            //// Initialisation de la variable qui indique si le dossier Atelier existe sur le serveur
+            //bool DossierAtelierServeurExiste = false;
 
-            // Initialisation du tableau qui contiendra les chemins des dossiers trouvés
-            string[] directories = new string[0];
+            //// Initialisation du tableau qui contiendra les chemins des dossiers trouvés
+            //string[] directories = new string[0];
 
-            // Initialisation du tableau qui contiendra les chemins des dossiers commençant par DossierRep
-            string[] startDirectories = new string[0];
+            //// Initialisation du tableau qui contiendra les chemins des dossiers commençant par DossierRep
+            //string[] startDirectories = new string[0];
 
-            // Affichage d'une boîte de dialogue demandant à l'utilisateur s'il souhaite exporter les fichiers
-            DialogResult dialogResult = MessageBox.Show("Souhaitez vous exporter les fichiers dans le dossier Atelier", "Confirmation", MessageBoxButtons.YesNo);
+            //// Affichage d'une boîte de dialogue demandant à l'utilisateur s'il souhaite exporter les fichiers
+            //DialogResult dialogResult = MessageBox.Show("Souhaitez vous exporter les fichiers dans le dossier Atelier", "Confirmation", MessageBoxButtons.YesNo);
 
-                // Définition du chemin du dossier Atelier sur le serveur
-                string DossierAtelierServeur = @"\\jbtec-be\meca$\atelier";
+            //    // Définition du chemin du dossier Atelier sur le serveur
+            //    string DossierAtelierServeur = @"\\jbtec-be\meca$\atelier";
 
-                // Récupération du nom du dossier à partir de la TextBox
-                string folderName = TextBoxNomMouleValue;
+            //    // Récupération du nom du dossier à partir de la TextBox
+            //    string folderName = TextBoxNomMouleValue;
 
-            bool ExporterFichiers = false;
-            string path3D = "";
-            if (dialogResult == DialogResult.Yes)
-            {
-                // Si l'utilisateur choisit "Oui", le code d'exportation des fichiers est exécuté
-
-
-                // Recherche du dossier dans le chemin spécifié
-                directories = System.IO.Directory.GetDirectories(DossierAtelierServeur, folderName, System.IO.SearchOption.AllDirectories);
-
-                if (directories.Length > 0)
-                {
-                    // Si le dossier est trouvé, DossierAtelierServeurExiste est défini sur true
-                    DossierAtelierServeurExiste = true;
-                }
-                else
-                {
-                    // Création du dossier principal
-                    System.IO.Directory.CreateDirectory(DossierAtelierServeur + "\\" + folderName);
-
-                    // Création du dossier repere
-                    System.IO.Directory.CreateDirectory(DossierAtelierServeur + "\\" + folderName + "\\" + TexteDossierRep);
-
-                    // Création du sous-dossier "TexteIndiceFolder"
-                    System.IO.Directory.CreateDirectory(DossierAtelierServeur + "\\" + folderName + "\\" + TexteDossierRep + "\\" + TexteIndiceFolder);
-
-                    // Création du sous-dossier "3D" dans "TexteIndiceFolder"
-                    path3D = DossierAtelierServeur + "\\" + folderName + "\\" + TexteDossierRep + "\\" + TexteIndiceFolder + "\\3D";
-                    System.IO.Directory.CreateDirectory(path3D);
-
-                    // Ouverture du dossier "3D"
-                    System.Diagnostics.Process.Start("explorer.exe", path3D);
-
-                    ExporterFichiers = true;
-                }
-            }
-            else if (dialogResult == DialogResult.No)
-            {
-                // Si l'utilisateur choisit "Non", le programme est terminé
-                Environment.Exit(0);
-            }
+            //bool ExporterFichiers = false;
+            //string path3D = "";
+            //if (dialogResult == DialogResult.Yes)
+            //{
+            //    // Si l'utilisateur choisit "Oui", le code d'exportation des fichiers est exécuté
 
 
-            bool DossierRepExiste = false;
-            if (DossierAtelierServeurExiste)
-            {
-                // Le dossier a été trouvé
-                string DossierRep = TextBoxCommentaireValue;
+            //    // Recherche du dossier dans le chemin spécifié
+            //    directories = System.IO.Directory.GetDirectories(DossierAtelierServeur, folderName, System.IO.SearchOption.AllDirectories);
 
-                // Recherche du dossier qui commence par DossierRep dans le dossier trouvé précédemment
-                startDirectories = System.IO.Directory.GetDirectories(directories[0], DossierRep + "*", System.IO.SearchOption.AllDirectories);
+            //    if (directories.Length > 0)
+            //    {
+            //        // Si le dossier est trouvé, DossierAtelierServeurExiste est défini sur true
+            //        DossierAtelierServeurExiste = true;
+            //    }
+            //    else
+            //    {
+            //        // Création du dossier principal
+            //        System.IO.Directory.CreateDirectory(DossierAtelierServeur + "\\" + folderName);
 
-                if (startDirectories.Length > 0)
-                {
-                    // Si le dossier est trouvé, DossierRepExiste est défini sur true
-                    DossierRepExiste = true;
-                }
-                else
-                {
-                    // Création du sous-dossier "TexteIndiceFolder"
-                    System.IO.Directory.CreateDirectory(DossierAtelierServeur + "\\" + folderName + "\\" + TexteIndiceFolder);
+            //        // Création du dossier repere
+            //        System.IO.Directory.CreateDirectory(DossierAtelierServeur + "\\" + folderName + "\\" + TexteDossierRep);
 
-                    // Création du sous-dossier "3D" dans "TexteIndiceFolder"
-                    path3D = DossierAtelierServeur + "\\" + folderName + "\\" + TexteIndiceFolder + "\\3D";
-                    System.IO.Directory.CreateDirectory(path3D);
+            //        // Création du sous-dossier "TexteIndiceFolder"
+            //        System.IO.Directory.CreateDirectory(DossierAtelierServeur + "\\" + folderName + "\\" + TexteDossierRep + "\\" + TexteIndiceFolder);
 
-                    // Ouverture du dossier "3D"
-                    System.Diagnostics.Process.Start("explorer.exe", path3D);
+            //        // Création du sous-dossier "3D" dans "TexteIndiceFolder"
+            //        path3D = DossierAtelierServeur + "\\" + folderName + "\\" + TexteDossierRep + "\\" + TexteIndiceFolder + "\\3D";
+            //        System.IO.Directory.CreateDirectory(path3D);
 
-                    ExporterFichiers = false;
-                }
+            //        // Ouverture du dossier "3D"
+            //        System.Diagnostics.Process.Start("explorer.exe", path3D);
 
-
-
-            }
-
-            bool indiceDirectoriesExiste = false;
-            if (DossierRepExiste)
-            {
-                // Le dossier DossierRep a été trouvé
-                string DossierIndice = TexteIndiceFolder;
-
-                // Recherche du dossier qui a le même nom que DossierIndice dans le dossier DossierRep trouvé précédemment
-                string[] indiceDirectories = System.IO.Directory.GetDirectories(startDirectories[0], DossierIndice, System.IO.SearchOption.AllDirectories);
-
-                if (indiceDirectories.Length > 0)
-                {
-                    // Le dossier avec le nom DossierIndice a été trouvé
-                    MessageBox.Show(this, "Il semble que le dossier existe", "Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    System.Diagnostics.Process.Start(indiceDirectories[0]); // Ouvre le dossier dans l'explorateur de fichiers
-                }
-                else
-                {
-                    // Le dossier avec le nom DossierIndice n'a pas été trouvé
-                    MessageBox.Show(this, $"Aucun dossier avec le nom '{DossierIndice}' n'a été trouvé", "Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                }
-            }
+            //        ExporterFichiers = true;
+            //    }
+            //}
+            //else if (dialogResult == DialogResult.No)
+            //{
+            //    // Si l'utilisateur choisit "Non", le programme est terminé
+            //    Environment.Exit(0);
+            //}
 
 
-            FindParasolidExporterIndex(out int X_TExporterIndex);
+            //bool DossierRepExiste = false;
+            //if (DossierAtelierServeurExiste)
+            //{
+            //    // Le dossier a été trouvé
+            //    string DossierRep = TextBoxCommentaireValue;
 
-            if (ExporterFichiers)
-            {
-                try
-                {
-                    TSH.Documents.Export(X_TExporterIndex, CurrentDocumentId, path3D);
+            //    // Recherche du dossier qui commence par DossierRep dans le dossier trouvé précédemment
+            //    startDirectories = System.IO.Directory.GetDirectories(directories[0], DossierRep + "*", System.IO.SearchOption.AllDirectories);
 
-                    Console.WriteLine("Exportation réussie.");
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine("Erreur lors de l'exportation : " + ex.Message);
-                }
-            }
+            //    if (startDirectories.Length > 0)
+            //    {
+            //        // Si le dossier est trouvé, DossierRepExiste est défini sur true
+            //        DossierRepExiste = true;
+            //    }
+            //    else
+            //    {
+            //        // Création du sous-dossier "TexteIndiceFolder"
+            //        System.IO.Directory.CreateDirectory(DossierAtelierServeur + "\\" + folderName + "\\" + TexteIndiceFolder);
+
+            //        // Création du sous-dossier "3D" dans "TexteIndiceFolder"
+            //        path3D = DossierAtelierServeur + "\\" + folderName + "\\" + TexteIndiceFolder + "\\3D";
+            //        System.IO.Directory.CreateDirectory(path3D);
+
+            //        // Ouverture du dossier "3D"
+            //        System.Diagnostics.Process.Start("explorer.exe", path3D);
+
+            //        ExporterFichiers = false;
+            //    }
+
+
+
+            //}
+
+            //bool indiceDirectoriesExiste = false;
+            //if (DossierRepExiste)
+            //{
+            //    // Le dossier DossierRep a été trouvé
+            //    string DossierIndice = TexteIndiceFolder;
+
+            //    // Recherche du dossier qui a le même nom que DossierIndice dans le dossier DossierRep trouvé précédemment
+            //    string[] indiceDirectories = System.IO.Directory.GetDirectories(startDirectories[0], DossierIndice, System.IO.SearchOption.AllDirectories);
+
+            //    if (indiceDirectories.Length > 0)
+            //    {
+            //        // Le dossier avec le nom DossierIndice a été trouvé
+            //        MessageBox.Show(this, "Il semble que le dossier existe", "Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            //        System.Diagnostics.Process.Start(indiceDirectories[0]); // Ouvre le dossier dans l'explorateur de fichiers
+            //    }
+            //    else
+            //    {
+            //        // Le dossier avec le nom DossierIndice n'a pas été trouvé
+            //        MessageBox.Show(this, $"Aucun dossier avec le nom '{DossierIndice}' n'a été trouvé", "Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            //    }
+            //}
+
+
+            //FindParasolidExporterIndex(out int X_TExporterIndex);
+
+            //if (ExporterFichiers)
+            //{
+            //    try
+            //    {
+            //        TSH.Documents.Export(X_TExporterIndex, CurrentDocumentId, path3D);
+
+            //        Console.WriteLine("Exportation réussie.");
+            //    }
+            //    catch (Exception ex)
+            //    {
+            //        Console.WriteLine("Erreur lors de l'exportation : " + ex.Message);
+            //    }
+            //}
 
 
 
