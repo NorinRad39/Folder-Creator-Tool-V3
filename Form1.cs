@@ -113,7 +113,6 @@ namespace Folder_Creator_Tool_V3
         PdmObjectId AuteurPdmObjectId = new PdmObjectId();
 
         PdmObjectId DocumentModeleDerivation = new PdmObjectId("19_5af816ad - b4b1 - 402d - 8914 - a4c95a895d88 & 3_6038"); //Recupération du PdmObjectId du document modele de dérivation
-                                                                                                                            //DocumentId DocumentModeleDerivationDocumentId = TSH.Pdm.(DocumentModeleDerivation);
 
         DocumentId DerivéDocumentId = new DocumentId(); //recuperation de l'Id de document du document dérivé
         List<DocumentId> DerivéDocumentIds = new List<DocumentId>(); //recuperation de l'Id de document du document dérivé
@@ -127,8 +126,6 @@ namespace Folder_Creator_Tool_V3
         List<PdmObjectId> DerivéDocumentPdmObjectIds = new List<PdmObjectId>(); //Creation liste du PdmObjectId du document dérivé
 
         PdmObjectId DossierIndiceId = new PdmObjectId(); //Recuperation de l'Id du dossier Indice pour creation du reste des dossiers
-
-        //PdmObjectId dossier3DId; //Recuperation de l'Id du dossier Indice pour creation du reste des dossiers
 
         String nomDocu = "";
         List<PdmObjectId> nomDocuIds = new List<PdmObjectId>();
@@ -567,23 +564,6 @@ namespace Folder_Creator_Tool_V3
                     break;
                 }
             }
-
-
-
-            //int exporterCount = TSH.Application.ExporterCount;
-            //string fileType;
-            //string[] fileExtensions;
-
-            //for (ExporterXtId = 0; ExporterXtId < exporterCount; ExporterXtId++)
-            //{
-            //    TSH.Application.GetExporterFileType(ExporterXtId, out fileType, out fileExtensions);
-            //    if (fileType == "Parasolid" && fileExtensions.Contains(".x_t"))
-            //    {
-            //        Console.WriteLine($"Index de l'exportateur pour Parasolid avec extension .x_t: {ExporterXtId}");
-            //        // Vous pouvez également stocker cet index pour l'utiliser plus tard
-            //        break;
-            //    }
-            //}
         }
 
 
@@ -810,9 +790,6 @@ namespace Folder_Creator_Tool_V3
 
             do
             {
-
-                //DocumentCourant(out PdmObjectIdCurrentDocumentId, out CurrentDocumentId, out DocumentId CurrentDocumentIdLastRev);
-
                 //Recuperation du texte modifié par l'utilisateur pour nommer les dossiers.
                 TextBoxCommentaireValue = textBox2.Text; //Repere de la piece
                 TextBoxIndiceValue = textBox8.Text; //Indice de la piece
@@ -833,9 +810,6 @@ namespace Folder_Creator_Tool_V3
 
                 try
                 {
-                    //// Récupération à nouveau des informations du document actuel
-                    //DocumentCourant(out PdmObjectIdCurrentDocumentId, out CurrentDocumentId, out CurrentDocumentIdLastRev);
-
                     //Activation des modifications
                     modifActif(CurrentDocumentId);
 
@@ -873,8 +847,7 @@ namespace Folder_Creator_Tool_V3
                     bool aucunDossierProjet = true;
                     bool FichierExiste = false;
                     bool BesoinDeTousLesDossier = false;
-                    //int i = 0; // index
-                    if (FolderIds.Count != 0) //
+                    if (FolderIds.Count != 0)
                     {
                         aucunDossierProjet = false;
 
@@ -919,7 +892,6 @@ namespace Folder_Creator_Tool_V3
 
                                     // Récupère les constituants du dossier existant
                                     TSH.Pdm.GetConstituents(DossierExistantId, out IndiceFolderIds, out DocumentsInIndiceFolder);
-                                    //PdmObjectId IndiceFolderId;
 
                                     // Vérifie l'existence du dossier indice
                                     VerifDossierIndice(IndiceFolderIds, out FichierExiste);
@@ -931,7 +903,6 @@ namespace Folder_Creator_Tool_V3
                                 // Si le fichier n'existe pas, crée un nouveau dossier
                                 if (!FichierExiste)
                                 {
-                                    //DossierRepId = TSH.Pdm.CreateFolder(AtelierFolderId, TexteDossierRep);
                                     DossierIndiceId = TSH.Pdm.CreateFolder(DossierExistantId, TexteIndiceFolder);
                                     dossier3DGenereId = creationAutreDossiers(DossierIndiceId);
                                     DossierRepId = DossierExistantId;
@@ -940,10 +911,6 @@ namespace Folder_Creator_Tool_V3
                                 else
                                     return;
                             }
-                            //else 
-                            //{
-                            //    BesoinDeTousLesDossier = true;
-                            //}
 
                         }
 
@@ -1003,12 +970,6 @@ namespace Folder_Creator_Tool_V3
                     //DocumentCourant(out PdmObjectIdCurrentDocumentId, out CurrentDocumentId, out CurrentDocumentIdLastRev);
                     modifActif(CurrentDocumentId);
                     
-                    ////Modification tolerance de visualisation
-                    //double TolLinear = 0.00001;
-                    //double TolAngular = 0.08726646259971647;
-
-                    //TSH.Options.SetVisualizationTolerances(DerivéDocumentId, TolLinear, TolAngular);
-
                     DocumentCourant(out PdmObjectIdCurrentDocumentId, out CurrentDocumentId, out CurrentDocumentIdLastRev);
                     List<ElementId> OtherSystemParameters = new List<ElementId>();
                     TopSolidDesignHost.Tools.SetDerivationInheritances(
@@ -1404,23 +1365,10 @@ namespace Folder_Creator_Tool_V3
 
                 // Récupère les identifiants du document actuel
                 DocumentCourant(out PdmObjectIdCurrentDocumentId, out CurrentDocumentId, out CurrentDocumentIdLastRev);
-                bool Updatenecessaire = TSH.Pdm.NeedsUpdating(PdmObjectIdCurrentDocumentId);
-                if (Updatenecessaire)
-                {
-                    TSH.Documents.Update(CurrentDocumentIdLastRev, true);
-                }
                 
-                //Mise a jour du document courent
-                TSH.Documents.Update(CurrentDocumentIdLastRev, true);
-
                 // Termine la modification avec succès
                 TSH.Application.EndModification(true, true);
                 PdmMinorRevisionId minorRevisionId = TSH.Pdm.GetFinalMinorRevision(PdmObjectIdCurrentDocumentId);
-
-                // Met à jour les références du document
-                TSH.Pdm.UpdateDocumentReferences(minorRevisionId);
-
-                TSH.Documents.EditedDocument = CurrentDocumentIdLastRev;
 
                 TSH.Documents.Open(ref CurrentDocumentIdLastRev);
 
@@ -1432,8 +1380,6 @@ namespace Folder_Creator_Tool_V3
 
                 // Définit l'état du cycle de vie du document sur "Validé"
                 TSH.Pdm.SetLifeCycleMainState(PdmObjectIdCurrentDocumentId, PdmLifeCycleMainState.Validated);
-
-                
 
                 // Quitte l'application
                 Environment.Exit(0);
