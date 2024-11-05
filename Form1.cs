@@ -833,11 +833,19 @@ namespace Folder_Creator_Tool_V3
 
                 try
                 {
+                    //// Récupération à nouveau des informations du document actuel
+                    //DocumentCourant(out PdmObjectIdCurrentDocumentId, out CurrentDocumentId, out CurrentDocumentIdLastRev);
+
                     //Activation des modifications
                     modifActif(CurrentDocumentId);
 
                     // Récupération à nouveau des informations du document actuel
-                    DocumentCourant(out PdmObjectIdCurrentDocumentId, out CurrentDocumentIdLastRev, out CurrentDocumentIdLastRev);
+                    DocumentCourant(out PdmObjectIdCurrentDocumentId, out CurrentDocumentId, out CurrentDocumentIdLastRev);
+
+                    //------------- Récupération du commentaire (Repère) du document courant----------------------------------------------------------------------------------------------------------------------------
+
+                    RecupCommentaire(in CurrentDocumentId, out CurrentDocumentCommentaireId, out TextCurrentDocumentCommentaire);
+
 
                     // Mise à jour des valeurs de commentaire et de désignation du document
                     TSH.Parameters.SetTextValue(CurrentDocumentCommentaireId, TextBoxCommentaireValue);
@@ -964,13 +972,12 @@ namespace Folder_Creator_Tool_V3
                     // Récupération de l'ID du propriétaire du document actuel
                     AuteurPdmObjectId = TSH.Pdm.GetOwner(PdmObjectIdCurrentDocumentId);
                     // Création d'un document dérivé et récupération de son ID
-                    DerivéDocumentId = TopSolidDesignHost.Tools.CreateDerivedDocument(AuteurPdmObjectId, CurrentDocumentIdLastRev, false);
+                    DerivéDocumentId = TopSolidDesignHost.Tools.CreateDerivedDocument(AuteurPdmObjectId, CurrentDocumentId, false);
 
                     // Récupération de l'ID Pdm du document dérivé
                     DerivéDocumentPdmObjectId = TSH.Documents.GetPdmObject(DerivéDocumentId);
                     // Ajout de l'ID Pdm du document dérivé à la liste
                     DerivéDocumentPdmObjectIds.Add(DerivéDocumentPdmObjectId);
-
 
                     // Sauvegarde du document actuel
                     TSH.Documents.Save(CurrentDocumentId);
@@ -980,8 +987,6 @@ namespace Folder_Creator_Tool_V3
                     TSH.Documents.Open(ref DerivéDocumentId);
                     PdmObjectId DerivéDocumentPdmId = TSH.Documents.GetPdmObject(DerivéDocumentId);
 
-                    // Récupération à nouveau des informations du document actuel
-                    //DocumentCourant(out PdmObjectIdCurrentDocumentId, out CurrentDocumentId, out CurrentDocumentIdLastRev);
 
                 }
                 catch (Exception ex)
@@ -996,13 +1001,14 @@ namespace Folder_Creator_Tool_V3
                 {
 
                     //DocumentCourant(out PdmObjectIdCurrentDocumentId, out CurrentDocumentId, out CurrentDocumentIdLastRev);
-                    modifActif(DerivéDocumentId);
+                    modifActif(CurrentDocumentId);
                     
-                    //Modification tolerance de visualisation
-                    double TolLinear = 0.00001;
-                    double TolAngular = 0.08726646259971647;
+                    ////Modification tolerance de visualisation
+                    //double TolLinear = 0.00001;
+                    //double TolAngular = 0.08726646259971647;
 
-                    TSH.Options.SetVisualizationTolerances(DerivéDocumentId, TolLinear, TolAngular);
+                    //TSH.Options.SetVisualizationTolerances(DerivéDocumentId, TolLinear, TolAngular);
+
                     DocumentCourant(out PdmObjectIdCurrentDocumentId, out CurrentDocumentId, out CurrentDocumentIdLastRev);
                     List<ElementId> OtherSystemParameters = new List<ElementId>();
                     TopSolidDesignHost.Tools.SetDerivationInheritances(
@@ -1389,25 +1395,37 @@ namespace Folder_Creator_Tool_V3
 
             try
             {
+                // Affiche le document dans l'arborescence du projet TopSolid
+                TSH.Pdm.ShowInProjectTree(PdmObjectIdCurrentDocumentId);
+
                 // Active la modification du document actuel
                 modifActif(CurrentDocumentId);
+               
 
                 // Récupère les identifiants du document actuel
                 DocumentCourant(out PdmObjectIdCurrentDocumentId, out CurrentDocumentId, out CurrentDocumentIdLastRev);
                 bool Updatenecessaire = TSH.Pdm.NeedsUpdating(PdmObjectIdCurrentDocumentId);
                 if (Updatenecessaire)
                 {
-                    TSH.Documents.Update(CurrentDocumentId, true);
+                    TSH.Documents.Update(CurrentDocumentIdLastRev, true);
                 }
+                
+                //Mise a jour du document courent
+                TSH.Documents.Update(CurrentDocumentIdLastRev, true);
+
                 // Termine la modification avec succès
                 TSH.Application.EndModification(true, true);
                 PdmMinorRevisionId minorRevisionId = TSH.Pdm.GetFinalMinorRevision(PdmObjectIdCurrentDocumentId);
 
-                // Sauvegarde du document actuel
-                TSH.Documents.Save(CurrentDocumentId);
-
                 // Met à jour les références du document
                 TSH.Pdm.UpdateDocumentReferences(minorRevisionId);
+
+                TSH.Documents.EditedDocument = CurrentDocumentIdLastRev;
+
+                TSH.Documents.Open(ref CurrentDocumentIdLastRev);
+
+                // Sauvegarde du document actuel
+                TSH.Documents.Save(CurrentDocumentIdLastRev);
 
                 // Enregistre le document dans le dossier de stockage
                 TSH.Pdm.CheckIn(DossierRepId, true);
@@ -1415,8 +1433,7 @@ namespace Folder_Creator_Tool_V3
                 // Définit l'état du cycle de vie du document sur "Validé"
                 TSH.Pdm.SetLifeCycleMainState(PdmObjectIdCurrentDocumentId, PdmLifeCycleMainState.Validated);
 
-                // Affiche le document dans l'arborescence du projet TopSolid
-                TSH.Pdm.ShowInProjectTree(PdmObjectIdCurrentDocumentId);
+                
 
                 // Quitte l'application
                 Environment.Exit(0);
