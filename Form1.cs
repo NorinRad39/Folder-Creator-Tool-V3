@@ -166,7 +166,7 @@ namespace Folder_Creator_Tool_V3
                 TSH.Pdm.CreateFolder(DossierFraisageId, "BEHE");
                 TSH.Pdm.CreateFolder(DossierFraisageId, "FLFA");
                 TSH.Pdm.CreateFolder(DossierFraisageId, "SETE");
-                TSH.Pdm.CreateFolder(DossierFraisageId, "THHE");
+                
 
                 //Creation des dossiers dans le dossier Electrode
 
@@ -323,34 +323,36 @@ namespace Folder_Creator_Tool_V3
 
         //Fonction recuperation de l'indice pour valeur par defaut formulaire------------------------------------------------
 
-
-
-        // Fonction principale pour rechercher le dossier contenant le document en cours d'édition
         void ChercherDossierDocumentEnCours(PdmObjectId PdmObjectIdCurrentDocumentId, out string IndiceTxtBox)
         {
             IndiceTxtBox = "";
 
             List<PdmObjectId> dossiers3Ds = new List<PdmObjectId>();
-            PdmObjectId dossiers3D = new PdmObjectId();
             try
             {
                 // Recherche du dossier "02-3D" dans le projet courant
                 dossiers3Ds = TSH.Pdm.SearchFolderByName(CurrentProjectPdmId, "02-3D");
-                dossiers3D = dossiers3Ds[0];
+                if (dossiers3Ds.Count > 0)
+                {
+                    Dictionary<PdmObjectId, PdmObjectId> parentMapping = new Dictionary<PdmObjectId, PdmObjectId>();
+                    if (ChercherDossierAvecParentMapping(dossiers3Ds[0], PdmObjectIdCurrentDocumentId, out IndiceTxtBox, parentMapping))
+                    {
+                        return;
+                    }
+                }
+                else
+                {
+                    throw new Exception("Aucun dossier '02-3D' trouvé.");
+                }
             }
             catch (Exception ex)
             {
-                // Affiche un message d'erreur si le dossier "02-3D" n'est pas trouvé
-                MessageBox.Show(new Form { TopMost = true }, "Dossier '02-3D' introuvable : " + ex.Message);
-                return;
+                MessageBox.Show(new Form { TopMost = true }, "Erreur : " + ex.Message);
             }
-
-            // Recherche récursive du dossier contenant le document en cours d'édition
-            ChercherDossier(dossiers3D, PdmObjectIdCurrentDocumentId, out IndiceTxtBox);
         }
 
-        // Fonction récursive pour rechercher le dossier contenant le document en cours d'édition
-        bool ChercherDossier(PdmObjectId dossierActuel, PdmObjectId documentIdRecherche, out string IndiceTxtBox)
+        // Fonction récursive pour rechercher le dossier et construire la map des parents
+        bool ChercherDossierAvecParentMapping(PdmObjectId dossierActuel, PdmObjectId documentIdRecherche, out string IndiceTxtBox, Dictionary<PdmObjectId, PdmObjectId> parentMapping)
         {
             IndiceTxtBox = "";
 
@@ -358,33 +360,23 @@ namespace Folder_Creator_Tool_V3
             List<PdmObjectId> documents = new List<PdmObjectId>();
             TSH.Pdm.GetConstituents(dossierActuel, out sousDossiers, out documents);
 
-            // Si le dossier actuel contient le document recherché, vérifie le nom et remonte si nécessaire
+            // Mappe les sous-dossiers à leur parent actuel
+            foreach (PdmObjectId sousDossier in sousDossiers)
+            {
+                parentMapping[sousDossier] = dossierActuel;
+            }
+
+            // Si le document est trouvé
             if (documents.Contains(documentIdRecherche))
             {
-                string nomDossier = TSH.Pdm.GetName(dossierActuel).ToLower();
-                if (nomDossier.StartsWith("ind"))
-                {
-                    char derniereLettre = nomDossier[nomDossier.Length - 1];
-                    IndiceTxtBox = derniereLettre.ToString().ToUpper();
-                    return true;
-                }
-                else
-                {
-                    // Continue de rechercher dans les dossiers parents de façon récursive
-                    foreach (PdmObjectId sousDossier in sousDossiers)
-                    {
-                        if (RemonterJusquAuDossierInd(sousDossier, out IndiceTxtBox))
-                        {
-                            return true;
-                        }
-                    }
-                }
+                // Remonte jusqu'au dossier commençant par "ind"
+                return RemonterJusquAuDossierInd(dossierActuel, out IndiceTxtBox, parentMapping);
             }
 
             // Recherche récursive dans les sous-dossiers
             foreach (PdmObjectId sousDossier in sousDossiers)
             {
-                if (ChercherDossier(sousDossier, documentIdRecherche, out IndiceTxtBox))
+                if (ChercherDossierAvecParentMapping(sousDossier, documentIdRecherche, out IndiceTxtBox, parentMapping))
                 {
                     return true;
                 }
@@ -393,34 +385,30 @@ namespace Folder_Creator_Tool_V3
             return false;
         }
 
-        // Fonction récursive pour remonter jusqu'à un dossier qui commence par "Ind"
-        bool RemonterJusquAuDossierInd(PdmObjectId dossierActuel, out string IndiceTxtBox)
+        // Fonction récursive pour remonter jusqu'à un dossier qui commence par "ind"
+        bool RemonterJusquAuDossierInd(PdmObjectId dossierActuel, out string IndiceTxtBox, Dictionary<PdmObjectId, PdmObjectId> parentMapping)
         {
             IndiceTxtBox = "";
 
+            // Vérifie le nom du dossier actuel
             string nomDossier = TSH.Pdm.GetName(dossierActuel).ToLower();
-            if (nomDossier.StartsWith("ind "))
+            if (nomDossier.StartsWith("ind"))
             {
                 char derniereLettre = nomDossier[nomDossier.Length - 1];
                 IndiceTxtBox = derniereLettre.ToString().ToUpper();
                 return true;
             }
 
-            // Continuer à rechercher dans les sous-dossiers de façon récursive
-            List<PdmObjectId> sousDossiers = new List<PdmObjectId>();
-            List<PdmObjectId> documents = new List<PdmObjectId>();
-            TSH.Pdm.GetConstituents(dossierActuel, out sousDossiers, out documents);
-
-            foreach (PdmObjectId sousDossier in sousDossiers)
+            // Vérifie si le parent existe et continue à remonter
+            if (parentMapping.ContainsKey(dossierActuel))
             {
-                if (RemonterJusquAuDossierInd(sousDossier, out IndiceTxtBox))
-                {
-                    return true;
-                }
+                return RemonterJusquAuDossierInd(parentMapping[dossierActuel], out IndiceTxtBox, parentMapping);
             }
-            return false;
 
+            return false;
         }
+
+
 
 
 
@@ -849,7 +837,7 @@ namespace Folder_Creator_Tool_V3
                     modifActif(CurrentDocumentId);
 
                     // Récupération à nouveau des informations du document actuel
-                    DocumentCourant(out PdmObjectIdCurrentDocumentId, out CurrentDocumentId, out CurrentDocumentIdLastRev);
+                    DocumentCourant(out PdmObjectIdCurrentDocumentId, out CurrentDocumentIdLastRev, out CurrentDocumentIdLastRev);
 
                     // Mise à jour des valeurs de commentaire et de désignation du document
                     TSH.Parameters.SetTextValue(CurrentDocumentCommentaireId, TextBoxCommentaireValue);
@@ -976,12 +964,13 @@ namespace Folder_Creator_Tool_V3
                     // Récupération de l'ID du propriétaire du document actuel
                     AuteurPdmObjectId = TSH.Pdm.GetOwner(PdmObjectIdCurrentDocumentId);
                     // Création d'un document dérivé et récupération de son ID
-                    DerivéDocumentId = TopSolidDesignHost.Tools.CreateDerivedDocument(AuteurPdmObjectId, CurrentDocumentId, false);
+                    DerivéDocumentId = TopSolidDesignHost.Tools.CreateDerivedDocument(AuteurPdmObjectId, CurrentDocumentIdLastRev, false);
 
                     // Récupération de l'ID Pdm du document dérivé
                     DerivéDocumentPdmObjectId = TSH.Documents.GetPdmObject(DerivéDocumentId);
                     // Ajout de l'ID Pdm du document dérivé à la liste
                     DerivéDocumentPdmObjectIds.Add(DerivéDocumentPdmObjectId);
+
 
                     // Sauvegarde du document actuel
                     TSH.Documents.Save(CurrentDocumentId);
@@ -990,6 +979,10 @@ namespace Folder_Creator_Tool_V3
                     // Ouverture du document dérivé
                     TSH.Documents.Open(ref DerivéDocumentId);
                     PdmObjectId DerivéDocumentPdmId = TSH.Documents.GetPdmObject(DerivéDocumentId);
+
+                    // Récupération à nouveau des informations du document actuel
+                    //DocumentCourant(out PdmObjectIdCurrentDocumentId, out CurrentDocumentId, out CurrentDocumentIdLastRev);
+
                 }
                 catch (Exception ex)
                 {
@@ -1001,8 +994,15 @@ namespace Folder_Creator_Tool_V3
 
                 try
                 {
+
                     //DocumentCourant(out PdmObjectIdCurrentDocumentId, out CurrentDocumentId, out CurrentDocumentIdLastRev);
-                    modifActif(CurrentDocumentId);
+                    modifActif(DerivéDocumentId);
+                    
+                    //Modification tolerance de visualisation
+                    double TolLinear = 0.00001;
+                    double TolAngular = 0.08726646259971647;
+
+                    TSH.Options.SetVisualizationTolerances(DerivéDocumentId, TolLinear, TolAngular);
                     DocumentCourant(out PdmObjectIdCurrentDocumentId, out CurrentDocumentId, out CurrentDocumentIdLastRev);
                     List<ElementId> OtherSystemParameters = new List<ElementId>();
                     TopSolidDesignHost.Tools.SetDerivationInheritances(
@@ -1118,8 +1118,12 @@ namespace Folder_Creator_Tool_V3
                 string NomDocuNomParam = "Nom_docu";
                 // Création du paramètre de nom du document avec l'identifiant récupéré
                 ElementId PubliedNom_docu = new ElementId();
+                
+                //Modifiction tolérence de visualisation
                 CréaetionParam(PubliedNom_docu, in Nom_docu, in NomDocuNomParam, in CurrentDocumentId);
-
+                double LinearTol=0.00001;
+                double AngularTol = 0.08726646259971647;
+                TSH.Options.SetVisualizationTolerances(CurrentDocumentIdLastRev, LinearTol, AngularTol);
 
                 // Fin des modifications avec sauvegarde des changements
                 TSH.Application.EndModification(true, true);
@@ -1415,7 +1419,7 @@ namespace Folder_Creator_Tool_V3
                 TSH.Pdm.ShowInProjectTree(PdmObjectIdCurrentDocumentId);
 
                 // Quitte l'application
-                //Environment.Exit(0);
+                Environment.Exit(0);
             }
             catch (Exception ex)
             {
