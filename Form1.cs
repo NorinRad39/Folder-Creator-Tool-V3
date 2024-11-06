@@ -820,6 +820,22 @@ namespace Folder_Creator_Tool_V3
 
                     RecupCommentaire(in CurrentDocumentId, out CurrentDocumentCommentaireId, out TextCurrentDocumentCommentaire);
 
+                    //----------- Récupération de la désignation du document courant----------------------------------------------------------------------------------------------------------------------------
+                    try
+                    {
+                        CurrentDocumentDesignationId = TSH.Parameters.GetDescriptionParameter(CurrentDocumentId);   // Récupération de la désignation
+                        TextCurrentDocumentDesignation = TSH.Parameters.GetTextLocalizedValue(CurrentDocumentDesignationId);
+
+                        textBox3.Text = TextCurrentDocumentDesignation; //Affichage du commentaire (Repère) dans la case texte
+
+
+                    }
+                    catch (Exception ex)
+                    {
+                        this.TopMost = false;
+                        MessageBox.Show(new Form { TopMost = true }, "Echec de la récupération du Commentaire " + ex.Message);
+                    }
+
 
                     // Mise à jour des valeurs de commentaire et de désignation du document
                     TSH.Parameters.SetTextValue(CurrentDocumentCommentaireId, TextBoxCommentaireValue);
