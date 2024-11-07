@@ -817,8 +817,9 @@ namespace Folder_Creator_Tool_V3
                     DocumentCourant(out PdmObjectIdCurrentDocumentId, out CurrentDocumentId, out CurrentDocumentIdLastRev);
 
                     //------------- Récupération du commentaire (Repère) du document courant----------------------------------------------------------------------------------------------------------------------------
-
-                    RecupCommentaire(in CurrentDocumentId, out CurrentDocumentCommentaireId, out TextCurrentDocumentCommentaire);
+                    CurrentDocumentCommentaireId = TSH.Parameters.GetCommentParameter(CurrentDocumentId);   // Récupération du commentaire (Repère)
+                    TextCurrentDocumentCommentaire = TSH.Parameters.GetTextLocalizedValue(CurrentDocumentCommentaireId);
+                    //RecupCommentaire(in CurrentDocumentId, out CurrentDocumentCommentaireId, out TextCurrentDocumentCommentaire);
 
                     //----------- Récupération de la désignation du document courant----------------------------------------------------------------------------------------------------------------------------
                     try
