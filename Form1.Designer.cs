@@ -55,10 +55,12 @@ namespace Folder_Creator_Tool_V3
             this.folderBrowserDialog1 = new System.Windows.Forms.FolderBrowserDialog();
             this.button3 = new System.Windows.Forms.Button();
             this.textBox4 = new System.Windows.Forms.TextBox();
+            this.groupBox4 = new System.Windows.Forms.GroupBox();
             this.menuStrip1.SuspendLayout();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.groupBox3.SuspendLayout();
+            this.groupBox4.SuspendLayout();
             this.SuspendLayout();
             // 
             // textBox1
@@ -258,9 +260,9 @@ namespace Folder_Creator_Tool_V3
             // 
             // button3
             // 
-            this.button3.Location = new System.Drawing.Point(330, 684);
+            this.button3.Location = new System.Drawing.Point(331, 19);
             this.button3.Name = "button3";
-            this.button3.Size = new System.Drawing.Size(83, 23);
+            this.button3.Size = new System.Drawing.Size(63, 23);
             this.button3.TabIndex = 29;
             this.button3.Text = "Parcourir";
             this.button3.UseVisualStyleBackColor = true;
@@ -269,20 +271,30 @@ namespace Folder_Creator_Tool_V3
             // textBox4
             // 
             this.textBox4.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.textBox4.Location = new System.Drawing.Point(13, 685);
+            this.textBox4.Location = new System.Drawing.Point(6, 19);
             this.textBox4.Name = "textBox4";
-            this.textBox4.Size = new System.Drawing.Size(311, 20);
+            this.textBox4.Size = new System.Drawing.Size(320, 20);
             this.textBox4.TabIndex = 30;
             this.textBox4.Text = "Chemin du dossier atelier";
+            // 
+            // groupBox4
+            // 
+            this.groupBox4.Controls.Add(this.textBox4);
+            this.groupBox4.Controls.Add(this.button3);
+            this.groupBox4.Location = new System.Drawing.Point(13, 684);
+            this.groupBox4.Name = "groupBox4";
+            this.groupBox4.Size = new System.Drawing.Size(400, 49);
+            this.groupBox4.TabIndex = 31;
+            this.groupBox4.TabStop = false;
+            this.groupBox4.Text = "Dossier export";
             // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.AutoSize = true;
-            this.ClientSize = new System.Drawing.Size(425, 717);
-            this.Controls.Add(this.textBox4);
-            this.Controls.Add(this.button3);
+            this.ClientSize = new System.Drawing.Size(425, 742);
+            this.Controls.Add(this.groupBox4);
             this.Controls.Add(this.groupBox2);
             this.Controls.Add(this.button1);
             this.Controls.Add(this.menuStrip1);
@@ -299,6 +311,8 @@ namespace Folder_Creator_Tool_V3
             this.groupBox2.ResumeLayout(false);
             this.groupBox2.PerformLayout();
             this.groupBox3.ResumeLayout(false);
+            this.groupBox4.ResumeLayout(false);
+            this.groupBox4.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -345,6 +359,7 @@ namespace Folder_Creator_Tool_V3
         private System.Windows.Forms.FolderBrowserDialog folderBrowserDialog1;
         private System.Windows.Forms.Button button3;
         private System.Windows.Forms.TextBox textBox4;
+        private System.Windows.Forms.GroupBox groupBox4;
     }
 }
 
