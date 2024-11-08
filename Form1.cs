@@ -588,7 +588,7 @@ namespace Folder_Creator_Tool_V3
             string parametreValueTxt = TSH.Parameters.GetTextValue(ParamSytemElementId);
 
             // Crée un objet SmartText avec la valeur récupérée
-            SmartText parametreValueSmartTxt = new SmartText(parametreValueTxt);
+            SmartText parametreValueSmartTxt = new SmartText(ParamSytemElementId);
 
             // Publie le paramètre texte dans le document spécifié avec le nom et la valeur fournis
             parametrePubliedId = TSH.Parameters.PublishText(document, NomParamTxt, parametreValueSmartTxt);
@@ -1095,13 +1095,14 @@ namespace Folder_Creator_Tool_V3
                         string Indice3DNomParamTxt = "Indice 3D";
                         // Définit une chaîne de caractères pour le nom du paramètre texte.
 
-                        SmartText Indice3DNomParam = new SmartText(TextBoxIndiceValue);
-                        // Crée un objet SmartText à partir de la valeur contenue dans 'TextBoxIndiceValue'.
-
                         ElementId Indice3DNomParamId = TSH.Parameters.CreateTextParameter(CurrentDocumentId, TextBoxIndiceValue);
                         // Crée un paramètre texte dans le document actuel avec la valeur spécifiée et stocke son identifiant.
 
+                        SmartText Indice3DNomParam = new SmartText(Indice3DNomParamId);
+                        
+                        // Crée un objet SmartText à partir de la valeur contenue dans 'TextBoxIndiceValue'.
                         TSH.Elements.SetName(Indice3DNomParamId, Indice3DNomParamTxt);
+                        
                         // Attribue un nom au paramètre texte créé précédemment.
 
                         ElementId publishedIndice3DNomParamId = TSH.Parameters.PublishText(CurrentDocumentId, Indice3DNomParamTxt, Indice3DNomParam);
