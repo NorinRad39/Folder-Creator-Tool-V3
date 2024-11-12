@@ -1693,15 +1693,23 @@ namespace Folder_Creator_Tool_V3
                 if (folderBrowserDialog.ShowDialog() == DialogResult.OK)
                 {
                     string selectedPath = folderBrowserDialog.SelectedPath;
-                    textBox4.Text = selectedPath;
+                    string fullPath = Path.GetFullPath(selectedPath);
+
+                    // Obtenir la lettre de lecteur réseau
+                    string driveLetter = Path.GetPathRoot(selectedPath).TrimEnd('\\');
+
+                    // Combiner le chemin complet avec la lettre de lecteur
+                    string displayPath = $"{driveLetter} ({fullPath})";
+                    textBox4.Text = displayPath;
 
                     // Sauvegarder le chemin dans les paramètres de l'application
-                    Properties.Settings.Default.FolderPath = selectedPath;
+                    Properties.Settings.Default.FolderPath = displayPath;
                     Properties.Settings.Default.Save();
                 }
             }
         }
 
-       
+
+
     }
 }
