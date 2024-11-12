@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq.Expressions;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using TopSolid.Cad.Design.Automating;
@@ -426,7 +427,7 @@ namespace Folder_Creator_Tool_V3
             {
                 this.TopMost = false;
                 MessageBox.Show(new Form { TopMost = true }, "Echec de la récupération de l'id du document courant. Ouvrez un document puis réessayez  " + ex.Message);
-                Environment.Exit(0);
+                Application.Exit();
                 //return;
 
             }
@@ -541,24 +542,27 @@ namespace Folder_Creator_Tool_V3
             // Retour de la valeur de FichierExiste après la fin de la boucle
             
         }
-
-        private void FindParasolidExporterIndex(out int X_TExporterIndex)
-        {
-            //search the Parasolid exporter index
-
-            X_TExporterIndex = -1;
-            for (int i = 0; i < TopSolidHost.Application.ExporterCount; i++)
+        
+            private void FindParasolidExporterIndex(out int X_TExporterIndex)
             {
-                TopSolidHost.Application.GetExporterFileType(i, out string fileTypeName, out string[] outFileExtensions);
-                if (fileTypeName != "Parasolid") { continue; }
+                //search the Parasolid exporter index
 
-                else
+                X_TExporterIndex = -1;
+                for (int i = 0; i < TopSolidHost.Application.ExporterCount; i++)
                 {
-                    X_TExporterIndex = i;
-                    break;
+                    TopSolidHost.Application.GetExporterFileType(i, out string fileTypeName, out string[] outFileExtensions);
+                    if (fileTypeName != "Parasolid") { continue; }
+
+                    else
+                    {
+                        X_TExporterIndex = i;
+                        break;
+                    }
                 }
             }
-        }
+
+
+
 
         private void FindNoConvertExporterIndex(out int NoConvertExporterIndex)
         {
@@ -781,8 +785,8 @@ namespace Folder_Creator_Tool_V3
                     {
 
                         TSH.Application.InvokeCommand("TopSolid.Kernel.UI.D3.Shapes.Healing.HealCommand");
-                        // Redémarre l'application
-                        Environment.Exit(0);
+                    // Redémarre l'application
+                    Application.Exit();
                     }
 
 
@@ -1487,6 +1491,7 @@ namespace Folder_Creator_Tool_V3
                             }
                             else
                             {
+                                //Si non si aucun dossier existe
                                 // Création du dossier principal
                                 System.IO.Directory.CreateDirectory(DossierAtelierServeur + "\\" + folderName);
 
@@ -1508,9 +1513,9 @@ namespace Folder_Creator_Tool_V3
                         }
                         else if (dialogResult == DialogResult.No)
                         {
-                            // Si l'utilisateur choisit "Non", le programme est terminé
-                            Environment.Exit(0);
-                        }
+                        // Si l'utilisateur choisit "Non", le programme est terminé
+                        Application.Exit();
+                    }
                     }
                     catch (Exception ex)
                     {
@@ -1539,6 +1544,7 @@ namespace Folder_Creator_Tool_V3
                         }
                         else
                         {
+                            //Si non si dossier moule existe mais pas dossier rep
                             // Création du sous-dossier "TexteIndiceFolder"
                             System.IO.Directory.CreateDirectory(DossierAtelierServeur + "\\" + folderName + "\\" + DossierRep + "\\" + TexteIndiceFolder);
 
@@ -1550,7 +1556,7 @@ namespace Folder_Creator_Tool_V3
                             // Ouverture du dossier "3D"
                             System.Diagnostics.Process.Start("explorer.exe", path3D);
 
-                            ExporterFichiers = false;
+                            ExporterFichiers = true;
                         }
                     }
                     string nomDocument = TSH.Documents.GetName(CurrentDocumentId);
@@ -1568,12 +1574,14 @@ namespace Folder_Creator_Tool_V3
                         if (indiceDirectories.Length > 0)
                         {
                             // Le dossier avec le nom DossierIndice a été trouvé
+                            //Tous les dossiers existe
                             MessageBox.Show(this, "Il semble que le dossier existe", "Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
                             System.Diagnostics.Process.Start(indiceDirectories[0]); // Ouvre le dossier dans l'explorateur de fichiers
                             Application.Exit();
                         }
                         else
                         {
+                            //Si non si dossier moule et le dossier rep existe mais pas le dossier ind
                             // Le dossier avec le nom DossierIndice n'a pas été trouvé
                             MessageBox.Show(this, $"Aucun dossier avec le nom '{DossierIndice}' n'a été trouvé", "Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
@@ -1626,6 +1634,8 @@ namespace Folder_Creator_Tool_V3
                                     TSH.Pdm.ExportMinorRevisionFile(PDFRev, cheminCompletPDF);
 
 
+
+
                                 }
                                 catch (Exception ex)
                                 {
@@ -1669,7 +1679,7 @@ namespace Folder_Creator_Tool_V3
         private void quitterToolStripMenuItem_Click(object sender, EventArgs e)
         {
             // Ferme l'application
-            Environment.Exit(0);
+            Application.Exit();
             
         }
 
