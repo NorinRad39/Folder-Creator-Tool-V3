@@ -3,11 +3,14 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq.Expressions;
 using System.Runtime.InteropServices;
+using System.Text;
 using System.Windows.Forms;
 using TopSolid.Cad.Design.Automating;
 using TopSolid.Kernel.Automating;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 using TSH = TopSolid.Kernel.Automating.TopSolidHost;
+using System.Management;
+
 
 
 
@@ -31,11 +34,48 @@ namespace Folder_Creator_Tool_V3
         [return: MarshalAs(UnmanagedType.Bool)]
         static extern bool SetForegroundWindow(IntPtr hWnd);
 
-     
 
-            
 
-   
+
+
+
+
+
+        // Classe pour récupérer le chemin réseau complet
+        public class NetworkPathHelper
+        {
+            [DllImport("mpr.dll")]
+            private static extern int WNetGetConnection(string localName, StringBuilder remoteName, ref int length);
+            public static string GetNetworkPath(string driveLetter)
+            {
+                StringBuilder remoteName = new StringBuilder(256);
+                int length = remoteName.Capacity;
+
+                int result = WNetGetConnection(driveLetter, remoteName, ref length);
+                if (result == 0)
+                {
+                    return remoteName.ToString();
+                }
+                else
+                {
+                    return null;
+                }
+
+            }
+            public static string GetMappedDriveName(string driveLetter) 
+            {
+                using (ManagementObjectSearcher searcher = new ManagementObjectSearcher($"SELECT VolumeName FROM Win32_LogicalDisk WHERE DeviceID='{driveLetter}'")) 
+                {
+                    foreach (ManagementObject disk in searcher.Get()) 
+                    { 
+                        return disk["VolumeName"]?.ToString(); 
+                    } 
+                }
+                return null;
+            }
+        }
+
+
 
 
 
@@ -1693,21 +1733,37 @@ namespace Folder_Creator_Tool_V3
                 if (folderBrowserDialog.ShowDialog() == DialogResult.OK)
                 {
                     string selectedPath = folderBrowserDialog.SelectedPath;
-                    string fullPath = Path.GetFullPath(selectedPath);
-
-                    // Obtenir la lettre de lecteur réseau
                     string driveLetter = Path.GetPathRoot(selectedPath).TrimEnd('\\');
+                    string networkPath = NetworkPathHelper.GetNetworkPath(driveLetter);
 
-                    // Combiner le chemin complet avec la lettre de lecteur
-                    string displayPath = $"{driveLetter} ({fullPath})";
-                    textBox4.Text = displayPath;
+                    if (networkPath != null)
+                    {
+                        // Récupérer le nom du lecteur mappé
+                        string driveName = NetworkPathHelper.GetMappedDriveName(driveLetter);
+
+                        // Construire correctement le chemin complet réseau
+                        string fullPath = selectedPath.Replace(driveLetter, networkPath);
+                        string displayPath = $"{driveLetter} ({driveName}) ({fullPath})";
+                        textBox4.Text = displayPath;
+                    }
+                    else
+                    {
+                        // Chemin local
+                        string displayPath = Path.GetFullPath(selectedPath);
+                        textBox4.Text = displayPath;
+                    }
 
                     // Sauvegarder le chemin dans les paramètres de l'application
-                    Properties.Settings.Default.FolderPath = displayPath;
+                    Properties.Settings.Default.FolderPath = textBox4.Text;
                     Properties.Settings.Default.Save();
                 }
             }
         }
+
+
+
+
+
 
 
 
