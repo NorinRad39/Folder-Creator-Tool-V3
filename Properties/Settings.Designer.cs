@@ -34,5 +34,17 @@ namespace Folder_Creator_Tool_V3.Properties {
                 this["FolderPath"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("acierjbt")]
+        public string SelectedMaterial {
+            get {
+                return ((string)(this["SelectedMaterial"]));
+            }
+            set {
+                this["SelectedMaterial"] = value;
+            }
+        }
     }
 }

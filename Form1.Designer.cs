@@ -56,6 +56,8 @@ namespace Folder_Creator_Tool_V3
             this.button3 = new System.Windows.Forms.Button();
             this.textBox4 = new System.Windows.Forms.TextBox();
             this.groupBox4 = new System.Windows.Forms.GroupBox();
+            this.matiereButton1 = new System.Windows.Forms.RadioButton();
+            this.matiereButton2 = new System.Windows.Forms.RadioButton();
             this.menuStrip1.SuspendLayout();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
@@ -114,9 +116,9 @@ namespace Folder_Creator_Tool_V3
             // 
             // button2
             // 
-            this.button2.Location = new System.Drawing.Point(7, 18);
+            this.button2.Location = new System.Drawing.Point(98, 18);
             this.button2.Name = "button2";
-            this.button2.Size = new System.Drawing.Size(385, 47);
+            this.button2.Size = new System.Drawing.Size(296, 47);
             this.button2.TabIndex = 13;
             this.button2.Text = "Génération des dossiers";
             this.button2.UseVisualStyleBackColor = true;
@@ -174,9 +176,9 @@ namespace Folder_Creator_Tool_V3
             // 
             // button1
             // 
-            this.button1.Location = new System.Drawing.Point(7, 71);
+            this.button1.Location = new System.Drawing.Point(98, 71);
             this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(385, 47);
+            this.button1.Size = new System.Drawing.Size(296, 47);
             this.button1.TabIndex = 22;
             this.button1.Text = "Reload";
             this.button1.UseVisualStyleBackColor = true;
@@ -251,9 +253,11 @@ namespace Folder_Creator_Tool_V3
             // 
             // groupBox3
             // 
+            this.groupBox3.Controls.Add(this.matiereButton2);
             this.groupBox3.Controls.Add(this.button2);
+            this.groupBox3.Controls.Add(this.matiereButton1);
             this.groupBox3.Controls.Add(this.button1);
-            this.groupBox3.Location = new System.Drawing.Point(13, 548);
+            this.groupBox3.Location = new System.Drawing.Point(12, 556);
             this.groupBox3.Name = "groupBox3";
             this.groupBox3.Size = new System.Drawing.Size(400, 130);
             this.groupBox3.TabIndex = 28;
@@ -282,19 +286,41 @@ namespace Folder_Creator_Tool_V3
             // 
             this.groupBox4.Controls.Add(this.textBox4);
             this.groupBox4.Controls.Add(this.button3);
-            this.groupBox4.Location = new System.Drawing.Point(13, 684);
+            this.groupBox4.Location = new System.Drawing.Point(13, 692);
             this.groupBox4.Name = "groupBox4";
             this.groupBox4.Size = new System.Drawing.Size(400, 49);
             this.groupBox4.TabIndex = 31;
             this.groupBox4.TabStop = false;
             this.groupBox4.Text = "Dossier export";
             // 
+            // matiereButton1
+            // 
+            this.matiereButton1.AutoSize = true;
+            this.matiereButton1.Checked = true;
+            this.matiereButton1.Location = new System.Drawing.Point(11, 19);
+            this.matiereButton1.Name = "matiereButton1";
+            this.matiereButton1.Size = new System.Drawing.Size(49, 17);
+            this.matiereButton1.TabIndex = 33;
+            this.matiereButton1.TabStop = true;
+            this.matiereButton1.Text = "Acier";
+            this.matiereButton1.UseVisualStyleBackColor = true;
+            // 
+            // matiereButton2
+            // 
+            this.matiereButton2.AutoSize = true;
+            this.matiereButton2.Location = new System.Drawing.Point(11, 42);
+            this.matiereButton2.Name = "matiereButton2";
+            this.matiereButton2.Size = new System.Drawing.Size(84, 17);
+            this.matiereButton2.TabIndex = 34;
+            this.matiereButton2.Text = "Acier trempé";
+            this.matiereButton2.UseVisualStyleBackColor = true;
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.AutoSize = true;
-            this.ClientSize = new System.Drawing.Size(425, 742);
+            this.ClientSize = new System.Drawing.Size(425, 749);
             this.Controls.Add(this.groupBox4);
             this.Controls.Add(this.groupBox2);
             this.Controls.Add(this.menuStrip1);
@@ -311,6 +337,7 @@ namespace Folder_Creator_Tool_V3
             this.groupBox2.ResumeLayout(false);
             this.groupBox2.PerformLayout();
             this.groupBox3.ResumeLayout(false);
+            this.groupBox3.PerformLayout();
             this.groupBox4.ResumeLayout(false);
             this.groupBox4.PerformLayout();
             this.ResumeLayout(false);
@@ -360,6 +387,8 @@ namespace Folder_Creator_Tool_V3
         private System.Windows.Forms.Button button3;
         private System.Windows.Forms.TextBox textBox4;
         private System.Windows.Forms.GroupBox groupBox4;
+        private System.Windows.Forms.RadioButton matiereButton1;
+        private System.Windows.Forms.RadioButton matiereButton2;
     }
 }
 

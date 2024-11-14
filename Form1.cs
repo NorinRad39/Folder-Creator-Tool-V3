@@ -34,6 +34,9 @@ namespace Folder_Creator_Tool_V3
         [return: MarshalAs(UnmanagedType.Bool)]
         static extern bool SetForegroundWindow(IntPtr hWnd);
 
+        
+
+        
 
 
 
@@ -705,6 +708,12 @@ namespace Folder_Creator_Tool_V3
                 MessageBox.Show(new Form { TopMost = true }, "Echec de la récupération du nom du document courant " + ex.Message);
             }
 
+            // Appel de la méthode pour vérifier le chemin au démarrage
+            VerifierCheminAuDemarrage();//-----------------------------------------------------------------------------////////////////////////////////////////---------------------------------------------------------
+
+            // Restaurer le choix de matière au démarrage
+            RestoreMaterialChoice();
+
             //-----------Récupération ID projet courant----------------------------------------------------------------------------------------------------------------------------
             try
             {
@@ -916,8 +925,14 @@ namespace Folder_Creator_Tool_V3
                             TSH.Parameters.SetTextValue(CurrentDocumentCommentaireId, TextBoxCommentaireValue);
                             TSH.Parameters.SetTextValue(CurrentDocumentDesignationId, TextBoxDesignationValue);
 
-                            // Fin des modifications avec sauvegarde des changements
-                            TSH.Application.EndModification(true, true);
+                        
+
+
+
+
+
+                        // Fin des modifications avec sauvegarde des changements
+                        TSH.Application.EndModification(true, true);
                         }
                         catch (Exception ex)
                         {
@@ -1743,22 +1758,156 @@ namespace Folder_Creator_Tool_V3
 
                         // Construire correctement le chemin complet réseau
                         string fullPath = selectedPath.Replace(driveLetter, networkPath);
-                        string displayPath = $"{driveLetter} ({driveName}) ({fullPath})";
+
+                        // Afficher le chemin réseau complet suivi de la lettre et du nom du lecteur entre crochets
+                        string displayPath = $"{fullPath}";// [{driveLetter}({driveName})]";
                         textBox4.Text = displayPath;
+
+                        // Sauvegarder le chemin réseau complet (sans la partie entre crochets)
+                        Properties.Settings.Default.FolderPath = fullPath;
                     }
                     else
                     {
-                        // Chemin local
+                        // Si ce n'est pas un chemin réseau, afficher le chemin local
                         string displayPath = Path.GetFullPath(selectedPath);
                         textBox4.Text = displayPath;
+
+                        // Sauvegarder le chemin local
+                        Properties.Settings.Default.FolderPath = displayPath;
                     }
 
                     // Sauvegarder le chemin dans les paramètres de l'application
-                    Properties.Settings.Default.FolderPath = textBox4.Text;
                     Properties.Settings.Default.Save();
                 }
             }
         }
+
+        private void VerifierCheminAuDemarrage()
+        {
+            // Récupérer le chemin enregistré dans les paramètres de l'application
+            string savedPath = Properties.Settings.Default.FolderPath;
+
+            // Vérifier si le chemin est vide ou null
+            if (string.IsNullOrEmpty(savedPath))
+            {
+                // Si aucun chemin n'est configuré, utiliser le texte actuel dans TextBox comme texte par défaut
+                textBox4.Text = "Chemin du dossier atelier";
+                return;
+            }
+
+            // Vérifier si le chemin enregistré existe réellement
+            if (Directory.Exists(savedPath) || File.Exists(savedPath))
+            {
+                // Si le chemin existe, afficher le chemin dans textBox4
+                textBox4.Text = savedPath;
+            }
+            else
+            {
+                // Si le chemin n'existe pas, réinitialiser le chemin dans les paramètres
+                Properties.Settings.Default.FolderPath = string.Empty;
+                Properties.Settings.Default.Save();
+
+                // Utiliser le texte actuel dans TextBox comme texte par défaut si le chemin est invalide
+                textBox4.Text = "Chemin du dossier atelier";
+            }
+        }
+
+        // Sauvegarder le choix de matière dans les paramètres
+        private void SaveMaterialChoice()
+        {
+            if (matiereButton1.Checked)
+            {
+                // Sauvegarder le choix de matière dans les paramètres de l'application
+                Properties.Settings.Default.SelectedMaterial = "acierjbt";
+            }
+            else if (matiereButton2.Checked)
+            {
+                Properties.Settings.Default.SelectedMaterial = "aciertrempejbt";
+            }
+            else
+            {
+                Properties.Settings.Default.SelectedMaterial = string.Empty; // Aucun choix
+            }
+
+            // Sauvegarder les paramètres
+            Properties.Settings.Default.Save();
+        }
+
+        // Restaurer le choix de matière lors du démarrage
+        private void RestoreMaterialChoice()
+        {
+            // Récupérer le choix de matière enregistré dans les paramètres
+            string savedMaterial = Properties.Settings.Default.SelectedMaterial;
+
+            // Vérifier le choix sauvegardé et cocher le bon bouton radio
+            if (savedMaterial == "acierjbt")
+            {
+                matiereButton1.Checked = true;
+            }
+            else if (savedMaterial == "aciertrempejbt")
+            {
+                matiereButton2.Checked = true;
+            }
+            else
+            {
+                // Aucun choix sauvegardé ou choix vide, laisser les boutons décochés
+                matiereButton1.Checked = false;
+                matiereButton2.Checked = false;
+            }
+        }
+
+        private void buttonSetMaterial_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                string domain = "jbtecnics";
+                string uName1 = "acierjbt";
+                string uName2 = "aciertrempejbt";
+
+                // Rechercher les documents de matériau dans le PDM
+                PdmObjectId MaterialAcierJbt = TSH.Pdm.SearchDocumentByUniversalId(PdmObjectId.Empty, domain, uName1);
+                DocumentId MaterialAcierJbtId = TSH.Documents.GetDocument(MaterialAcierJbt);
+
+                PdmObjectId MaterialAcierTrempeJbt = TSH.Pdm.SearchDocumentByUniversalId(PdmObjectId.Empty, domain, uName2);
+                DocumentId MaterialAcierTrempeJbtId = TSH.Documents.GetDocument(MaterialAcierTrempeJbt);
+
+                // Vérifier quel bouton radio est sélectionné pour définir la matière
+                if (matiereButton1.Checked)
+                {
+                    // Si matiereButton1 est coché, assigner MaterialAcierJbtId
+                    TopSolidDesignHost.Parts.SetMaterial(CurrentDocumentIdLastRev, MaterialAcierJbtId);
+                }
+                else if (matiereButton2.Checked)
+                {
+                    // Si matiereButton2 est coché, assigner MaterialAcierTrempeJbtId
+                    TopSolidDesignHost.Parts.SetMaterial(CurrentDocumentIdLastRev, MaterialAcierTrempeJbtId);
+                }
+                else
+                {
+                    // Aucun bouton n'est sélectionné, afficher un message d'erreur
+                    MessageBox.Show("Veuillez sélectionner une matière avant de continuer.");
+                    return; // Sortir de la fonction si aucun choix n'est fait
+                }
+
+                // Sauvegarder le choix de matière
+                SaveMaterialChoice();
+
+                // Message de confirmation (facultatif)
+                MessageBox.Show("La matière a été définie pour la pièce.");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Erreur lors de la définition de la matière : " + ex.Message);
+            }
+        }
+
+        // Appeler la fonction RestoreMaterialChoice lors de l'initialisation de l'interface utilisateur (par exemple, dans le Form_Load)
+        private void Form_Load(object sender, EventArgs e)
+        {
+            // Restaurer le choix de matière au démarrage
+            RestoreMaterialChoice();
+        }
+
 
 
 
