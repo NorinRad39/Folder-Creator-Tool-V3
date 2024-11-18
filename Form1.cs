@@ -1560,10 +1560,10 @@ namespace Folder_Creator_Tool_V3
                                 path3D = DossierAtelierServeur + "\\" + folderName + "\\" + TexteDossierRep + "\\" + TexteIndiceFolder + "\\3D";
                                 System.IO.Directory.CreateDirectory(path3D);
 
-                                // Ouverture du dossier "3D"
-                                System.Diagnostics.Process.Start("explorer.exe", path3D);
+                            //// Ouverture du dossier "3D"
+                            //System.Diagnostics.Process.Start("explorer.exe", path3D);
 
-                                ExporterFichiers = true;
+                            ExporterFichiers = true;
                             }
                         }
                         else if (dialogResult == DialogResult.No)
@@ -1599,17 +1599,20 @@ namespace Folder_Creator_Tool_V3
                         }
                         else
                         {
-                            //Si non si dossier moule existe mais pas dossier rep
-                            // Création du sous-dossier "TexteIndiceFolder"
-                            System.IO.Directory.CreateDirectory(DossierAtelierServeur + "\\" + folderName + "\\" + DossierRep + "\\" + TexteIndiceFolder);
+                        //Si non si dossier moule existe mais pas dossier rep
 
+                        // Création du dossier repere
+                        System.IO.Directory.CreateDirectory(DossierAtelierServeur + "\\" + folderName + "\\" + TexteDossierRep);
+
+                        // Création du sous-dossier "TexteIndiceFolder"
+                        System.IO.Directory.CreateDirectory(DossierAtelierServeur + "\\" + folderName + "\\" + TexteDossierRep + "\\" + TexteIndiceFolder);
 
                             // Création du sous-dossier "3D" dans "TexteIndiceFolder"
-                            path3D = DossierAtelierServeur + "\\" + folderName + "\\" + TexteIndiceFolder + "\\3D";
+                            path3D = DossierAtelierServeur + "\\" + folderName + "\\" + TexteDossierRep + "\\" + TexteIndiceFolder + "\\3D";
                             System.IO.Directory.CreateDirectory(path3D);
 
-                            // Ouverture du dossier "3D"
-                            System.Diagnostics.Process.Start("explorer.exe", path3D);
+                            //// Ouverture du dossier "3D"
+                            //System.Diagnostics.Process.Start("explorer.exe", path3D);
 
                             ExporterFichiers = true;
                         }
@@ -1644,11 +1647,9 @@ namespace Folder_Creator_Tool_V3
                             System.IO.Directory.CreateDirectory(DossierAtelierServeur + "\\" + folderName + "\\" + TexteDossierRep + "\\" + TexteIndiceFolder);
 
                             // Création du sous-dossier "3D" dans "TexteIndiceFolder"
-                            path3D = DossierAtelierServeur + "\\" + folderName + "\\" + TexteDossierRep + "\\" + TexteIndiceFolder + "\\3D";
+                            path3D = DossierAtelierServeur + "\\" + folderName + "\\" + TexteDossierRep + "\\" + TexteDossierRep + "\\" + TexteIndiceFolder + "\\3D";
                             System.IO.Directory.CreateDirectory(path3D);
 
-                            // Ouverture du dossier "3D"
-                            System.Diagnostics.Process.Start("explorer.exe", path3D);
 
                             ExporterFichiers = true;
 
@@ -1702,6 +1703,8 @@ namespace Folder_Creator_Tool_V3
 
 
 
+                            // Ouverture du dossier "3D"
+                            System.Diagnostics.Process.Start("explorer.exe", DossierAtelierServeur + "\\" + folderName + "\\" + TexteDossierRep + "\\" + TexteDossierRep + "\\" + TexteIndiceFolder + "\\3D");
 
                             MessageBox.Show("Exportation réussie.", "Succès", MessageBoxButtons.OK, MessageBoxIcon.Information, MessageBoxDefaultButton.Button1, MessageBoxOptions.DefaultDesktopOnly);
                             // Ferme l'application après que l'utilisateur ait cliqué sur OK
