@@ -1690,6 +1690,9 @@ namespace Folder_Creator_Tool_V3
                                     TSH.Pdm.ExportMinorRevisionFile(PDFRev, cheminCompletPDF);
 
 
+                                    // Ouverture du dossier "3D"
+                                    System.Diagnostics.Process.Start("explorer.exe", path3D);
+
 
 
                                 }
@@ -1702,9 +1705,6 @@ namespace Folder_Creator_Tool_V3
 
 
 
-
-                            // Ouverture du dossier "3D"
-                            System.Diagnostics.Process.Start("explorer.exe", DossierAtelierServeur + "\\" + folderName + "\\" + TexteDossierRep + "\\" + TexteDossierRep + "\\" + TexteIndiceFolder + "\\3D");
 
                             MessageBox.Show("Exportation réussie.", "Succès", MessageBoxButtons.OK, MessageBoxIcon.Information, MessageBoxDefaultButton.Button1, MessageBoxOptions.DefaultDesktopOnly);
                             // Ferme l'application après que l'utilisateur ait cliqué sur OK
