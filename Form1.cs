@@ -714,6 +714,9 @@ namespace Folder_Creator_Tool_V3
             // Restaurer le choix de matière au démarrage
             RestoreMaterialChoice();
 
+            
+            
+
             //-----------Récupération ID projet courant----------------------------------------------------------------------------------------------------------------------------
             try
             {
@@ -925,7 +928,28 @@ namespace Folder_Creator_Tool_V3
                             TSH.Parameters.SetTextValue(CurrentDocumentCommentaireId, TextBoxCommentaireValue);
                             TSH.Parameters.SetTextValue(CurrentDocumentDesignationId, TextBoxDesignationValue);
 
-                        
+                            // Appeler la méthode de vérification pendant l'initialisation ou un événement
+
+                            try
+                            {
+                                // Initialisation
+                                string domain = "jbtecnics";
+                                string uName1 = "acierjbt";
+                                string uName2 = "aciertrempejbt";
+
+                                PdmObjectId MaterialAcierJbt = TSH.Pdm.SearchDocumentByUniversalId(PdmObjectId.Empty, domain, uName1);
+                                DocumentId MaterialAcierJbtId = TSH.Documents.GetDocument(MaterialAcierJbt);
+
+                                PdmObjectId MaterialAcierTrempeJbt = TSH.Pdm.SearchDocumentByUniversalId(PdmObjectId.Empty, domain, uName2);
+                                DocumentId MaterialAcierTrempeJbtId = TSH.Documents.GetDocument(MaterialAcierTrempeJbt);
+
+                                // Appeler la vérification pour s'assurer qu'une matière est sélectionnée dès le départ
+                                CheckAndSetMaterial(MaterialAcierJbtId, MaterialAcierTrempeJbtId);
+                            }
+                            catch (Exception ex)
+                            {
+                                MessageBox.Show("Erreur pendant l'initialisation : " + ex.Message);
+                            }
 
 
 
@@ -1874,23 +1898,8 @@ namespace Folder_Creator_Tool_V3
                 PdmObjectId MaterialAcierTrempeJbt = TSH.Pdm.SearchDocumentByUniversalId(PdmObjectId.Empty, domain, uName2);
                 DocumentId MaterialAcierTrempeJbtId = TSH.Documents.GetDocument(MaterialAcierTrempeJbt);
 
-                // Vérifier quel bouton radio est sélectionné pour définir la matière
-                if (matiereButton1.Checked)
-                {
-                    // Si matiereButton1 est coché, assigner MaterialAcierJbtId
-                    TopSolidDesignHost.Parts.SetMaterial(CurrentDocumentIdLastRev, MaterialAcierJbtId);
-                }
-                else if (matiereButton2.Checked)
-                {
-                    // Si matiereButton2 est coché, assigner MaterialAcierTrempeJbtId
-                    TopSolidDesignHost.Parts.SetMaterial(CurrentDocumentIdLastRev, MaterialAcierTrempeJbtId);
-                }
-                else
-                {
-                    // Aucun bouton n'est sélectionné, afficher un message d'erreur
-                    MessageBox.Show("Veuillez sélectionner une matière avant de continuer.");
-                    return; // Sortir de la fonction si aucun choix n'est fait
-                }
+                // Appeler la vérification de la matière
+                CheckAndSetMaterial(MaterialAcierJbtId, MaterialAcierTrempeJbtId);
 
                 // Sauvegarder le choix de matière
                 SaveMaterialChoice();
@@ -1901,6 +1910,27 @@ namespace Folder_Creator_Tool_V3
             catch (Exception ex)
             {
                 MessageBox.Show("Erreur lors de la définition de la matière : " + ex.Message);
+            }
+        }
+
+        // Nouvelle méthode pour vérifier les boutons et appliquer la matière
+        private void CheckAndSetMaterial(DocumentId MaterialAcierJbtId, DocumentId MaterialAcierTrempeJbtId)
+        {
+            if (matiereButton1.Checked)
+            {
+                // Si matiereButton1 est coché, assigner MaterialAcierJbtId
+                TopSolidDesignHost.Parts.SetMaterial(CurrentDocumentIdLastRev, MaterialAcierJbtId);
+            }
+            else if (matiereButton2.Checked)
+            {
+                // Si matiereButton2 est coché, assigner MaterialAcierTrempeJbtId
+                TopSolidDesignHost.Parts.SetMaterial(CurrentDocumentIdLastRev, MaterialAcierTrempeJbtId);
+            }
+            else
+            {
+                // Aucun bouton n'est sélectionné, afficher un message d'erreur
+                MessageBox.Show("Veuillez sélectionner une matière avant de continuer.");
+                throw new InvalidOperationException("Aucune matière sélectionnée.");
             }
         }
 
