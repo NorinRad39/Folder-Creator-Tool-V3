@@ -1557,7 +1557,7 @@ namespace Folder_Creator_Tool_V3
                                 System.IO.Directory.CreateDirectory(DossierAtelierServeur + "\\" + folderName + "\\" + TexteDossierRep + "\\" + TexteIndiceFolder);
 
                                 // Création du sous-dossier "3D" dans "TexteIndiceFolder"
-                                path3D = DossierAtelierServeur + "\\" + folderName + "\\" + TexteDossierRep + "\\" + TexteIndiceFolder + "\\3D";
+                                path3D = DossierAtelierServeur + folderName + "\\" + TexteDossierRep + "\\" + TexteIndiceFolder + "\\3D";
                                 System.IO.Directory.CreateDirectory(path3D);
 
                             //// Ouverture du dossier "3D"
@@ -1608,7 +1608,7 @@ namespace Folder_Creator_Tool_V3
                         System.IO.Directory.CreateDirectory(DossierAtelierServeur + "\\" + folderName + "\\" + TexteDossierRep + "\\" + TexteIndiceFolder);
 
                             // Création du sous-dossier "3D" dans "TexteIndiceFolder"
-                            path3D = DossierAtelierServeur + "\\" + folderName + "\\" + TexteDossierRep + "\\" + TexteIndiceFolder + "\\3D";
+                            path3D = DossierAtelierServeur + folderName + "\\" + TexteDossierRep + "\\" + TexteIndiceFolder + "\\3D";
                             System.IO.Directory.CreateDirectory(path3D);
 
                             //// Ouverture du dossier "3D"
@@ -1647,7 +1647,7 @@ namespace Folder_Creator_Tool_V3
                             System.IO.Directory.CreateDirectory(DossierAtelierServeur + "\\" + folderName + "\\" + TexteDossierRep + "\\" + TexteIndiceFolder);
 
                             // Création du sous-dossier "3D" dans "TexteIndiceFolder"
-                            path3D = DossierAtelierServeur + "\\" + folderName + "\\" + TexteDossierRep + "\\" + TexteDossierRep + "\\" + TexteIndiceFolder + "\\3D";
+                            path3D = DossierAtelierServeur + folderName + "\\" + TexteDossierRep + "\\" + TexteDossierRep + "\\" + TexteIndiceFolder + "\\3D";
                             System.IO.Directory.CreateDirectory(path3D);
 
 
@@ -1690,8 +1690,6 @@ namespace Folder_Creator_Tool_V3
                                     TSH.Pdm.ExportMinorRevisionFile(PDFRev, cheminCompletPDF);
 
 
-                                    // Ouverture du dossier "3D"
-                                    System.Diagnostics.Process.Start("explorer.exe", path3D);
 
 
 
@@ -1705,6 +1703,8 @@ namespace Folder_Creator_Tool_V3
 
 
 
+                                    // Ouverture du dossier "3D"
+                                    System.Diagnostics.Process.Start("explorer.exe", path3D);
 
                             MessageBox.Show("Exportation réussie.", "Succès", MessageBoxButtons.OK, MessageBoxIcon.Information, MessageBoxDefaultButton.Button1, MessageBoxOptions.DefaultDesktopOnly);
                             // Ferme l'application après que l'utilisateur ait cliqué sur OK
