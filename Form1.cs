@@ -184,7 +184,7 @@ namespace Folder_Creator_Tool_V3
                                              //PdmObjectId DossierIndiceIdFonction; //Recuperation de l'Id du dossier Indice pour creation du reste des dossiers
             PdmObjectId DossierElectrodeId; //Recuperation de l'Id du dossier electrode pour creation des dossiers
             PdmObjectId DossierFraisageId; //Recuperation de l'Id du dossier fraisage pour creation des dossiers utilisateursP
-
+            PdmObjectId DossierMethodeId;  //Recuperation de l'Id du dossier Methode pour creation des dossiers controle et tournage
 
             try
             {
@@ -193,8 +193,9 @@ namespace Folder_Creator_Tool_V3
                 dossier3DFonctionId = TSH.Pdm.CreateFolder(DossierIndiceIdFonction, "3D");
                 DossierElectrodeId = TSH.Pdm.CreateFolder(DossierIndiceIdFonction, "Electrode");
                 DossierFraisageId = TSH.Pdm.CreateFolder(DossierIndiceIdFonction, "Fraisage");
-                TSH.Pdm.CreateFolder(DossierIndiceIdFonction, "Methode");
-
+                DossierMethodeId = TSH.Pdm.CreateFolder(DossierIndiceIdFonction, "Methode");
+                TSH.Pdm.CreateFolder(DossierMethodeId, "Contrôle");
+                TSH.Pdm.CreateFolder(DossierMethodeId, "Tournage");
 
                 //Cration des dossier utilisateur dans le dossier fraisage
 
