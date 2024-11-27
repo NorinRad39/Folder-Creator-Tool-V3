@@ -1818,6 +1818,7 @@ namespace Folder_Creator_Tool_V3
         }
 
 
+
         private void VerifierCheminAuDemarrage()
         {
             // Récupérer le chemin enregistré dans les paramètres de l'application
