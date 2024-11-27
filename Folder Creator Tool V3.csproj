@@ -33,7 +33,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup>
-    <ApplicationIcon>01.ico</ApplicationIcon>
+    <ApplicationIcon>icône pour une application de classement de fichiers 3D et de plans avec un robot et des dossiers.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Microsoft.VisualBasic" />
@@ -96,6 +96,8 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="01.ico" />
+    <Content Include="icône pour une application de classement de fichiers 3D et de plans avec un robot et des dossiers %281%29.ico" />
+    <Content Include="icône pour une application de classement de fichiers 3D et de plans avec un robot et des dossiers.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

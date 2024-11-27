@@ -1741,6 +1741,8 @@ namespace Folder_Creator_Tool_V3
             
         }
 
+
+        //fonction pour selectionner le chemin du dossier atelier
         private void button3_Click_1(object sender, EventArgs e)
         {
             using (FolderBrowserDialog folderBrowserDialog = new FolderBrowserDialog())
@@ -1754,25 +1756,30 @@ namespace Folder_Creator_Tool_V3
                     string driveLetter = Path.GetPathRoot(selectedPath).TrimEnd('\\');
                     string networkPath = NetworkPathHelper.GetNetworkPath(driveLetter);
 
+                    string EnsureTrailingSlash(string path)
+                    {
+                        return path.EndsWith(Path.DirectorySeparatorChar.ToString()) ? path : path + Path.DirectorySeparatorChar;
+                    }
+
                     if (networkPath != null)
                     {
                         // Récupérer le nom du lecteur mappé
                         string driveName = NetworkPathHelper.GetMappedDriveName(driveLetter);
 
                         // Construire correctement le chemin complet réseau
-                        string fullPath = selectedPath.Replace(driveLetter, networkPath);
+                        string fullPath = EnsureTrailingSlash(selectedPath.Replace(driveLetter, networkPath));
 
-                        // Afficher le chemin réseau complet suivi de la lettre et du nom du lecteur entre crochets
-                        string displayPath = $"{fullPath}";// [{driveLetter}({driveName})]";
+                        // Afficher le chemin réseau complet
+                        string displayPath = fullPath; // [$"{fullPath} [{driveLetter}({driveName})]"];
                         textBox4.Text = displayPath;
 
-                        // Sauvegarder le chemin réseau complet (sans la partie entre crochets)
+                        // Sauvegarder le chemin réseau complet
                         Properties.Settings.Default.FolderPath = fullPath;
                     }
                     else
                     {
-                        // Si ce n'est pas un chemin réseau, afficher le chemin local
-                        string displayPath = Path.GetFullPath(selectedPath);
+                        // Si ce n'est pas un chemin réseau, ajouter le slash si nécessaire
+                        string displayPath = EnsureTrailingSlash(Path.GetFullPath(selectedPath));
                         textBox4.Text = displayPath;
 
                         // Sauvegarder le chemin local
@@ -1784,6 +1791,7 @@ namespace Folder_Creator_Tool_V3
                 }
             }
         }
+
 
         private void VerifierCheminAuDemarrage()
         {
