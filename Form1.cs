@@ -184,7 +184,7 @@ namespace Folder_Creator_Tool_V3
                                              //PdmObjectId DossierIndiceIdFonction; //Recuperation de l'Id du dossier Indice pour creation du reste des dossiers
             PdmObjectId DossierElectrodeId; //Recuperation de l'Id du dossier electrode pour creation des dossiers
             PdmObjectId DossierFraisageId; //Recuperation de l'Id du dossier fraisage pour creation des dossiers utilisateursP
-
+            PdmObjectId DossierMethodeId;  //Recuperation de l'Id du dossier Methode pour creation des dossiers controle et tournage
 
             try
             {
@@ -193,8 +193,9 @@ namespace Folder_Creator_Tool_V3
                 dossier3DFonctionId = TSH.Pdm.CreateFolder(DossierIndiceIdFonction, "3D");
                 DossierElectrodeId = TSH.Pdm.CreateFolder(DossierIndiceIdFonction, "Electrode");
                 DossierFraisageId = TSH.Pdm.CreateFolder(DossierIndiceIdFonction, "Fraisage");
-                TSH.Pdm.CreateFolder(DossierIndiceIdFonction, "Methode");
-
+                DossierMethodeId = TSH.Pdm.CreateFolder(DossierIndiceIdFonction, "Methode");
+                TSH.Pdm.CreateFolder(DossierMethodeId, "Contrôle");
+                TSH.Pdm.CreateFolder(DossierMethodeId, "Tournage");
 
                 //Cration des dossier utilisateur dans le dossier fraisage
 
@@ -714,6 +715,9 @@ namespace Folder_Creator_Tool_V3
             // Restaurer le choix de matière au démarrage
             RestoreMaterialChoice();
 
+            
+            
+
             //-----------Récupération ID projet courant----------------------------------------------------------------------------------------------------------------------------
             try
             {
@@ -925,7 +929,28 @@ namespace Folder_Creator_Tool_V3
                             TSH.Parameters.SetTextValue(CurrentDocumentCommentaireId, TextBoxCommentaireValue);
                             TSH.Parameters.SetTextValue(CurrentDocumentDesignationId, TextBoxDesignationValue);
 
-                        
+                            // Appeler la méthode de vérification pendant l'initialisation ou un événement
+
+                            try
+                            {
+                                // Initialisation
+                                string domain = "jbtecnics";
+                                string uName1 = "acierjbt";
+                                string uName2 = "aciertrempejbt";
+
+                                PdmObjectId MaterialAcierJbt = TSH.Pdm.SearchDocumentByUniversalId(PdmObjectId.Empty, domain, uName1);
+                                DocumentId MaterialAcierJbtId = TSH.Documents.GetDocument(MaterialAcierJbt);
+
+                                PdmObjectId MaterialAcierTrempeJbt = TSH.Pdm.SearchDocumentByUniversalId(PdmObjectId.Empty, domain, uName2);
+                                DocumentId MaterialAcierTrempeJbtId = TSH.Documents.GetDocument(MaterialAcierTrempeJbt);
+
+                                // Appeler la vérification pour s'assurer qu'une matière est sélectionnée dès le départ
+                                CheckAndSetMaterial(MaterialAcierJbtId, MaterialAcierTrempeJbtId);
+                            }
+                            catch (Exception ex)
+                            {
+                                MessageBox.Show("Erreur pendant l'initialisation : " + ex.Message);
+                            }
 
 
 
@@ -1557,7 +1582,7 @@ namespace Folder_Creator_Tool_V3
                                 System.IO.Directory.CreateDirectory(DossierAtelierServeur + "\\" + folderName + "\\" + TexteDossierRep + "\\" + TexteIndiceFolder);
 
                                 // Création du sous-dossier "3D" dans "TexteIndiceFolder"
-                                path3D = DossierAtelierServeur + "\\" + folderName + "\\" + TexteDossierRep + "\\" + TexteIndiceFolder + "\\3D";
+                                path3D = DossierAtelierServeur + folderName + "\\" + TexteDossierRep + "\\" + TexteIndiceFolder + "\\3D";
                                 System.IO.Directory.CreateDirectory(path3D);
 
                             //// Ouverture du dossier "3D"
@@ -1608,7 +1633,7 @@ namespace Folder_Creator_Tool_V3
                         System.IO.Directory.CreateDirectory(DossierAtelierServeur + "\\" + folderName + "\\" + TexteDossierRep + "\\" + TexteIndiceFolder);
 
                             // Création du sous-dossier "3D" dans "TexteIndiceFolder"
-                            path3D = DossierAtelierServeur + "\\" + folderName + "\\" + TexteDossierRep + "\\" + TexteIndiceFolder + "\\3D";
+                            path3D = DossierAtelierServeur + folderName + "\\" + TexteDossierRep + "\\" + TexteIndiceFolder + "\\3D";
                             System.IO.Directory.CreateDirectory(path3D);
 
                             //// Ouverture du dossier "3D"
@@ -1647,7 +1672,7 @@ namespace Folder_Creator_Tool_V3
                             System.IO.Directory.CreateDirectory(DossierAtelierServeur + "\\" + folderName + "\\" + TexteDossierRep + "\\" + TexteIndiceFolder);
 
                             // Création du sous-dossier "3D" dans "TexteIndiceFolder"
-                            path3D = DossierAtelierServeur + "\\" + folderName + "\\" + TexteDossierRep + "\\" + TexteDossierRep + "\\" + TexteIndiceFolder + "\\3D";
+                            path3D = DossierAtelierServeur + folderName + "\\" + TexteDossierRep + "\\" + TexteDossierRep + "\\" + TexteIndiceFolder + "\\3D";
                             System.IO.Directory.CreateDirectory(path3D);
 
 
@@ -1690,8 +1715,6 @@ namespace Folder_Creator_Tool_V3
                                     TSH.Pdm.ExportMinorRevisionFile(PDFRev, cheminCompletPDF);
 
 
-                                    // Ouverture du dossier "3D"
-                                    System.Diagnostics.Process.Start("explorer.exe", path3D);
 
 
 
@@ -1705,6 +1728,8 @@ namespace Folder_Creator_Tool_V3
 
 
 
+                                    // Ouverture du dossier "3D"
+                                    System.Diagnostics.Process.Start("explorer.exe", path3D);
 
                             MessageBox.Show("Exportation réussie.", "Succès", MessageBoxButtons.OK, MessageBoxIcon.Information, MessageBoxDefaultButton.Button1, MessageBoxOptions.DefaultDesktopOnly);
                             // Ferme l'application après que l'utilisateur ait cliqué sur OK
@@ -1882,23 +1907,8 @@ namespace Folder_Creator_Tool_V3
                 PdmObjectId MaterialAcierTrempeJbt = TSH.Pdm.SearchDocumentByUniversalId(PdmObjectId.Empty, domain, uName2);
                 DocumentId MaterialAcierTrempeJbtId = TSH.Documents.GetDocument(MaterialAcierTrempeJbt);
 
-                // Vérifier quel bouton radio est sélectionné pour définir la matière
-                if (matiereButton1.Checked)
-                {
-                    // Si matiereButton1 est coché, assigner MaterialAcierJbtId
-                    TopSolidDesignHost.Parts.SetMaterial(CurrentDocumentIdLastRev, MaterialAcierJbtId);
-                }
-                else if (matiereButton2.Checked)
-                {
-                    // Si matiereButton2 est coché, assigner MaterialAcierTrempeJbtId
-                    TopSolidDesignHost.Parts.SetMaterial(CurrentDocumentIdLastRev, MaterialAcierTrempeJbtId);
-                }
-                else
-                {
-                    // Aucun bouton n'est sélectionné, afficher un message d'erreur
-                    MessageBox.Show("Veuillez sélectionner une matière avant de continuer.");
-                    return; // Sortir de la fonction si aucun choix n'est fait
-                }
+                // Appeler la vérification de la matière
+                CheckAndSetMaterial(MaterialAcierJbtId, MaterialAcierTrempeJbtId);
 
                 // Sauvegarder le choix de matière
                 SaveMaterialChoice();
@@ -1909,6 +1919,27 @@ namespace Folder_Creator_Tool_V3
             catch (Exception ex)
             {
                 MessageBox.Show("Erreur lors de la définition de la matière : " + ex.Message);
+            }
+        }
+
+        // Nouvelle méthode pour vérifier les boutons et appliquer la matière
+        private void CheckAndSetMaterial(DocumentId MaterialAcierJbtId, DocumentId MaterialAcierTrempeJbtId)
+        {
+            if (matiereButton1.Checked)
+            {
+                // Si matiereButton1 est coché, assigner MaterialAcierJbtId
+                TopSolidDesignHost.Parts.SetMaterial(CurrentDocumentIdLastRev, MaterialAcierJbtId);
+            }
+            else if (matiereButton2.Checked)
+            {
+                // Si matiereButton2 est coché, assigner MaterialAcierTrempeJbtId
+                TopSolidDesignHost.Parts.SetMaterial(CurrentDocumentIdLastRev, MaterialAcierTrempeJbtId);
+            }
+            else
+            {
+                // Aucun bouton n'est sélectionné, afficher un message d'erreur
+                MessageBox.Show("Veuillez sélectionner une matière avant de continuer.");
+                throw new InvalidOperationException("Aucune matière sélectionnée.");
             }
         }
 
