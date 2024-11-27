@@ -10,6 +10,7 @@ using TopSolid.Kernel.Automating;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 using TSH = TopSolid.Kernel.Automating.TopSolidHost;
 using System.Management;
+using System.Linq;
 
 
 
@@ -261,11 +262,10 @@ namespace Folder_Creator_Tool_V3
 
 
         //-------------------------------Fonction de recupéaration des pdf-------------------
-
-        // Cette fonction liste les fichiers PDF dans un dossier spécifique.
-        void listePdf()
+        TreeNode rootFolderNode = new TreeNode();
+        string targetName = "";
+        void listePdf(string indice)
         {
-            // Initialisation des listes pour stocker les identifiants des objets PDM.
             List<PdmObjectId> dossiers2Ds = new List<PdmObjectId>();
             PdmObjectId dossiers2D = new PdmObjectId();
             List<PdmObjectId> FoldersInPDFFolder = new List<PdmObjectId>();
@@ -273,28 +273,22 @@ namespace Folder_Creator_Tool_V3
 
             try
             {
-                // Recherche du dossier "01-2D" dans le projet courant.
                 dossiers2Ds = TSH.Pdm.SearchFolderByName(CurrentProjectPdmId, "01-2D");
                 dossiers2D = dossiers2Ds[0];
             }
             catch (Exception ex)
             {
-                // Affichage d'un message d'erreur si le dossier "01-2D" n'est pas trouvé.
                 this.TopMost = false;
                 MessageBox.Show(new Form { TopMost = true }, "Dossier '01-2D' introuvable" + ex.Message);
+                return;
             }
 
-            // Obtention du nom du dossier racine et création d'un TreeNode pour le dossier racine.
             string rootFolderName = TSH.Pdm.GetName(dossiers2D);
-            TreeNode rootFolderNode = new TreeNode(rootFolderName);
+            rootFolderNode = new TreeNode(rootFolderName);
 
-            // Obtention des dossiers et des fichiers dans le dossier "01-2D".
             TSH.Pdm.GetConstituents(dossiers2D, out FoldersInPDFFolder, out PDFIds);
 
-            // Initialisation de la variable pour gérer l'événement AfterCheck.
             bool isEventTriggeredByCode = false;
-
-            // Gestion de l'événement AfterCheck pour empêcher la coche des dossiers.
             treeView1.AfterCheck += (s, e) =>
             {
                 if (isEventTriggeredByCode)
@@ -308,54 +302,159 @@ namespace Folder_Creator_Tool_V3
                 }
             };
 
-            // Parcours de chaque dossier dans le dossier "01-2D".
             foreach (PdmObjectId folderId in FoldersInPDFFolder)
             {
-                // Appel de la fonction récursive pour chaque dossier.
-                ProcessFolder(folderId, rootFolderNode);
+                ProcessFolder(folderId, rootFolderNode, indice);
             }
 
-            // Ajout du TreeNode racine au TreeView.
             treeView1.Nodes.Add(rootFolderNode);
+
+           
+
+            targetName = "Ind " +indice;
+
+            
         }
 
 
-        // Cette fonction traite un dossier en obtenant ses fichiers et ses sous-dossiers.
-        void ProcessFolder(PdmObjectId folderId, TreeNode parentNode)
+
+        void ProcessFolder(PdmObjectId folderId, TreeNode parentNode, string indice)
         {
-            // Obtention du nom du dossier et création d'un TreeNode pour le dossier.
             string folderName = TSH.Pdm.GetName(folderId);
             TreeNode folderNode = new TreeNode(folderName);
 
-            // Obtention des fichiers et des sous-dossiers dans le dossier.
             List<PdmObjectId> subFolderIds;
             List<PdmObjectId> fileIdsInFolder;
             TSH.Pdm.GetConstituents(folderId, out subFolderIds, out fileIdsInFolder);
 
-            // Parcours de chaque fichier dans le dossier.
+            // Liste pour les sous-dossiers "Ind" à trier
+            List<TreeNode> indFolderNodes = new List<TreeNode>();
+
+            // Parcours des sous-dossiers
+            foreach (PdmObjectId subFolderId in subFolderIds)
+            {
+                string subFolderName = TSH.Pdm.GetName(subFolderId);
+
+                // Si le nom du sous-dossier commence par "Ind"
+                if (subFolderName.StartsWith("Ind", StringComparison.OrdinalIgnoreCase))
+                {
+                    // Création du nœud pour ce sous-dossier
+                    TreeNode subFolderNode = new TreeNode(subFolderName);
+                    indFolderNodes.Add(subFolderNode); // Ajout du nœud à la liste
+                }
+                else
+                {
+                    // Traitement récursif pour les autres sous-dossiers
+                    ProcessFolder(subFolderId, folderNode, indice);
+                }
+            }
+
+            // Tri des sous-dossiers "Ind" par ordre alphabétique
+            indFolderNodes.Sort((node1, node2) => string.Compare(node1.Text, node2.Text, StringComparison.OrdinalIgnoreCase));
+
+            // Ajout des sous-dossiers "Ind" triés au dossier actuel
+            foreach (TreeNode indFolderNode in indFolderNodes)
+            {
+                folderNode.Nodes.Add(indFolderNode);
+            }
+
+            // Ajouter les fichiers dans le dossier
             foreach (PdmObjectId fileId in fileIdsInFolder)
             {
-                // Obtention du nom du fichier et création d'un TreeNode pour le fichier.
                 string fileName = TSH.Pdm.GetName(fileId);
                 TreeNode fileNode = new TreeNode(fileName);
-
-                // Stockage de l'identifiant de l'objet PDM dans le Tag du TreeNode.
                 fileNode.Tag = fileId;
-
-                // Ajout du TreeNode du fichier au TreeNode du dossier.
                 folderNode.Nodes.Add(fileNode);
             }
 
-            // Parcours de chaque sous-dossier dans le dossier.
-            foreach (PdmObjectId subFolderId in subFolderIds)
-            {
-                // Appel récursif pour chaque sous-dossier.
-                ProcessFolder(subFolderId, folderNode);
-            }
-
-            // Ajout du TreeNode du dossier au TreeNode parent.
+            // Ajouter le dossier actuel à l'arbre
             parentNode.Nodes.Add(folderNode);
         }
+
+
+
+
+
+
+
+
+        void ExpandTargetNode(TreeNode rootNode, string targetName)
+        {
+            // Supprimer les espaces et convertir les deux chaînes en minuscules pour ne pas tenir compte de la casse et des espaces
+            string normalizedTargetName = targetName.Replace(" ", "").ToLower();
+
+            // Parcours récursif des nœuds enfants
+            foreach (TreeNode node in rootNode.Nodes)
+            {
+                // Normalisation du nom du nœud
+                string normalizedNodeName = node.Text.Replace(" ", "").ToLower();
+
+                // Vérification si le nom du nœud correspond à la cible (en ignorant la casse et les espaces)
+                if (normalizedNodeName == normalizedTargetName)
+                {
+                    // Déplie le nœud cible
+                    node.Expand();
+
+                    // Remonte la hiérarchie pour déplier les parents
+                    TreeNode parent = node.Parent;
+                    while (parent != null)
+                    {
+                        parent.Expand();
+                        parent = parent.Parent;
+                    }
+
+                    // Tri des nœuds enfants après dépliage
+                    SortTreeNodes(rootNode); // Ajouter le tri ici si nécessaire
+
+                    return; // Sort de la fonction après avoir déplié le nœud
+                }
+                else
+                {
+                    // Appel récursif pour vérifier les sous-dossiers
+                    ExpandTargetNode(node, targetName);
+                }
+            }
+        }
+
+        void SortTreeNodes(TreeNode rootNode)
+        {
+            // Tri des nœuds enfants par ordre alphabétique
+            var sortedNodes = rootNode.Nodes.Cast<TreeNode>().OrderBy(n => n.Text, StringComparer.OrdinalIgnoreCase).ToList();
+
+            // Réaffecter les nœuds triés à la collection de nœuds
+            rootNode.Nodes.Clear();
+            foreach (var node in sortedNodes)
+            {
+                rootNode.Nodes.Add(node);
+            }
+        }
+
+
+
+
+
+
+        void ExpandNodeByName(TreeNodeCollection nodes, string targetName)
+        {
+            foreach (TreeNode node in nodes)
+            {
+                // Vérifie si le nom du nœud correspond au dossier recherché
+                if (node.Text.Equals(targetName, StringComparison.OrdinalIgnoreCase))
+                {
+                    // Déplie le nœud correspondant
+                    node.Expand();
+                    return;
+                }
+
+                // Appel récursif pour vérifier les sous-nœuds
+                ExpandNodeByName(node.Nodes, targetName);
+            }
+        }
+
+
+
+
+
 
         //Fonction recuperation de l'indice pour valeur par defaut formulaire------------------------------------------------
 
@@ -453,7 +552,6 @@ namespace Folder_Creator_Tool_V3
 
 
 
-
         //-----------Fonction Récupération ID Document courant----------------------------------------------------------------------------------------------------------------------------
         void DocumentCourant(out PdmObjectId PdmObjectIdCurrentDocumentId, out DocumentId CurrentDocumentId, out DocumentId CurrentDocumentIdLastRev)
         {
@@ -475,6 +573,14 @@ namespace Folder_Creator_Tool_V3
                 //return;
 
             }
+        }
+
+        string indice; 
+        void InitialiserTreeView()
+        {
+            //string indice;
+            ChercherDossierDocumentEnCours(PdmObjectIdCurrentDocumentId, out indice);
+            listePdf(indice);
         }
 
 
@@ -796,8 +902,16 @@ namespace Folder_Creator_Tool_V3
 
             //Liste PDF--------------------------------
 
-            listePdf();
-            treeView1.ExpandAll();
+            listePdf(IndiceTxtBox);
+
+
+            string DossierIndicePdf = "Ind " + IndiceTxtBox;
+
+            // Trouver et déplier le nœud cible
+            ExpandTargetNode(rootFolderNode, DossierIndicePdf);
+
+
+            //treeView1.ExpandAll();
             // Fonction pour ajouter les nœuds cochés à la liste
 
 
