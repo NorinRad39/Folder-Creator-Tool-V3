@@ -1786,7 +1786,7 @@ namespace Folder_Creator_Tool_V3
                             System.IO.Directory.CreateDirectory(DossierAtelierServeur + "\\" + folderName + "\\" + TexteDossierRep + "\\" + TexteIndiceFolder);
 
                             // Création du sous-dossier "3D" dans "TexteIndiceFolder"
-                            path3D = DossierAtelierServeur + folderName + "\\" + TexteDossierRep + "\\" + TexteDossierRep + "\\" + TexteIndiceFolder + "\\3D";
+                            path3D = DossierAtelierServeur + folderName + "\\" + TexteDossierRep + "\\" + TexteIndiceFolder + "\\3D";
                             System.IO.Directory.CreateDirectory(path3D);
 
 
