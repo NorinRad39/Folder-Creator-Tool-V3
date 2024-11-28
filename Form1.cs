@@ -570,7 +570,8 @@ namespace Folder_Creator_Tool_V3
                 this.TopMost = false;
                 MessageBox.Show(new Form { TopMost = true }, "Echec de la récupération de l'id du document courant. Ouvrez un document puis réessayez  " + ex.Message);
                 Application.Exit();
-                //return;
+                Environment.Exit(0);
+                return;
 
             }
         }
