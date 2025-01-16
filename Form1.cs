@@ -29,7 +29,7 @@ namespace Folder_Creator_Tool_V3
     public partial class Form1 : Form
         {
 
-            
+
 
         [DllImport("user32.dll")]
         [return: MarshalAs(UnmanagedType.Bool)]
@@ -650,7 +650,6 @@ namespace Folder_Creator_Tool_V3
         {
             // Initialisation de la variable de sortie
             FichierExiste = false;
-            bool existePas = true;
             nomDocu = textBox2.Text + " Ind " + textBox8.Text + " " + textBox10.Text;
 
             // Vérification si la liste des IDs de dossier n'est pas vide
@@ -685,10 +684,9 @@ namespace Folder_Creator_Tool_V3
                 }
                    
             }
-            
-                existePas = true;
-                return
-                        !FichierExiste;
+
+            return
+                    !FichierExiste;
             
             // Retour de la valeur de FichierExiste après la fin de la boucle
             
@@ -711,7 +709,15 @@ namespace Folder_Creator_Tool_V3
                     }
                 }
             }
+            
+            private List<KeyValue> OptionExport(int X_TExporterIndex)
+            {
+                List<KeyValue> optionsExportXT = TSH.Application.GetExporterOptions(X_TExporterIndex);
 
+                return optionsExportXT;
+
+
+            }
 
 
 
@@ -940,7 +946,6 @@ namespace Folder_Creator_Tool_V3
 
                     // Initialisation des listes
                     List<string> TxtCheckedItems = new List<string>();
-                    string TxtCheckedItem = null;
                     List<string> CheckedItemsIdTxt = new List<string>();
                     List<PdmObjectId> CheckedItems = new List<PdmObjectId>();
                     List<PdmObjectId> CheckedItemListeCopie = new List<PdmObjectId>();
@@ -951,7 +956,7 @@ namespace Folder_Creator_Tool_V3
 
                     if (resulta == DialogResult.Yes)
                     {
-
+                    
                         TSH.Application.InvokeCommand("TopSolid.Kernel.UI.D3.Shapes.Healing.HealCommand");
                     // Redémarre l'application
                     Application.Exit();
@@ -1759,8 +1764,6 @@ namespace Folder_Creator_Tool_V3
                     }
                     string nomDocument = TSH.Documents.GetName(CurrentDocumentId);
                     string nomFichier = $"{nomDocument}.x_t"; // Ajoutez l'extension souhaitée
-
-                    bool indiceDirectoriesExiste = false;
                     if (DossierRepExiste)
                     {
                         // Le dossier DossierRep a été trouvé
@@ -1797,6 +1800,10 @@ namespace Folder_Creator_Tool_V3
                     }
 
                     FindParasolidExporterIndex(out int X_TExporterIndex);
+
+                    List<KeyValue> optionsExportXT = OptionExport(X_TExporterIndex);
+
+
 
                     PdmMinorRevisionId PDFRev = new PdmMinorRevisionId();
 
