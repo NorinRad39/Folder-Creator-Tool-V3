@@ -942,6 +942,25 @@ namespace Folder_Creator_Tool_V3
 
         private void button2_Click_1(object sender, EventArgs e)
         {
+            string celluleVideErreur = "Merci de remplir toute les cases";
+            
+            if (textBox2.Text == string.Empty)
+            {
+                MessageBox.Show ( celluleVideErreur);
+                return;
+            }
+            if (textBox3.Text == string.Empty)
+            {
+                MessageBox.Show(celluleVideErreur);
+                return;
+            }
+            if (textBox8.Text == string.Empty)
+            {
+                MessageBox.Show(celluleVideErreur);
+                return;
+            }
+
+
 
 
             // Récupère le texte de la TextBox
