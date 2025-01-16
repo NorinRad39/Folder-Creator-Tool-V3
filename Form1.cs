@@ -11,6 +11,7 @@ using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 using TSH = TopSolid.Kernel.Automating.TopSolidHost;
 using System.Management;
 using System.Linq;
+using System.Net.NetworkInformation;
 
 
 
@@ -174,9 +175,11 @@ namespace Folder_Creator_Tool_V3
         ElementId CurrentNameParameterId = new ElementId();
         bool areDirectionsEqual = false;
 
+        int X_TExporterIndex = new int();
+        List<KeyValue> optionsExportXT = new List<KeyValue>();
 
         //------------------------------------------------------------------
-        
+
 
         //Fonction de création des dossier apres ind
         static PdmObjectId creationAutreDossiers(PdmObjectId DossierIndiceIdFonction)
@@ -710,13 +713,20 @@ namespace Folder_Creator_Tool_V3
                 }
             }
             
-            private List<KeyValue> OptionExport(int X_TExporterIndex)
+            private void VersionX_T(int X_TExporterIndex, string version)
             {
-                List<KeyValue> optionsExportXT = TSH.Application.GetExporterOptions(X_TExporterIndex);
+                List<KeyValue> options = TSH.Application.GetExporterOptions(X_TExporterIndex);
 
-                return optionsExportXT;
+                // Modification de la valeur associée à "SAVE_VERSION"
+                for (int i = 0; i < options.Count; i++)
+                {
+                    if (options[i].Key == "SAVE_VERSION")
+                    {
+                        options[i] = new KeyValue("SAVE_VERSION", version); // Remplacement par un nouvel objet                                                      //break; // Sortie de la boucle après la modification
+                        break;
+                    }
 
-
+                } 
             }
 
 
@@ -800,13 +810,15 @@ namespace Folder_Creator_Tool_V3
             // Variable pour stocker la dernière lettre du nom du dossier
             string IndiceTxtBox = "";
 
+           //Recuperation l'exporteur parasolid
+            FindParasolidExporterIndex(out X_TExporterIndex);
 
+            string versionX_T = "31";
+            //Configuartion version parasolid
+           VersionX_T (X_TExporterIndex, (versionX_T+"0"));
 
-
-
-
-               
-            
+                label7.Text = versionX_T; // Afficher la version dans le formulaire
+  
 
             //----------- Récupération du nom du document courant----------------------------------------------------------------------------------------------------------------------------         
             try
@@ -1799,9 +1811,7 @@ namespace Folder_Creator_Tool_V3
                         }
                     }
 
-                    FindParasolidExporterIndex(out int X_TExporterIndex);
-
-                    List<KeyValue> optionsExportXT = OptionExport(X_TExporterIndex);
+                    
 
 
 
@@ -1812,7 +1822,7 @@ namespace Folder_Creator_Tool_V3
                         try
                         {
                             cheminComplet = System.IO.Path.Combine(path3D, nomFichier);
-                            TSH.Documents.Export(X_TExporterIndex, CurrentDocumentId, cheminComplet);
+                            TSH.Documents.ExportWithOptions(X_TExporterIndex, optionsExportXT, CurrentDocumentId, cheminComplet);
 
                             for (int i = 0; i < CheckedItemListeCopie.Count; i++)
                             {

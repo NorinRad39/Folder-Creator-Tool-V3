@@ -52,12 +52,14 @@ namespace Folder_Creator_Tool_V3
             this.treeView1 = new System.Windows.Forms.TreeView();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
             this.groupBox3 = new System.Windows.Forms.GroupBox();
+            this.matiereButton2 = new System.Windows.Forms.RadioButton();
+            this.matiereButton1 = new System.Windows.Forms.RadioButton();
             this.folderBrowserDialog1 = new System.Windows.Forms.FolderBrowserDialog();
             this.button3 = new System.Windows.Forms.Button();
             this.textBox4 = new System.Windows.Forms.TextBox();
             this.groupBox4 = new System.Windows.Forms.GroupBox();
-            this.matiereButton1 = new System.Windows.Forms.RadioButton();
-            this.matiereButton2 = new System.Windows.Forms.RadioButton();
+            this.label5 = new System.Windows.Forms.Label();
+            this.label7 = new System.Windows.Forms.Label();
             this.menuStrip1.SuspendLayout();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
@@ -263,6 +265,28 @@ namespace Folder_Creator_Tool_V3
             this.groupBox3.TabIndex = 28;
             this.groupBox3.TabStop = false;
             // 
+            // matiereButton2
+            // 
+            this.matiereButton2.AutoSize = true;
+            this.matiereButton2.Location = new System.Drawing.Point(11, 42);
+            this.matiereButton2.Name = "matiereButton2";
+            this.matiereButton2.Size = new System.Drawing.Size(84, 17);
+            this.matiereButton2.TabIndex = 34;
+            this.matiereButton2.Text = "Acier trempé";
+            this.matiereButton2.UseVisualStyleBackColor = true;
+            // 
+            // matiereButton1
+            // 
+            this.matiereButton1.AutoSize = true;
+            this.matiereButton1.Checked = true;
+            this.matiereButton1.Location = new System.Drawing.Point(11, 19);
+            this.matiereButton1.Name = "matiereButton1";
+            this.matiereButton1.Size = new System.Drawing.Size(49, 17);
+            this.matiereButton1.TabIndex = 33;
+            this.matiereButton1.TabStop = true;
+            this.matiereButton1.Text = "Acier";
+            this.matiereButton1.UseVisualStyleBackColor = true;
+            // 
             // button3
             // 
             this.button3.Location = new System.Drawing.Point(331, 19);
@@ -284,43 +308,41 @@ namespace Folder_Creator_Tool_V3
             // 
             // groupBox4
             // 
+            this.groupBox4.Controls.Add(this.label7);
+            this.groupBox4.Controls.Add(this.label5);
             this.groupBox4.Controls.Add(this.textBox4);
             this.groupBox4.Controls.Add(this.button3);
             this.groupBox4.Location = new System.Drawing.Point(13, 692);
             this.groupBox4.Name = "groupBox4";
-            this.groupBox4.Size = new System.Drawing.Size(400, 49);
+            this.groupBox4.Size = new System.Drawing.Size(400, 63);
             this.groupBox4.TabIndex = 31;
             this.groupBox4.TabStop = false;
             this.groupBox4.Text = "Dossier export";
             // 
-            // matiereButton1
+            // label5
             // 
-            this.matiereButton1.AutoSize = true;
-            this.matiereButton1.Checked = true;
-            this.matiereButton1.Location = new System.Drawing.Point(11, 19);
-            this.matiereButton1.Name = "matiereButton1";
-            this.matiereButton1.Size = new System.Drawing.Size(49, 17);
-            this.matiereButton1.TabIndex = 33;
-            this.matiereButton1.TabStop = true;
-            this.matiereButton1.Text = "Acier";
-            this.matiereButton1.UseVisualStyleBackColor = true;
+            this.label5.AutoSize = true;
+            this.label5.Location = new System.Drawing.Point(3, 42);
+            this.label5.Name = "label5";
+            this.label5.Size = new System.Drawing.Size(97, 13);
+            this.label5.TabIndex = 31;
+            this.label5.Text = "Version Parasolid : ";
             // 
-            // matiereButton2
+            // label7
             // 
-            this.matiereButton2.AutoSize = true;
-            this.matiereButton2.Location = new System.Drawing.Point(11, 42);
-            this.matiereButton2.Name = "matiereButton2";
-            this.matiereButton2.Size = new System.Drawing.Size(84, 17);
-            this.matiereButton2.TabIndex = 34;
-            this.matiereButton2.Text = "Acier trempé";
-            this.matiereButton2.UseVisualStyleBackColor = true;
+            this.label7.AutoSize = true;
+            this.label7.Location = new System.Drawing.Point(94, 41);
+            this.label7.Name = "label7";
+            this.label7.Size = new System.Drawing.Size(42, 13);
+            this.label7.TabIndex = 33;
+            this.label7.Text = "Version";
             // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.AutoSize = true;
-            this.ClientSize = new System.Drawing.Size(425, 749);
+            this.ClientSize = new System.Drawing.Size(425, 760);
             this.Controls.Add(this.groupBox4);
             this.Controls.Add(this.groupBox2);
             this.Controls.Add(this.menuStrip1);
@@ -389,6 +411,8 @@ namespace Folder_Creator_Tool_V3
         private System.Windows.Forms.GroupBox groupBox4;
         private System.Windows.Forms.RadioButton matiereButton1;
         private System.Windows.Forms.RadioButton matiereButton2;
+        private System.Windows.Forms.Label label5;
+        private System.Windows.Forms.Label label7;
     }
 }
 
