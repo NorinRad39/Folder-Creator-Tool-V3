@@ -176,7 +176,7 @@ namespace Folder_Creator_Tool_V3
         bool areDirectionsEqual = false;
 
         int X_TExporterIndex = new int();
-        List<KeyValue> optionsExportXT = new List<KeyValue>();
+        List<KeyValue> options = new List<KeyValue>();
 
         //------------------------------------------------------------------
 
@@ -713,7 +713,7 @@ namespace Folder_Creator_Tool_V3
                 }
             }
             
-            private void VersionX_T(int X_TExporterIndex, string version)
+            private List<KeyValue> VersionX_T(int X_TExporterIndex, string version)
             {
                 List<KeyValue> options = TSH.Application.GetExporterOptions(X_TExporterIndex);
 
@@ -723,10 +723,9 @@ namespace Folder_Creator_Tool_V3
                     if (options[i].Key == "SAVE_VERSION")
                     {
                         options[i] = new KeyValue("SAVE_VERSION", version); // Remplacement par un nouvel objet                                                      //break; // Sortie de la boucle après la modification
-                        break;
                     }
-
                 } 
+                        return options;
             }
 
 
@@ -815,7 +814,7 @@ namespace Folder_Creator_Tool_V3
 
             string versionX_T = "31";
             //Configuartion version parasolid
-           VersionX_T (X_TExporterIndex, (versionX_T+"0"));
+           options = VersionX_T(X_TExporterIndex, (versionX_T+"0"));
 
                 label7.Text = versionX_T; // Afficher la version dans le formulaire
   
@@ -1841,7 +1840,7 @@ namespace Folder_Creator_Tool_V3
                         try
                         {
                             cheminComplet = System.IO.Path.Combine(path3D, nomFichier);
-                            TSH.Documents.ExportWithOptions(X_TExporterIndex, optionsExportXT, CurrentDocumentId, cheminComplet);
+                            TSH.Documents.ExportWithOptions(X_TExporterIndex, options, CurrentDocumentId, cheminComplet);
 
                             for (int i = 0; i < CheckedItemListeCopie.Count; i++)
                             {
