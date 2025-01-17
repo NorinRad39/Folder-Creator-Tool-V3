@@ -58,8 +58,8 @@ namespace Folder_Creator_Tool_V3
             this.button3 = new System.Windows.Forms.Button();
             this.textBox4 = new System.Windows.Forms.TextBox();
             this.groupBox4 = new System.Windows.Forms.GroupBox();
-            this.label5 = new System.Windows.Forms.Label();
             this.label7 = new System.Windows.Forms.Label();
+            this.label5 = new System.Windows.Forms.Label();
             this.menuStrip1.SuspendLayout();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
@@ -319,15 +319,6 @@ namespace Folder_Creator_Tool_V3
             this.groupBox4.TabStop = false;
             this.groupBox4.Text = "Dossier export";
             // 
-            // label5
-            // 
-            this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(3, 42);
-            this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(97, 13);
-            this.label5.TabIndex = 31;
-            this.label5.Text = "Version Parasolid : ";
-            // 
             // label7
             // 
             this.label7.AutoSize = true;
@@ -336,6 +327,15 @@ namespace Folder_Creator_Tool_V3
             this.label7.Size = new System.Drawing.Size(42, 13);
             this.label7.TabIndex = 33;
             this.label7.Text = "Version";
+            // 
+            // label5
+            // 
+            this.label5.AutoSize = true;
+            this.label5.Location = new System.Drawing.Point(3, 42);
+            this.label5.Name = "label5";
+            this.label5.Size = new System.Drawing.Size(97, 13);
+            this.label5.TabIndex = 31;
+            this.label5.Text = "Version Parasolid : ";
             // 
             // Form1
             // 
