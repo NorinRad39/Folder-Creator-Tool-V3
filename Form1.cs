@@ -12,6 +12,8 @@ using TSH = TopSolid.Kernel.Automating.TopSolidHost;
 using System.Management;
 using System.Linq;
 using System.Net.NetworkInformation;
+using System.Diagnostics;
+using System.Threading;
 
 
 
@@ -1804,11 +1806,25 @@ namespace Folder_Creator_Tool_V3
 
                         if (indiceDirectories.Length > 0)
                         {
-                            // Le dossier avec le nom DossierIndice a été trouvé
-                            //Tous les dossiers existe
-                            MessageBox.Show(this, "Il semble que le dossier existe", "Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                            System.Diagnostics.Process.Start(indiceDirectories[0]); // Ouvre le dossier dans l'explorateur de fichiers
-                            Application.Exit();
+                        // Le dossier avec le nom DossierIndice a été trouvé
+                        //Tous les dossiers existe
+                        // Chemin du dossier à ouvrir
+                        string folderPath = indiceDirectories[0];
+
+                        // Ouvre le dossier dans l'explorateur de fichiers
+                        Process.Start(new ProcessStartInfo
+                        {
+                            FileName = folderPath,
+                            UseShellExecute = true,
+                            Verb = "open"
+                        });
+
+                            // Ajoute un délai pour s'assurer que le dossier est ouvert
+                            Thread.Sleep(1000); // 1 seconde de délai
+
+                            // Affiche une boîte de message avec un message d'information
+                            MessageBox.Show("Il semble que le dossier existe", "Information", MessageBoxButtons.OK, MessageBoxIcon.Information); // Ouvre le dossier dans l'explorateur de fichiers
+                                Application.Exit();
                         }
                         else
                         {
@@ -1878,10 +1894,20 @@ namespace Folder_Creator_Tool_V3
 
 
 
-                                    // Ouverture du dossier "3D"
-                                    System.Diagnostics.Process.Start("explorer.exe", path3D);
+                        Process.Start(new ProcessStartInfo
+                        {
+                            FileName = "explorer.exe",
+                            Arguments = path3D,
+                            UseShellExecute = true,
+                            Verb = "open"
+                        });
 
+                            // Ajoute un délai pour s'assurer que le dossier est ouvert
+                            Thread.Sleep(1000); // 1 seconde de délai
+
+                            // Affiche une boîte de message avec un message d'information
                             MessageBox.Show("Exportation réussie.", "Succès", MessageBoxButtons.OK, MessageBoxIcon.Information, MessageBoxDefaultButton.Button1, MessageBoxOptions.DefaultDesktopOnly);
+                    
                             // Ferme l'application après que l'utilisateur ait cliqué sur OK
                             Application.Exit();
 
