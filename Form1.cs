@@ -1776,13 +1776,13 @@ namespace Folder_Creator_Tool_V3
                         }
                         else
                         {
-                        //Si non si dossier moule existe mais pas dossier rep
+                            //Si non si dossier moule existe mais pas dossier rep
 
-                        // Création du dossier repere
-                        System.IO.Directory.CreateDirectory(DossierAtelierServeur + "\\" + folderName + "\\" + TexteDossierRep);
+                            // Création du dossier repere
+                            System.IO.Directory.CreateDirectory(DossierAtelierServeur + "\\" + folderName + "\\" + TexteDossierRep);
 
-                        // Création du sous-dossier "TexteIndiceFolder"
-                        System.IO.Directory.CreateDirectory(DossierAtelierServeur + "\\" + folderName + "\\" + TexteDossierRep + "\\" + TexteIndiceFolder);
+                            // Création du sous-dossier "TexteIndiceFolder"
+                            System.IO.Directory.CreateDirectory(DossierAtelierServeur + "\\" + folderName + "\\" + TexteDossierRep + "\\" + TexteIndiceFolder);
 
                             // Création du sous-dossier "3D" dans "TexteIndiceFolder"
                             path3D = DossierAtelierServeur + folderName + "\\" + TexteDossierRep + "\\" + TexteIndiceFolder + "\\3D";
@@ -1823,14 +1823,14 @@ namespace Folder_Creator_Tool_V3
                             Thread.Sleep(1000); // 1 seconde de délai
 
                             // Affiche une boîte de message avec un message d'information
-                            MessageBox.Show("Il semble que le dossier existe", "Information", MessageBoxButtons.OK, MessageBoxIcon.Information); // Ouvre le dossier dans l'explorateur de fichiers
+                            MessageBox.Show("Il semble que le dossier existe", "Information", MessageBoxButtons.OK, MessageBoxIcon.Information, MessageBoxDefaultButton.Button1, MessageBoxOptions.DefaultDesktopOnly); // Ouvre le dossier dans l'explorateur de fichiers
                                 Application.Exit();
                         }
                         else
                         {
                             //Si non si dossier moule et le dossier rep existe mais pas le dossier ind
                             // Le dossier avec le nom DossierIndice n'a pas été trouvé
-                            MessageBox.Show(this, $"Aucun dossier avec le nom '{DossierIndice}' n'a été trouvé", "Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                            MessageBox.Show(this, $"Aucun dossier avec le nom '{DossierIndice}' n'a été trouvé", "Information", MessageBoxButtons.OK, MessageBoxIcon.Information, MessageBoxDefaultButton.Button1, MessageBoxOptions.DefaultDesktopOnly);
 
                             // Création du sous-dossier "TexteIndiceFolder"
                             System.IO.Directory.CreateDirectory(DossierAtelierServeur + "\\" + folderName + "\\" + TexteDossierRep + "\\" + TexteIndiceFolder);
@@ -1923,7 +1923,7 @@ namespace Folder_Creator_Tool_V3
             else
             {
               // Affiche un message d'erreur si le chemin n'est pas valide
-              MessageBox.Show("Veuillez entrer un chemin de dossier atelier valide.", "Erreur", MessageBoxButtons.OK, MessageBoxIcon.Error);
+              MessageBox.Show("Veuillez entrer un chemin de dossier atelier valide.", "Erreur", MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1, MessageBoxOptions.DefaultDesktopOnly);
             }
         }
 
