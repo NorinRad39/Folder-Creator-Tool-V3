@@ -329,8 +329,6 @@ namespace Folder_Creator_Tool_V3
             
         }
 
-
-
         void ProcessFolder(PdmObjectId folderId, TreeNode parentNode, string indice)
         {
             string folderName = TSH.Pdm.GetName(folderId);
@@ -384,13 +382,6 @@ namespace Folder_Creator_Tool_V3
             parentNode.Nodes.Add(folderNode);
         }
 
-
-
-
-
-
-
-
         void ExpandTargetNode(TreeNode rootNode, string targetName)
         {
             // Supprimer les espaces et convertir les deux chaînes en minuscules pour ne pas tenir compte de la casse et des espaces
@@ -442,11 +433,6 @@ namespace Folder_Creator_Tool_V3
             }
         }
 
-
-
-
-
-
         void ExpandNodeByName(TreeNodeCollection nodes, string targetName)
         {
             foreach (TreeNode node in nodes)
@@ -463,11 +449,6 @@ namespace Folder_Creator_Tool_V3
                 ExpandNodeByName(node.Nodes, targetName);
             }
         }
-
-
-
-
-
 
         //Fonction recuperation de l'indice pour valeur par defaut formulaire------------------------------------------------
 
@@ -556,15 +537,6 @@ namespace Folder_Creator_Tool_V3
             return false;
         }
 
-
-
-
-
-
-
-
-
-
         //-----------Fonction Récupération ID Document courant----------------------------------------------------------------------------------------------------------------------------
         void DocumentCourant(out PdmObjectId PdmObjectIdCurrentDocumentId, out DocumentId CurrentDocumentId, out DocumentId CurrentDocumentIdLastRev)
         {
@@ -596,7 +568,6 @@ namespace Folder_Creator_Tool_V3
             ChercherDossierDocumentEnCours(PdmObjectIdCurrentDocumentId, out indice);
             listePdf(indice);
         }
-
 
         //-----------Fonction Récupération Commentaire----------------------------------------------------------------------------------------------------------------------------
         void RecupCommentaire(in DocumentId CurrentDocumentId, out ElementId CurrentDocumentCommentaireId , out string TextCurrentDocumentCommentaire)
@@ -656,7 +627,6 @@ namespace Folder_Creator_Tool_V3
             }
         }
 
-
         ///----------------------------Fonction verification dossier indice---------------------------------
 
         bool VerifDossierIndice(List<PdmObjectId> IndiceFolderIds, out bool FichierExiste)
@@ -705,40 +675,38 @@ namespace Folder_Creator_Tool_V3
             
         }
         
-            private void FindParasolidExporterIndex(out int X_TExporterIndex)
+        private void FindParasolidExporterIndex(out int X_TExporterIndex)
+        {
+            //search the Parasolid exporter index
+
+            X_TExporterIndex = -1;
+            for (int i = 0; i < TopSolidHost.Application.ExporterCount; i++)
             {
-                //search the Parasolid exporter index
+                TopSolidHost.Application.GetExporterFileType(i, out string fileTypeName, out string[] outFileExtensions);
+                if (fileTypeName != "Parasolid") { continue; }
 
-                X_TExporterIndex = -1;
-                for (int i = 0; i < TopSolidHost.Application.ExporterCount; i++)
+                else
                 {
-                    TopSolidHost.Application.GetExporterFileType(i, out string fileTypeName, out string[] outFileExtensions);
-                    if (fileTypeName != "Parasolid") { continue; }
-
-                    else
-                    {
-                        X_TExporterIndex = i;
-                        break;
-                    }
+                    X_TExporterIndex = i;
+                    break;
                 }
             }
+        }
             
-            private List<KeyValue> VersionX_T(int X_TExporterIndex, string version)
+        private List<KeyValue> VersionX_T(int X_TExporterIndex, string version)
+        {
+            List<KeyValue> options = TSH.Application.GetExporterOptions(X_TExporterIndex);
+
+            // Modification de la valeur associée à "SAVE_VERSION"
+            for (int i = 0; i < options.Count; i++)
             {
-                List<KeyValue> options = TSH.Application.GetExporterOptions(X_TExporterIndex);
-
-                // Modification de la valeur associée à "SAVE_VERSION"
-                for (int i = 0; i < options.Count; i++)
+                if (options[i].Key == "SAVE_VERSION")
                 {
-                    if (options[i].Key == "SAVE_VERSION")
-                    {
-                        options[i] = new KeyValue("SAVE_VERSION", version); // Remplacement par un nouvel objet                                                      //break; // Sortie de la boucle après la modification
-                    }
-                } 
-                        return options;
-            }
-
-
+                    options[i] = new KeyValue("SAVE_VERSION", version); // Remplacement par un nouvel objet                                                      //break; // Sortie de la boucle après la modification
+                }
+            } 
+                    return options;
+        }
 
         private void FindNoConvertExporterIndex(out int NoConvertExporterIndex)
         {
@@ -758,10 +726,6 @@ namespace Folder_Creator_Tool_V3
             }
         }
 
-
-
-
-
         void CréaetionParam(ElementId parametrePubliedId, in ElementId ParamSytemElementId, in string NomParamTxt, in DocumentId document)
         {
             // Récupère la valeur du paramètre système en texte à partir de son identifiant
@@ -778,20 +742,8 @@ namespace Folder_Creator_Tool_V3
 
         }
 
-
-
-
-
-
-
-
-
-
-
         public Form1()
         {
-            
-
             InitializeComponent();
 
             // Charger le chemin sauvegardé et l'afficher dans la TextBox
@@ -849,9 +801,6 @@ namespace Folder_Creator_Tool_V3
             // Restaurer le choix de matière au démarrage
             RestoreMaterialChoice();
 
-            
-            
-
             //-----------Récupération ID projet courant----------------------------------------------------------------------------------------------------------------------------
             try
             {
@@ -880,11 +829,8 @@ namespace Folder_Creator_Tool_V3
                 MessageBox.Show(new Form { TopMost = true }, "Echec de la récupération de l'id du projet courant " + ex.Message);
             }
            
-            
             // Appel de la fonction pour chercher le dossier contenant
             ChercherDossierDocumentEnCours(PdmObjectIdCurrentDocumentId, out IndiceTxtBox);
-
-
 
             //-------------Creation de la variable pour la recherche du dossier atelier-------------------------------------------------------------------------------------------------------------------
 
@@ -899,7 +845,6 @@ namespace Folder_Creator_Tool_V3
                 this.TopMost = false;
                 MessageBox.Show(new Form { TopMost = true }, "Dossier ''02-Atelier'' introuvable dans le projet " + ex.Message);
             }
-
 
             //------------- Récupération du commentaire (Repère) du document courant----------------------------------------------------------------------------------------------------------------------------
 
@@ -924,14 +869,11 @@ namespace Folder_Creator_Tool_V3
 
             //----------- Variable des differents façon de nommer le dossier indice----------------------------------------------------------------------------------------------------------------------------
 
-           
-
             textBox8.Text = IndiceTxtBox; //Affichage de l'indice
 
             //Liste PDF--------------------------------
 
             listePdf(IndiceTxtBox);
-
 
             string DossierIndicePdf = "Ind " + IndiceTxtBox;
 
@@ -944,8 +886,6 @@ namespace Folder_Creator_Tool_V3
 
 
         }
-
-
 
         //------------------------------Bouton click dossier-------------
 
@@ -969,9 +909,6 @@ namespace Folder_Creator_Tool_V3
                 return;
             }
 
-
-
-
             // Récupère le texte de la TextBox
             string DossierAtelierServeur = textBox4.Text;
 
@@ -980,9 +917,6 @@ namespace Folder_Creator_Tool_V3
             {
                         // Si le chemin est valide, continue avec le reste du programme
                         // Ton code ici
-           
-
-
 
                     // Initialisation des listes
                     List<string> TxtCheckedItems = new List<string>();
@@ -1001,8 +935,6 @@ namespace Folder_Creator_Tool_V3
                     // Redémarre l'application
                     Application.Exit();
                     }
-
-
 
                     // Ajout des nœuds cochés à la liste CheckedItems
                     try
@@ -1336,23 +1268,58 @@ namespace Folder_Creator_Tool_V3
                         TSH.Documents.SetName(CurrentDocumentIdLastRev, nomDocu);
                         // Change le nom du document (dernière révision) avec la nouvelle valeur fournie par 'nomDocu'.
 
-                        string Indice3DNomParamTxt = "Indice 3D";
-                        // Définit une chaîne de caractères pour le nom du paramètre texte.
-
                         ElementId Indice3DNomParamId = TSH.Parameters.CreateTextParameter(CurrentDocumentId, TextBoxIndiceValue);
                         // Crée un paramètre texte dans le document actuel avec la valeur spécifiée et stocke son identifiant.
-
+                        string Indice3DNomParamTxt = "Indice 3D";
+                        // Définit une chaîne de caractères pour le nom du paramètre texte.
                         SmartText Indice3DNomParam = new SmartText(Indice3DNomParamId);
-                        
                         // Crée un objet SmartText à partir de la valeur contenue dans 'TextBoxIndiceValue'.
                         TSH.Elements.SetName(Indice3DNomParamId, Indice3DNomParamTxt);
-                        
                         // Attribue un nom au paramètre texte créé précédemment.
-
                         ElementId publishedIndice3DNomParamId = TSH.Parameters.PublishText(CurrentDocumentId, Indice3DNomParamTxt, Indice3DNomParam);
                         // Publie le paramètre texte 'Indice 3D' dans le document actuel et récupère l'identifiant de l'entité publiée.
-
                         TSH.Elements.SetName(publishedIndice3DNomParamId, Indice3DNomParamTxt);
+                        // Attribue le nom 'Indice 3D' à l'entité publiée.
+
+
+
+                         ElementId matierePlanParamId = TSH.Parameters.CreateTextParameter(CurrentDocumentId, textBox5.Text);
+                        // Crée un paramètre texte dans le document actuel avec la valeur spécifiée et stocke son identifiant.
+                        string matiereNomParamTxt = "Matiére plan";
+                        // Définit une chaîne de caractères pour le nom du paramètre texte.
+                        SmartText matierePlanParam = new SmartText(matierePlanParamId);
+                        // Crée un objet SmartText à partir de la valeur contenue dans 'TextBoxIndiceValue'.
+                        TSH.Elements.SetName(matierePlanParamId, matiereNomParamTxt);
+                        // Attribue un nom au paramètre texte créé précédemment.
+                        ElementId publishedMatierePlanParamId = TSH.Parameters.PublishText(CurrentDocumentId, matiereNomParamTxt, matierePlanParam);
+                        // Publie le paramètre texte 'Indice 3D' dans le document actuel et récupère l'identifiant de l'entité publiée.
+                        TSH.Elements.SetName(publishedMatierePlanParamId, matiereNomParamTxt);
+                        // Attribue le nom 'Indice 3D' à l'entité publiée.
+
+                         ElementId traitementParamId = TSH.Parameters.CreateTextParameter(CurrentDocumentId, textBox6.Text);
+                        // Crée un paramètre texte dans le document actuel avec la valeur spécifiée et stocke son identifiant.
+                        string traitementNomParamTxt = "Traitement";
+                        // Définit une chaîne de caractères pour le nom du paramètre texte.
+                        SmartText traitementParam = new SmartText(traitementParamId);
+                        // Crée un objet SmartText à partir de la valeur contenue dans 'TextBoxIndiceValue'.
+                        TSH.Elements.SetName(traitementParamId, traitementNomParamTxt);
+                        // Attribue un nom au paramètre texte créé précédemment.
+                        ElementId publishedTraitementParamId = TSH.Parameters.PublishText(CurrentDocumentId, traitementNomParamTxt, traitementParam);
+                        // Publie le paramètre texte 'Indice 3D' dans le document actuel et récupère l'identifiant de l'entité publiée.
+                        TSH.Elements.SetName(publishedTraitementParamId, traitementNomParamTxt);
+                        // Attribue le nom 'Indice 3D' à l'entité publiée.
+
+                         ElementId nbrPiecesParamId = TSH.Parameters.CreateTextParameter(CurrentDocumentId, textBox7.Text);
+                        // Crée un paramètre texte dans le document actuel avec la valeur spécifiée et stocke son identifiant.
+                        string nbrPiecesNomParamTxt = "Nombre de piéces";
+                        // Définit une chaîne de caractères pour le nom du paramètre texte.
+                        SmartText nbrPiecesParam = new SmartText(nbrPiecesParamId);
+                        // Crée un objet SmartText à partir de la valeur contenue dans 'TextBoxIndiceValue'.
+                        TSH.Elements.SetName(nbrPiecesParamId, nbrPiecesNomParamTxt);
+                        // Attribue un nom au paramètre texte créé précédemment.
+                        ElementId publishedNbrPiecesParamId = TSH.Parameters.PublishText(CurrentDocumentId, nbrPiecesNomParamTxt, nbrPiecesParam);
+                        // Publie le paramètre texte 'Indice 3D' dans le document actuel et récupère l'identifiant de l'entité publiée.
+                        TSH.Elements.SetName(publishedNbrPiecesParamId, nbrPiecesNomParamTxt);
                         // Attribue le nom 'Indice 3D' à l'entité publiée.
 
                         // Récupération de l'identifiant du paramètre de description du système
@@ -1383,6 +1350,8 @@ namespace Folder_Creator_Tool_V3
                         double LinearTol = 0.00001;
                         double AngularTol = 0.08726646259971647;
                         TSH.Options.SetVisualizationTolerances(CurrentDocumentIdLastRev, LinearTol, AngularTol);
+
+                        
 
                         // Fin des modifications avec sauvegarde des changements
                         TSH.Application.EndModification(true, true);
@@ -2135,13 +2104,6 @@ namespace Folder_Creator_Tool_V3
             RestoreMaterialChoice();
         }
 
-
-
-
-
-
-
-
-
+        
     }
 }
