@@ -191,6 +191,10 @@ namespace Folder_Creator_Tool_V3
             PdmObjectId DossierElectrodeId; //Recuperation de l'Id du dossier electrode pour creation des dossiers
             PdmObjectId DossierFraisageId; //Recuperation de l'Id du dossier fraisage pour creation des dossiers utilisateursP
             PdmObjectId DossierMethodeId;  //Recuperation de l'Id du dossier Methode pour creation des dossiers controle et tournage
+            PdmObjectId DossierFLFA; //Recuperation de l'Id du dossier FLFA pour creation du dossier OP1
+            PdmObjectId DossierBEHE; //Recuperation de l'Id du dossier FLFA pour creation du dossier OP1
+            PdmObjectId DossierSETE; //Recuperation de l'Id du dossier FLFA pour creation du dossier OP1
+
 
             try
             {
@@ -205,10 +209,14 @@ namespace Folder_Creator_Tool_V3
 
                 //Cration des dossier utilisateur dans le dossier fraisage
 
-                TSH.Pdm.CreateFolder(DossierFraisageId, "BEHE");
-                TSH.Pdm.CreateFolder(DossierFraisageId, "FLFA");
-                TSH.Pdm.CreateFolder(DossierFraisageId, "SETE");
-                
+                DossierBEHE = TSH.Pdm.CreateFolder(DossierFraisageId, "BEHE");
+                DossierFLFA = TSH.Pdm.CreateFolder(DossierFraisageId, "FLFA");
+                DossierSETE = TSH.Pdm.CreateFolder(DossierFraisageId, "SETE");
+
+                //Creation des dossier OP1
+                TSH.Pdm.CreateFolder(DossierBEHE, "OP1");
+                TSH.Pdm.CreateFolder(DossierFLFA, "OP1");
+                TSH.Pdm.CreateFolder(DossierSETE, "OP1");
 
                 //Creation des dossiers dans le dossier Electrode
 
