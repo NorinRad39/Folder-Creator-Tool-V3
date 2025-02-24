@@ -14,7 +14,19 @@ using System.Linq;
 using System.Net.NetworkInformation;
 using System.Diagnostics;
 using System.Threading;
-
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Threading.Tasks;
+using TopSolid.Cad.Drafting.Automating;
+using TopSolid.Cam.NC.Kernel.Automating;
+using TSHD = TopSolid.Cad.Design.Automating.TopSolidDesignHost;
+using TSCH = TopSolid.Cam.NC.Kernel.Automating.TopSolidCamHost;
+using S = System.Collections.Generic;
+using System.Security;
+using System.Security.Cryptography;
+using System.Xml.Linq;
+using TSCamPgmRename_V2;
 
 
 
@@ -32,27 +44,19 @@ namespace Folder_Creator_Tool_V3
     public partial class Form1 : Form
         {
 
-
+        private Document currentDoc;
+        private Document derivedCurrentDoc;
 
         [DllImport("user32.dll")]
         [return: MarshalAs(UnmanagedType.Bool)]
         static extern bool SetForegroundWindow(IntPtr hWnd);
-
-        
-
-        
-
-
-
-
-
-
-
+      
         // Classe pour récupérer le chemin réseau complet
         public class NetworkPathHelper
         {
             [DllImport("mpr.dll")]
             private static extern int WNetGetConnection(string localName, StringBuilder remoteName, ref int length);
+
             public static string GetNetworkPath(string driveLetter)
             {
                 StringBuilder remoteName = new StringBuilder(256);
@@ -82,11 +86,7 @@ namespace Folder_Creator_Tool_V3
             }
         }
 
-
-
-
-
-
+        #region Variable divers
 
         PdmObjectId CurrentProjectPdmId = new PdmObjectId(); //Id du projet courant
         string CurrentProjectName = ""; //Nom du projet courent
@@ -180,6 +180,7 @@ namespace Folder_Creator_Tool_V3
         int X_TExporterIndex = new int();
         List<KeyValue> options = new List<KeyValue>();
 
+        #endregion Fin variable divers
         //------------------------------------------------------------------
 
 
@@ -746,6 +747,11 @@ namespace Folder_Creator_Tool_V3
         {
             InitializeComponent();
 
+            // Initialisation de currentDoc
+            currentDoc = new Document();
+            currentDoc.DocId = TSH.Documents.EditedDocument;
+            derivedCurrentDoc = new Document();
+
             // Charger le chemin sauvegardé et l'afficher dans la TextBox
             textBox4.Text = Properties.Settings.Default.FolderPath;
 
@@ -930,10 +936,9 @@ namespace Folder_Creator_Tool_V3
 
                     if (resulta == DialogResult.Yes)
                     {
-                    
                         TSH.Application.InvokeCommand("TopSolid.Kernel.UI.D3.Shapes.Healing.HealCommand");
-                    // Redémarre l'application
-                    Application.Exit();
+                        // Redémarre l'application
+                        Application.Exit();
                     }
 
                     // Ajout des nœuds cochés à la liste CheckedItems
@@ -990,21 +995,21 @@ namespace Folder_Creator_Tool_V3
                         try
                         {
                             //Activation des modifications
-                            modifActif(CurrentDocumentId);
+                            modifActif(currentDoc.DocId);
 
-                            // Récupération à nouveau des informations du document actuel
-                            DocumentCourant(out PdmObjectIdCurrentDocumentId, out CurrentDocumentId, out CurrentDocumentIdLastRev);
+                            //// Récupération à nouveau des informations du document actuel
+                            //DocumentCourant(out PdmObjectIdCurrentDocumentId, out CurrentDocumentId, out CurrentDocumentIdLastRev);
 
                             //------------- Récupération du commentaire (Repère) du document courant----------------------------------------------------------------------------------------------------------------------------
                             CurrentDocumentCommentaireId = TSH.Parameters.GetCommentParameter(CurrentDocumentId);   // Récupération du commentaire (Repère)
-                            TextCurrentDocumentCommentaire = TSH.Parameters.GetTextLocalizedValue(CurrentDocumentCommentaireId);
+                            TextCurrentDocumentCommentaire = TSH.Parameters.GetTextLocalizedValue(currentDoc.CommentaireId);
                             //RecupCommentaire(in CurrentDocumentId, out CurrentDocumentCommentaireId, out TextCurrentDocumentCommentaire);
 
                             //----------- Récupération de la désignation du document courant----------------------------------------------------------------------------------------------------------------------------
                             try
                             {
                                 CurrentDocumentDesignationId = TSH.Parameters.GetDescriptionParameter(CurrentDocumentId);   // Récupération de la désignation
-                                TextCurrentDocumentDesignation = TSH.Parameters.GetTextLocalizedValue(CurrentDocumentDesignationId);
+                                TextCurrentDocumentDesignation = TSH.Parameters.GetTextLocalizedValue(currentDoc.DesignationId);
 
                                 textBox3.Text = TextCurrentDocumentDesignation; //Affichage du commentaire (Repère) dans la case texte
 
@@ -1018,8 +1023,8 @@ namespace Folder_Creator_Tool_V3
 
 
                             // Mise à jour des valeurs de commentaire et de désignation du document
-                            TSH.Parameters.SetTextValue(CurrentDocumentCommentaireId, TextBoxCommentaireValue);
-                            TSH.Parameters.SetTextValue(CurrentDocumentDesignationId, TextBoxDesignationValue);
+                            TSH.Parameters.SetTextValue(currentDoc.CommentaireId, TextBoxCommentaireValue);
+                            TSH.Parameters.SetTextValue(currentDoc.DesignationId, TextBoxDesignationValue);
 
                             // Appeler la méthode de vérification pendant l'initialisation ou un événement
 
@@ -1160,19 +1165,20 @@ namespace Folder_Creator_Tool_V3
                         try
                         {
                             // Récupération de l'ID du propriétaire du document actuel
-                            AuteurPdmObjectId = TSH.Pdm.GetOwner(PdmObjectIdCurrentDocumentId);
+                            AuteurPdmObjectId = TSH.Pdm.GetOwner(currentDoc.PdmObject);
                             // Création d'un document dérivé et récupération de son ID
-                            DerivéDocumentId = TopSolidDesignHost.Tools.CreateDerivedDocument(AuteurPdmObjectId, CurrentDocumentId, false);
+                            derivedCurrentDoc.DocId = TopSolidDesignHost.Tools.CreateDerivedDocument(AuteurPdmObjectId, currentDoc.DocId, false);
+                            DocumentId DerivéDocumentId = derivedCurrentDoc.DocId;
 
                             // Récupération de l'ID Pdm du document dérivé
-                            DerivéDocumentPdmObjectId = TSH.Documents.GetPdmObject(DerivéDocumentId);
+                            DerivéDocumentPdmObjectId = TSH.Documents.GetPdmObject(derivedCurrentDoc.DocId);
                             // Ajout de l'ID Pdm du document dérivé à la liste
-                            DerivéDocumentPdmObjectIds.Add(DerivéDocumentPdmObjectId);
+                            DerivéDocumentPdmObjectIds.Add(derivedCurrentDoc.PdmObject);
 
                             // Sauvegarde du document actuel
-                            TSH.Documents.Save(CurrentDocumentId);
+                            TSH.Documents.Save(currentDoc.DocId);
                             // Fermeture du document actuel
-                            TSH.Documents.Close(CurrentDocumentId, false, false);
+                            TSH.Documents.Close(currentDoc.DocId, false, false);
                             // Ouverture du document dérivé
                             TSH.Documents.Open(ref DerivéDocumentId);
                             PdmObjectId DerivéDocumentPdmId = TSH.Documents.GetPdmObject(DerivéDocumentId);
@@ -1191,12 +1197,12 @@ namespace Folder_Creator_Tool_V3
                         {
 
                             //DocumentCourant(out PdmObjectIdCurrentDocumentId, out CurrentDocumentId, out CurrentDocumentIdLastRev);
-                            modifActif(CurrentDocumentId);
+                            modifActif(currentDoc.DocId);
 
                             DocumentCourant(out PdmObjectIdCurrentDocumentId, out CurrentDocumentId, out CurrentDocumentIdLastRev);
                             List<ElementId> OtherSystemParameters = new List<ElementId>();
                             TopSolidDesignHost.Tools.SetDerivationInheritances(
-                                               CurrentDocumentIdLastRev, // Identifiant de la dernière révision du document courant
+                                               currentDoc.DocId, // Identifiant de la dernière révision du document courant
                                                 false, // inName
                                                 true,  // inDescription
                                                 false,  // inCode
@@ -1259,13 +1265,13 @@ namespace Folder_Creator_Tool_V3
                         // Appelle une méthode personnalisée pour récupérer les identifiants du document actuel, 
                         // y compris l'identifiant de la dernière révision du document.
 
-                        modifActif(CurrentDocumentId);
+                        modifActif(currentDoc.DocId);
                         // Active les modifications sur le document actuel.
 
-                        DocumentCourant(out PdmObjectIdCurrentDocumentId, out CurrentDocumentId, out CurrentDocumentIdLastRev);
-                        // Répète l'appel à la méthode pour mettre à jour les informations du document.
+                        //DocumentCourant(out PdmObjectIdCurrentDocumentId, out CurrentDocumentId, out CurrentDocumentIdLastRev);
+                        //// Répète l'appel à la méthode pour mettre à jour les informations du document.
 
-                        TSH.Documents.SetName(CurrentDocumentIdLastRev, nomDocu);
+                        TSH.Documents.SetName(currentDoc.DocId, nomDocu);
                         // Change le nom du document (dernière révision) avec la nouvelle valeur fournie par 'nomDocu'.
 
                         ElementId Indice3DNomParamId = TSH.Parameters.CreateTextParameter(CurrentDocumentId, TextBoxIndiceValue);
@@ -1283,7 +1289,7 @@ namespace Folder_Creator_Tool_V3
 
 
 
-                         ElementId matierePlanParamId = TSH.Parameters.CreateTextParameter(CurrentDocumentId, textBox5.Text);
+                         ElementId matierePlanParamId = TSH.Parameters.CreateTextParameter(currentDoc.DocId, textBox5.Text);
                         // Crée un paramètre texte dans le document actuel avec la valeur spécifiée et stocke son identifiant.
                         string matiereNomParamTxt = "Matiére plan";
                         // Définit une chaîne de caractères pour le nom du paramètre texte.
@@ -1291,12 +1297,12 @@ namespace Folder_Creator_Tool_V3
                         // Crée un objet SmartText à partir de la valeur contenue dans 'TextBoxIndiceValue'.
                         TSH.Elements.SetName(matierePlanParamId, matiereNomParamTxt);
                         // Attribue un nom au paramètre texte créé précédemment.
-                        ElementId publishedMatierePlanParamId = TSH.Parameters.PublishText(CurrentDocumentId, matiereNomParamTxt, matierePlanParam);
+                        ElementId publishedMatierePlanParamId = TSH.Parameters.PublishText(currentDoc.DocId, matiereNomParamTxt, matierePlanParam);
                         // Publie le paramètre texte 'Indice 3D' dans le document actuel et récupère l'identifiant de l'entité publiée.
                         TSH.Elements.SetName(publishedMatierePlanParamId, matiereNomParamTxt);
                         // Attribue le nom 'Indice 3D' à l'entité publiée.
 
-                         ElementId traitementParamId = TSH.Parameters.CreateTextParameter(CurrentDocumentId, textBox6.Text);
+                         ElementId traitementParamId = TSH.Parameters.CreateTextParameter(currentDoc.DocId, textBox6.Text);
                         // Crée un paramètre texte dans le document actuel avec la valeur spécifiée et stocke son identifiant.
                         string traitementNomParamTxt = "Traitement";
                         // Définit une chaîne de caractères pour le nom du paramètre texte.
@@ -1304,12 +1310,12 @@ namespace Folder_Creator_Tool_V3
                         // Crée un objet SmartText à partir de la valeur contenue dans 'TextBoxIndiceValue'.
                         TSH.Elements.SetName(traitementParamId, traitementNomParamTxt);
                         // Attribue un nom au paramètre texte créé précédemment.
-                        ElementId publishedTraitementParamId = TSH.Parameters.PublishText(CurrentDocumentId, traitementNomParamTxt, traitementParam);
+                        ElementId publishedTraitementParamId = TSH.Parameters.PublishText(currentDoc.DocId, traitementNomParamTxt, traitementParam);
                         // Publie le paramètre texte 'Indice 3D' dans le document actuel et récupère l'identifiant de l'entité publiée.
                         TSH.Elements.SetName(publishedTraitementParamId, traitementNomParamTxt);
                         // Attribue le nom 'Indice 3D' à l'entité publiée.
 
-                         ElementId nbrPiecesParamId = TSH.Parameters.CreateTextParameter(CurrentDocumentId, textBox7.Text);
+                         ElementId nbrPiecesParamId = TSH.Parameters.CreateTextParameter(currentDoc.DocId, textBox7.Text);
                         // Crée un paramètre texte dans le document actuel avec la valeur spécifiée et stocke son identifiant.
                         string nbrPiecesNomParamTxt = "Nombre de piéces";
                         // Définit une chaîne de caractères pour le nom du paramètre texte.
@@ -1317,13 +1323,13 @@ namespace Folder_Creator_Tool_V3
                         // Crée un objet SmartText à partir de la valeur contenue dans 'TextBoxIndiceValue'.
                         TSH.Elements.SetName(nbrPiecesParamId, nbrPiecesNomParamTxt);
                         // Attribue un nom au paramètre texte créé précédemment.
-                        ElementId publishedNbrPiecesParamId = TSH.Parameters.PublishText(CurrentDocumentId, nbrPiecesNomParamTxt, nbrPiecesParam);
+                        ElementId publishedNbrPiecesParamId = TSH.Parameters.PublishText(currentDoc.DocId, nbrPiecesNomParamTxt, nbrPiecesParam);
                         // Publie le paramètre texte 'Indice 3D' dans le document actuel et récupère l'identifiant de l'entité publiée.
                         TSH.Elements.SetName(publishedNbrPiecesParamId, nbrPiecesNomParamTxt);
                         // Attribue le nom 'Indice 3D' à l'entité publiée.
 
                         // Récupération de l'identifiant du paramètre de description du système
-                        ElementId DesignationSystemeId = TSH.Parameters.GetDescriptionParameter(CurrentDocumentId);
+                        ElementId DesignationSystemeId = TSH.Parameters.GetDescriptionParameter(currentDoc.DocId);
                         // Définition du nom du paramètre de description
                         string DesignationNomParam = "Designation";
                         // Création du paramètre de description avec l'identifiant récupéré
