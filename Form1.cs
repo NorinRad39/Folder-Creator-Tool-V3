@@ -26,7 +26,7 @@ using S = System.Collections.Generic;
 using System.Security;
 using System.Security.Cryptography;
 using System.Xml.Linq;
-using TSCamPgmRename_V2;
+
 
 
 
@@ -36,16 +36,11 @@ using TSCamPgmRename_V2;
 
 namespace Folder_Creator_Tool_V3
 {
-  
-
-
-
-
     public partial class Form1 : Form
         {
-
         private Document currentDoc;
         private Document derivedCurrentDoc;
+        private StartConnect startConnect;
 
         [DllImport("user32.dll")]
         [return: MarshalAs(UnmanagedType.Bool)]
@@ -88,97 +83,8 @@ namespace Folder_Creator_Tool_V3
 
         #region Variable divers
 
-        PdmObjectId CurrentProjectPdmId = new PdmObjectId(); //Id du projet courant
-        string CurrentProjectName = ""; //Nom du projet courent
-
-        DocumentId CurrentDocumentId = new DocumentId(); //Id du document courant
-        PdmObjectId PdmObjectIdCurrentDocumentId = new PdmObjectId();
-        DocumentId CurrentDocumentIdLastRev;
-
-        string TextCurrentDocumentName = ""; //Nom du document courant
-
-        List<PdmObjectId> FolderIds = new List<PdmObjectId>(); //Liste des dossiers contenu dans le projet courant
-        List<PdmObjectId> DocumentsIds = new List<PdmObjectId>(); //Liste des documents contenu dans le projet courant
-
-        ElementId CurrentDocumentCommentaireId = new ElementId(); //Id du commentaire du document courant
-        string TextCurrentDocumentCommentaire; //Texte du commentaire du document courant
-        ElementId CurrentDocumentDesignationId = new ElementId();//Id de la designation du document courant
-        string TextCurrentDocumentDesignation = "";//Texte de la designation du document courant
-
-        string TextBoxProjectName =""; //Nom du projet affiché dans la textbox
-
-        string TextBoxDesignationValue="";//Texte afficher dans la textbox designation
-        string TextBoxCommentaireValue=""; //Texte afficher dans la textbox Commentaire
-        string TextBoxIndiceValue = "";//Texte afficher dans la textbox Indice
-        string TextBoxNomMouleValue;//Texte afficher dans la textbox NomMoule
-
-        string ConstituantFolderName = "";
-        List<string> ConstituantFolderNames = new List<string>();
-
-        List<string> ListFoldersNames = new List<string>();
-
-        string TexteDossierRep = ""; //Nom du dossier repere a creer
-
-        bool test00; //Creation bool pour tester la presence des dossiers a creer dans le projet
-        bool test01;
-        bool test02;
-        bool test03;
-
-
-        List<PdmObjectId> DocumentsInIndiceFolder = new List<PdmObjectId>(); //Liste document fictive pour recuperation dossier indice
-        List<PdmObjectId> IndiceFolderIds = new List<PdmObjectId>(); //Liste des Id de dossier indice
-
-        PdmObjectId DossierExistantId =new PdmObjectId(); //Id du dossier existant
-
-        string IndiceFolderName = "";
-
         PdmObjectId AtelierFolderId = new PdmObjectId(); //Id du dossier atelier
 
-
-
-        string CommentaireTxtFormat00 = ""; //Different format de commantaire
-        string CommentaireTxtFormat01 = "";
-        string IndiceTxtFormat00 = ""; //Different format d'indice
-        string IndiceTxtFormat01 = "";
-
-        List<PdmObjectId> AtelierFolderIds = new List<PdmObjectId>();
-
-        PdmObjectId DossierRepId = new PdmObjectId(); //Recuperation de l'Id du dossier rep pour creation du rep indice
-
-
-
-
-        string TexteIndiceFolder = "";
-        List<PdmObjectId> DocuDossierIndiceIds = new List<PdmObjectId>();
-
-
-        PdmObjectId AuteurPdmObjectId = new PdmObjectId();
-
-        PdmObjectId DocumentModeleDerivation = new PdmObjectId("19_5af816ad - b4b1 - 402d - 8914 - a4c95a895d88 & 3_6038"); //Recupération du PdmObjectId du document modele de dérivation
-
-        DocumentId DerivéDocumentId = new DocumentId(); //recuperation de l'Id de document du document dérivé
-        List<DocumentId> DerivéDocumentIds = new List<DocumentId>(); //recuperation de l'Id de document du document dérivé
-
-        PdmObjectId Dossier3DPdmObjectId = new PdmObjectId();
-        List<PdmObjectId> Dossier3DPdmObjectIds = new List<PdmObjectId>();
-
-
-        PdmObjectId DerivéDocumentPdmObjectId = new PdmObjectId(); //Recupération du PdmObjectId du document dérivé
-
-        List<PdmObjectId> DerivéDocumentPdmObjectIds = new List<PdmObjectId>(); //Creation liste du PdmObjectId du document dérivé
-
-        PdmObjectId DossierIndiceId = new PdmObjectId(); //Recuperation de l'Id du dossier Indice pour creation du reste des dossiers
-
-        String nomDocu = "";
-        List<PdmObjectId> nomDocuIds = new List<PdmObjectId>();
-
-        PdmObjectId dossier3DGenereId = new PdmObjectId();
-
-        ElementId CurrentNameParameterId = new ElementId();
-        bool areDirectionsEqual = false;
-
-        int X_TExporterIndex = new int();
-        List<KeyValue> options = new List<KeyValue>();
 
         #endregion Fin variable divers
         //------------------------------------------------------------------
@@ -274,7 +180,6 @@ namespace Folder_Creator_Tool_V3
             }
         }
 
-
         //-------------------------------Fonction de recupéaration des pdf-------------------
         TreeNode rootFolderNode = new TreeNode();
         string targetName = "";
@@ -287,7 +192,7 @@ namespace Folder_Creator_Tool_V3
 
             try
             {
-                dossiers2Ds = TSH.Pdm.SearchFolderByName(CurrentProjectPdmId, "01-2D");
+                dossiers2Ds = TSH.Pdm.SearchFolderByName(currentDoc.ProjetId, "01-2D");
                 dossiers2D = dossiers2Ds[0];
             }
             catch (Exception ex)
@@ -461,7 +366,7 @@ namespace Folder_Creator_Tool_V3
             try
             {
                 // Recherche du dossier "02-3D" dans le projet courant
-                dossiers3Ds = TSH.Pdm.SearchFolderByName(CurrentProjectPdmId, "02-3D");
+                dossiers3Ds = TSH.Pdm.SearchFolderByName(currentDoc.ProjetId, "02-3D");
                 if (dossiers3Ds.Count > 0)
                 {
                     Dictionary<PdmObjectId, PdmObjectId> parentMapping = new Dictionary<PdmObjectId, PdmObjectId>();
@@ -538,56 +443,7 @@ namespace Folder_Creator_Tool_V3
             return false;
         }
 
-        //-----------Fonction Récupération ID Document courant----------------------------------------------------------------------------------------------------------------------------
-        void DocumentCourant(out PdmObjectId PdmObjectIdCurrentDocumentId, out DocumentId CurrentDocumentId, out DocumentId CurrentDocumentIdLastRev)
-        {
-           
-            try
-            {
-                CurrentDocumentId = TSH.Documents.EditedDocument;  // Récupération ID Document courant
-                PdmObjectIdCurrentDocumentId = TSH.Documents.GetPdmObject(CurrentDocumentId);
-                PdmMinorRevisionId DerniereRev = TSH.Pdm.GetFinalMinorRevision(PdmObjectIdCurrentDocumentId);
-                CurrentDocumentIdLastRev = TSH.Documents.GetMinorRevisionDocument(DerniereRev);
-
-
-            }
-            catch (Exception ex)
-            {
-                this.TopMost = false;
-                MessageBox.Show(new Form { TopMost = true }, "Echec de la récupération de l'id du document courant. Ouvrez un document puis réessayez  " + ex.Message);
-                Application.Exit();
-                Environment.Exit(0);
-                return;
-
-            }
-        }
-
-        string indice; 
-        void InitialiserTreeView()
-        {
-            //string indice;
-            ChercherDossierDocumentEnCours(PdmObjectIdCurrentDocumentId, out indice);
-            listePdf(indice);
-        }
-
         //-----------Fonction Récupération Commentaire----------------------------------------------------------------------------------------------------------------------------
-        void RecupCommentaire(in DocumentId CurrentDocumentId, out ElementId CurrentDocumentCommentaireId , out string TextCurrentDocumentCommentaire)
-        {
-            CurrentDocumentCommentaireId = new ElementId(); // Initialisation avant le bloc try
-            TextCurrentDocumentCommentaire = "";
-            try
-            {
-                CurrentDocumentCommentaireId = TSH.Parameters.GetCommentParameter(CurrentDocumentId);   // Récupération du commentaire (Repère)
-                TextCurrentDocumentCommentaire = TSH.Parameters.GetTextLocalizedValue(CurrentDocumentCommentaireId);
-
-                textBox2.Text = TextCurrentDocumentCommentaire; //Affichage du commentaire (Repère) dans la case texte
-            }
-            catch (Exception ex)
-            {
-                this.TopMost = false;
-                MessageBox.Show(new Form { TopMost = true }, "Echec de la récupération du Commentaire " + ex.Message);
-            }
-        }
 
         class MyDocumentsEventsHost : IDocumentsEvents
         {
@@ -629,19 +485,27 @@ namespace Folder_Creator_Tool_V3
         }
 
         ///----------------------------Fonction verification dossier indice---------------------------------
+        string IndiceTxtFormat00 = ""; //Different format d'indice
+        string IndiceTxtFormat01 = "";
+        string nomDocu = string.Empty;
 
         bool VerifDossierIndice(List<PdmObjectId> IndiceFolderIds, out bool FichierExiste)
         {
             // Initialisation de la variable de sortie
             FichierExiste = false;
-            nomDocu = textBox2.Text + " Ind " + textBox8.Text + " " + textBox10.Text;
+           nomDocu = textBox2.Text + " Ind " + textBox8.Text + " " + textBox10.Text;
+
+            
 
             // Vérification si la liste des IDs de dossier n'est pas vide
             if (IndiceFolderIds.Count != 0)
             {
+
                 // Parcours de la liste des IDs de dossier
                 for (int i = 0; i < IndiceFolderIds.Count; i++)
                 {
+                    
+
                     // Obtention du nom du dossier à partir de l'ID
                     string IndiceFolderName = TSH.Pdm.GetName(IndiceFolderIds[i]);
                     // Vérification si le nom du dossier correspond à un format spécifique
@@ -654,7 +518,7 @@ namespace Folder_Creator_Tool_V3
                     if (test02 || test03)
                     {
                         // Recherche de documents par nom dans le projet actuel
-                        List<PdmObjectId> nomDocuIds = TSH.Pdm.SearchDocumentByName(CurrentProjectPdmId, nomDocu);
+                        List<PdmObjectId> nomDocuIds = TSH.Pdm.SearchDocumentByName(currentDoc.ProjetId, nomDocu);
                         // Si aucun document n'est trouvé, affichage d'un message
                         if (nomDocuIds.Count > 0)
                         {
@@ -709,24 +573,6 @@ namespace Folder_Creator_Tool_V3
                     return options;
         }
 
-        private void FindNoConvertExporterIndex(out int NoConvertExporterIndex)
-        {
-            //search exporter sans conversion index
-
-            NoConvertExporterIndex = -1;
-            for (int i = 0; i < TopSolidHost.Application.ExporterCount; i++)
-            {
-                TopSolidHost.Application.GetExporterFileType(i, out string fileTypeName, out string[] outFileExtensions);
-                if (fileTypeName != "") { continue; }
-
-                else
-                {
-                    NoConvertExporterIndex = i;
-                    break;
-                }
-            }
-        }
-
         void CréaetionParam(ElementId parametrePubliedId, in ElementId ParamSytemElementId, in string NomParamTxt, in DocumentId document)
         {
             // Récupère la valeur du paramètre système en texte à partir de son identifiant
@@ -742,37 +588,23 @@ namespace Folder_Creator_Tool_V3
             TSH.Elements.SetName(parametrePubliedId, NomParamTxt);
 
         }
+        
+        int X_TExporterIndex = new int();
 
         public Form1()
         {
             InitializeComponent();
+            startConnect = new StartConnect();
+            startConnect.ConnectionTopsolid();
 
             // Initialisation de currentDoc
             currentDoc = new Document();
             currentDoc.DocId = TSH.Documents.EditedDocument;
             derivedCurrentDoc = new Document();
 
+
             // Charger le chemin sauvegardé et l'afficher dans la TextBox
             textBox4.Text = Properties.Settings.Default.FolderPath;
-
-            //-----------Connexion a TopSolid-----------------------------------------------------------------------------------------------------------------
-
-            bool TSConnected = TopSolidDesignHost.IsConnected;
-            {
-                try
-                {
-                    TSH.Connect("Folder Creator Tool");  // Connection à TopSolid
-                    TopSolidDesignHost.Connect();    // Connection à TopSolidDesign
-                }
-                catch (Exception ex)
-                {
-                    this.TopMost = false;
-                    MessageBox.Show("Impossible de se connecter à TopSolid " + ex.Message);
-                    return;
-                }
-            }
-
-            DocumentCourant(out PdmObjectIdCurrentDocumentId,out CurrentDocumentId, out DocumentId CurrentDocumentIdLastRev);
 
             // Variable pour stocker la dernière lettre du nom du dossier
             string IndiceTxtBox = "";
@@ -780,9 +612,14 @@ namespace Folder_Creator_Tool_V3
            //Recuperation l'exporteur parasolid
             FindParasolidExporterIndex(out X_TExporterIndex);
 
+
             string versionX_T = "31";
+                    List<KeyValue> options = new List<KeyValue>();
+
             //Configuartion version parasolid
-           options = VersionX_T(X_TExporterIndex, (versionX_T+"0"));
+            List<KeyValue> options = new List<KeyValue>();
+
+            options = VersionX_T(X_TExporterIndex, (versionX_T+"0"));
 
                 label7.Text = versionX_T; // Afficher la version dans le formulaire
   
@@ -790,10 +627,10 @@ namespace Folder_Creator_Tool_V3
             //----------- Récupération du nom du document courant----------------------------------------------------------------------------------------------------------------------------         
             try
             {
-                string CurrentDocumentName = TSH.Documents.GetName(CurrentDocumentId);  // Récupération du nom du document courant
-                TextCurrentDocumentName = CurrentDocumentName;
+                //string CurrentDocumentName = TSH.Documents.GetName(CurrentDocumentId);  // Récupération du nom du document courant
+                //TextCurrentDocumentName = currentDoc.Nom;
 
-                textBox9.Text = TextCurrentDocumentName; //Affichage du nom du document courent dans la case texte
+                textBox9.Text = currentDoc.Nom; //Affichage du nom du document courent dans la case texte
             }
             catch (Exception ex)
             {
@@ -807,23 +644,11 @@ namespace Folder_Creator_Tool_V3
             // Restaurer le choix de matière au démarrage
             RestoreMaterialChoice();
 
-            //-----------Récupération ID projet courant----------------------------------------------------------------------------------------------------------------------------
-            try
-            {
-                CurrentProjectPdmId = TSH.Pdm.GetProject(PdmObjectIdCurrentDocumentId);   // Récupération ID projet courant
-            }
-            catch (Exception ex)
-            {
-                this.TopMost = false;
-                MessageBox.Show(new Form { TopMost = true }, "Echec de la récupération de l'id du projet courant " + ex.Message);
-                return;
-            }
-
             //-----------Récupération Nom projet courant----------------------------------------------------------------------------------------------------------------------------
             try
             {
-                CurrentProjectName = TSH.Pdm.GetName(CurrentProjectPdmId);  // Récupération Nom projet
-                TextBoxProjectName = CurrentProjectName;
+                //CurrentProjectName = TSH.Pdm.GetName(currentDoc.ProjetId);  // Récupération Nom projet
+                string TextBoxProjectName = TSH.Pdm.GetName(currentDoc.ProjetId);
 
                 textBox10.Text = TextBoxProjectName; //Affichage du nom du projet courent dans la case texte
                 textBox1.Text = TextBoxProjectName; //Affichage le N° de moule dans la case texte
@@ -836,13 +661,14 @@ namespace Folder_Creator_Tool_V3
             }
            
             // Appel de la fonction pour chercher le dossier contenant
-            ChercherDossierDocumentEnCours(PdmObjectIdCurrentDocumentId, out IndiceTxtBox);
+            ChercherDossierDocumentEnCours(currentDoc.PdmObject, out IndiceTxtBox);
 
             //-------------Creation de la variable pour la recherche du dossier atelier-------------------------------------------------------------------------------------------------------------------
+            
 
             try
             {
-                AtelierFolderIds = TSH.Pdm.SearchFolderByName(CurrentProjectPdmId, "02-Atelier");
+                List<PdmObjectId> AtelierFolderIds = TSH.Pdm.SearchFolderByName(currentDoc.ProjetId, "02-Atelier");
                 AtelierFolderId = AtelierFolderIds[0];
 
             }
@@ -854,16 +680,16 @@ namespace Folder_Creator_Tool_V3
 
             //------------- Récupération du commentaire (Repère) du document courant----------------------------------------------------------------------------------------------------------------------------
 
-            RecupCommentaire(in CurrentDocumentId, out CurrentDocumentCommentaireId, out TextCurrentDocumentCommentaire);
+            //RecupCommentaire(in CurrentDocumentId, out CurrentDocumentCommentaireId, out TextCurrentDocumentCommentaire);
 
             //----------- Récupération de la désignation du document courant----------------------------------------------------------------------------------------------------------------------------
 
             try
             {
-                CurrentDocumentDesignationId = TSH.Parameters.GetDescriptionParameter(CurrentDocumentId);   // Récupération de la désignation
-                TextCurrentDocumentDesignation = TSH.Parameters.GetTextLocalizedValue(CurrentDocumentDesignationId);
-
-                textBox3.Text = TextCurrentDocumentDesignation; //Affichage du commentaire (Repère) dans la case texte
+                //CurrentDocumentDesignationId = TSH.Parameters.GetDescriptionParameter(CurrentDocumentId);   // Récupération de la désignation
+                //TextCurrentDocumentDesignation = TSH.Parameters.GetTextLocalizedValue(currentDoc.CommentaireId);
+                textBox2.Text = TSH.Parameters.GetTextLocalizedValue(currentDoc.CommentaireId);
+                textBox3.Text = TSH.Parameters.GetTextLocalizedValue(currentDoc.DesignationId); //Affichage du commentaire (Repère) dans la case texte
 
 
             }
@@ -901,7 +727,7 @@ namespace Folder_Creator_Tool_V3
             
             if (textBox2.Text == string.Empty)
             {
-                MessageBox.Show ( celluleVideErreur);
+                MessageBox.Show (celluleVideErreur);
                 return;
             }
             if (textBox3.Text == string.Empty)
@@ -917,364 +743,388 @@ namespace Folder_Creator_Tool_V3
 
             // Récupère le texte de la TextBox
             string DossierAtelierServeur = textBox4.Text;
+            string TextBoxCommentaireValue = string.Empty;
+            string TextBoxDesignationValue = string.Empty;
+            string TextBoxIndiceValue = string.Empty;
+            string TextBoxNomMouleValue = string.Empty;
+            string TexteDossierRep = string.Empty;
+            string TexteIndiceFolder = string.Empty;
+
+
+            PdmObjectId DossierRepId = new PdmObjectId(); //Recuperation de l'Id du dossier rep pour creation du rep indice
 
             // Vérifie si le chemin est valide et s'il existe
             if (Directory.Exists(DossierAtelierServeur))
             {
-                        // Si le chemin est valide, continue avec le reste du programme
-                        // Ton code ici
+                    
+                // Initialisation des listes
+                List<string> TxtCheckedItems = new List<string>();
+                List<string> CheckedItemsIdTxt = new List<string>();
+                List<PdmObjectId> CheckedItems = new List<PdmObjectId>();
+                List<PdmObjectId> CheckedItemListeCopie = new List<PdmObjectId>();
+                List<PdmObjectId> CheckedItemsliste = new List<PdmObjectId>();
+                List<PdmObjectId> CheckedItemCopieListe = new List<PdmObjectId>();
 
-                    // Initialisation des listes
-                    List<string> TxtCheckedItems = new List<string>();
-                    List<string> CheckedItemsIdTxt = new List<string>();
-                    List<PdmObjectId> CheckedItems = new List<PdmObjectId>();
-                    List<PdmObjectId> CheckedItemListeCopie = new List<PdmObjectId>();
-                    List<PdmObjectId> CheckedItemsliste = new List<PdmObjectId>();
-                    List<PdmObjectId> CheckedItemCopieListe = new List<PdmObjectId>();
+                DialogResult resulta = MessageBox.Show("Voulez vous simplifier la piece", "Confirmation", MessageBoxButtons.YesNo);
 
-                    DialogResult resulta = MessageBox.Show("Voulez vous simplifier la piece", "Confirmation", MessageBoxButtons.YesNo);
+                if (resulta == DialogResult.Yes)
+                {
+                    TSH.Application.InvokeCommand("TopSolid.Kernel.UI.D3.Shapes.Healing.HealCommand");
+                    // Redémarre l'application
+                    Application.Exit();
+                }
 
-                    if (resulta == DialogResult.Yes)
+                // Ajout des nœuds cochés à la liste CheckedItems
+                try
+                {
+                    AddCheckedNodesToList(treeView1.Nodes, CheckedItems);
+
+                    // Parcours de la liste CheckedItems
+                    for (int i = 0; CheckedItems.Count > i; i++)
                     {
-                        TSH.Application.InvokeCommand("TopSolid.Kernel.UI.D3.Shapes.Healing.HealCommand");
-                        // Redémarre l'application
-                        Application.Exit();
+                        string ExtentionTxtPdf = "";
+                        PdmObjectId CheckedItem = CheckedItems[i];
+                        PdmObjectType TypePDF = TSH.Pdm.GetType(CheckedItem, out ExtentionTxtPdf);
+                        // Si l'extension du fichier est .pdf, ajout à la liste CheckedItemsliste
+                        if (ExtentionTxtPdf == ".pdf")
+                        {
+                            CheckedItemsliste.Add(CheckedItem);
+                        }
                     }
+                }
+                catch (Exception ex)
+                {
+                    this.TopMost = false;
+                    MessageBox.Show(new Form { TopMost = true }, "Echec de la récupération de la liste des PDF " + ex.Message);
+                }
+                List<string> ConstituantFolderNames = new List<string>();
+                List<string> ListFoldersNames = new List<string>();
+                ConstituantFolderNames.Clear();
+                ListFoldersNames.Clear();
 
-                    // Ajout des nœuds cochés à la liste CheckedItems
+                bool recommencer;
+                recommencer = false; // Réinitialisez recommencer à false à chaque début de boucle
+                                     //Récuperation des noms de dossiers
+                PdmObjectId dossier3DGenereId = new PdmObjectId();
+
+
+                do
+                {
+                    //Recuperation du texte modifié par l'utilisateur pour nommer les dossiers.
+                    TextBoxCommentaireValue = textBox2.Text; //Repere de la piece
+                    TextBoxIndiceValue = textBox8.Text; //Indice de la piece
+                    TextBoxDesignationValue = textBox3.Text; //Designation de la piece
+                    TextBoxNomMouleValue = textBox10.Text; //Numero du moule
+                    TexteIndiceFolder = "Ind " + TextBoxIndiceValue;
+                    TexteDossierRep = textBox2.Text + " - " + textBox3.Text; //Nom du dossier repere
+
+                    IndiceTxtFormat00 = "Ind" + textBox8.Text;
+                    IndiceTxtFormat01 = "Ind " + textBox8.Text;
+
+
+                    string CommentaireTxtFormat00 = textBox2.Text + "-";
+                    string CommentaireTxtFormat01 = textBox2.Text + " ";
+
+                    nomDocu = textBox2.Text + " Ind " + textBox8.Text + " " + textBox10.Text;
+
+
                     try
                     {
-                        AddCheckedNodesToList(treeView1.Nodes, CheckedItems);
+                        //Activation des modifications
+                        modifActif(currentDoc.DocId);
+                        currentDoc.DocId = TSH.Documents.EditedDocument;
+                        //// Récupération à nouveau des informations du document actuel
+                        //DocumentCourant(out PdmObjectIdCurrentDocumentId, out CurrentDocumentId, out CurrentDocumentIdLastRev);
 
-                        // Parcours de la liste CheckedItems
-                        for (int i = 0; CheckedItems.Count > i; i++)
+                        //------------- Récupération du commentaire (Repère) du document courant----------------------------------------------------------------------------------------------------------------------------
+                        //CurrentDocumentCommentaireId = currentDoc.CommentaireId;   // Récupération du commentaire (Repère)
+                        string TextCurrentDocumentCommentaire = TSH.Parameters.GetTextLocalizedValue(currentDoc.CommentaireId);
+                        //RecupCommentaire(in CurrentDocumentId, out CurrentDocumentCommentaireId, out TextCurrentDocumentCommentaire);
+
+                        //----------- Récupération de la désignation du document courant----------------------------------------------------------------------------------------------------------------------------
+                        try
                         {
-                            string ExtentionTxtPdf = "";
-                            PdmObjectId CheckedItem = CheckedItems[i];
-                            PdmObjectType TypePDF = TSH.Pdm.GetType(CheckedItem, out ExtentionTxtPdf);
-                            // Si l'extension du fichier est .pdf, ajout à la liste CheckedItemsliste
-                            if (ExtentionTxtPdf == ".pdf")
+                            //CurrentDocumentDesignationId = TSH.Parameters.GetDescriptionParameter(CurrentDocumentId);   // Récupération de la désignation
+                            string TextCurrentDocumentDesignation = TSH.Parameters.GetTextLocalizedValue(currentDoc.DesignationId);
+                            textBox3.Text = TextCurrentDocumentDesignation; //Affichage du commentaire (Repère) dans la case texte
+                        }
+                        catch (Exception ex)
+                        {
+                            this.TopMost = false;
+                            MessageBox.Show(new Form { TopMost = true }, "Echec de la récupération du Commentaire " + ex.Message);
+                        }
+
+
+                        // Mise à jour des valeurs de commentaire et de désignation du document
+                        TSH.Parameters.SetTextValue(currentDoc.CommentaireId, TextBoxCommentaireValue);
+                        TSH.Parameters.SetTextValue(currentDoc.DesignationId, TextBoxDesignationValue);
+
+                        // Appeler la méthode de vérification pendant l'initialisation ou un événement
+
+                        try
+                        {
+                            // Initialisation
+                            string domain = "jbtecnics";
+                            string uName1 = "acierjbt";
+                            string uName2 = "aciertrempejbt";
+
+                            PdmObjectId MaterialAcierJbt = TSH.Pdm.SearchDocumentByUniversalId(PdmObjectId.Empty, domain, uName1);
+                            DocumentId MaterialAcierJbtId = TSH.Documents.GetDocument(MaterialAcierJbt);
+
+                            PdmObjectId MaterialAcierTrempeJbt = TSH.Pdm.SearchDocumentByUniversalId(PdmObjectId.Empty, domain, uName2);
+                            DocumentId MaterialAcierTrempeJbtId = TSH.Documents.GetDocument(MaterialAcierTrempeJbt);
+
+                            // Appeler la vérification pour s'assurer qu'une matière est sélectionnée dès le départ
+                            CheckAndSetMaterial(MaterialAcierJbtId, MaterialAcierTrempeJbtId);
+                        }
+                        catch (Exception ex)
+                        {
+                            MessageBox.Show("Erreur pendant l'initialisation : " + ex.Message);
+                        }
+
+
+
+
+
+                    // Fin des modifications avec sauvegarde des changements
+                    TSH.Application.EndModification(true, true);
+                    }
+                    catch (Exception ex)
+                    {
+                        this.TopMost = false;
+                        // Annulation des modifications en cas d'erreur
+                        TSH.Application.EndModification(true, true);
+                        // Affichage d'un message d'erreur en cas d'échec de l'édition du commentaire et de la désignation
+                        MessageBox.Show(new Form { TopMost = true }, "erreur lors de l'edition du commentaire et de la désignation du document " + ex.Message);
+                        return;
+                    }
+
+
+                    //--------------Recuperation des dossier du projet--------------------------
+                    List<PdmObjectId> DocumentsIds = new List<PdmObjectId>();
+                    List<PdmObjectId> FolderIds = new List<PdmObjectId>();
+                    TSH.Pdm.GetConstituents(AtelierFolderId, out FolderIds, out DocumentsIds);
+
+                    try
+                    {
+                        bool aucunDossierProjet = true;
+                        bool FichierExiste = false;
+                        bool BesoinDeTousLesDossier = false;
+                        bool test00 = false;
+                        bool test01 = false;
+                        PdmObjectId DossierExistantId = new PdmObjectId(); //Id du dossier existant
+                        PdmObjectId DossierIndiceId = new PdmObjectId(); //Recuperation de l'Id du dossier Indice pour creation du reste des dossiers
+
+                        if (FolderIds.Count != 0)
                             {
-                                CheckedItemsliste.Add(CheckedItem);
+                            aucunDossierProjet = false;
+
+                            for (int i = 0; i < FolderIds.Count; i++) //Boucle de décompte
+                            {
+                                // Obtention du nom du dossier actuel dans la boucle
+                                string ConstituantFolderName = TSH.Pdm.GetName(FolderIds[i]);
+
+                                // Vérification si le nom du dossier commence par un format de commentaire spécifique
+                                test00 = ConstituantFolderName.StartsWith(CommentaireTxtFormat00, StringComparison.OrdinalIgnoreCase);
+                                test01 = ConstituantFolderName.StartsWith(CommentaireTxtFormat01, StringComparison.OrdinalIgnoreCase);
+
+                                // Stockage de l'ID du dossier existant
+                                DossierExistantId = FolderIds[i];
+
+                                // Vérification si un seul des tests est vrai (opérateur XOR)
+                                if (test00 ^ test01)
+                                {
+                                    // Si le nom du dossier à créer est différent du nom du dossier existant
+                                    if (TexteDossierRep != ConstituantFolderName)
+                                    {
+                                        // Affichage d'un message d'avertissement à l'utilisateur concernant un doublon potentiel
+                                        DialogResult result = MessageBox.Show("Un dossier existe avec le même repère mais avec une désignation différente." + Environment.NewLine + "Merci de vérifier et de corriger avant de continuer " + Environment.NewLine + "Nom du dossier détecté = " + ConstituantFolderName + Environment.NewLine + "Nom du dossier qui doit être créé : " + TexteDossierRep, "Doublon potentiel ", MessageBoxButtons.RetryCancel);
+
+                                        // Si l'utilisateur choisit de réessayer, la variable 'recommencer' est définie sur true
+                                        if (result == DialogResult.Retry)
+                                        {
+                                            recommencer = true; // La boucle while recommencera
+                                        }
+                                        // Si l'utilisateur annule, la fonction retourne et arrête l'exécution
+                                        if (result == DialogResult.Cancel)
+                                        {
+                                            return;
+                                        }
+                                    }
+
+                                    List<PdmObjectId> IndiceFolderIds = new List<PdmObjectId>();
+                                    // Si le nom du dossier à créer est identique au nom du dossier existant
+                                    if (TexteDossierRep == ConstituantFolderName)
+                                    {
+                                        // Affiche un message indiquant que le dossier existe déjà
+                                        MessageBox.Show("le dossier " + TexteDossierRep + " existe déjà. Recherche du dossier d'indice");
+
+                                        // Récupère les constituants du dossier existant
+                                        List<PdmObjectId> DocumentsInIndiceFolder = new List<PdmObjectId>();
+                                        TSH.Pdm.GetConstituents(DossierExistantId, out IndiceFolderIds, out DocumentsInIndiceFolder);
+
+                                        // Vérifie l'existence du dossier indice
+                                        VerifDossierIndice(IndiceFolderIds, out FichierExiste);
+                                    }
+                                    if (FichierExiste)
+                                    {
+                                        return;
+                                    }
+                                    // Si le fichier n'existe pas, crée un nouveau dossier
+                                    if (!FichierExiste)
+                                    {
+                                        DossierIndiceId = TSH.Pdm.CreateFolder(DossierExistantId, TexteIndiceFolder);
+                                        dossier3DGenereId = creationAutreDossiers(DossierIndiceId);
+                                        DossierRepId = DossierExistantId;
+                                        break;
+                                    }
+                                    else
+                                        return;
+                                }
+
                             }
+
+                        }
+                        if ((!test00 && !test01) || BesoinDeTousLesDossier || aucunDossierProjet)
+                        {
+                            DossierRepId = TSH.Pdm.CreateFolder(AtelierFolderId, TexteDossierRep);
+                            DossierIndiceId = TSH.Pdm.CreateFolder(DossierRepId, TexteIndiceFolder);
+                            dossier3DGenereId = creationAutreDossiers(DossierIndiceId);
                         }
                     }
                     catch (Exception ex)
                     {
                         this.TopMost = false;
-                        MessageBox.Show(new Form { TopMost = true }, "Echec de la récupération de la liste des PDF " + ex.Message);
+                        MessageBox.Show(new Form { TopMost = true }, "erreur" + ex.Message);
                     }
 
-                    ConstituantFolderNames.Clear();
-                    ListFoldersNames.Clear();
 
-                    bool recommencer;
-                    recommencer = false; // Réinitialisez recommencer à false à chaque début de boucle
-                                         //Récuperation des noms de dossiers
+                }
+                while (recommencer); // La boucle while recommencera si recommencer est true
+                    
+                PdmObjectId AuteurPdmObjectId = new PdmObjectId();
+                List<PdmObjectId> DerivéDocumentPdmObjectIds = new List<PdmObjectId>(); //Creation liste du PdmObjectId du document dérivé
 
-                    do
+                try
+                {
+                    try
                     {
-                        //Recuperation du texte modifié par l'utilisateur pour nommer les dossiers.
-                        TextBoxCommentaireValue = textBox2.Text; //Repere de la piece
-                        TextBoxIndiceValue = textBox8.Text; //Indice de la piece
-                        TextBoxDesignationValue = textBox3.Text; //Designation de la piece
-                        TextBoxNomMouleValue = textBox10.Text; //Numero du moule
-                        TexteIndiceFolder = "Ind " + TextBoxIndiceValue;
-                        TexteDossierRep = textBox2.Text + " - " + textBox3.Text; //Nom du dossier repere
+                        // Récupération de l'ID du propriétaire du document actuel
+                        AuteurPdmObjectId = TSH.Pdm.GetOwner(currentDoc.PdmObject);
+                        // Création d'un document dérivé et récupération de son ID
+                        derivedCurrentDoc.DocId = TopSolidDesignHost.Tools.CreateDerivedDocument(AuteurPdmObjectId, currentDoc.DocId, false);
+                        //DocumentId DerivéDocumentId = derivedCurrentDoc.DocId;
 
-                        IndiceTxtFormat00 = "Ind" + textBox8.Text;
-                        IndiceTxtFormat01 = "Ind " + textBox8.Text;
+                        // Récupération de l'ID Pdm du document dérivé
+                        //DerivéDocumentPdmObjectId = TSH.Documents.GetPdmObject(derivedCurrentDoc.DocId);
+                        // Ajout de l'ID Pdm du document dérivé à la liste
+                        
+                        DerivéDocumentPdmObjectIds.Add(derivedCurrentDoc.PdmObject);
 
-
-                        CommentaireTxtFormat00 = textBox2.Text + "-";
-                        CommentaireTxtFormat01 = textBox2.Text + " ";
-
-                        nomDocu = textBox2.Text + " Ind " + textBox8.Text + " " + textBox10.Text;
-
-
-                        try
-                        {
-                            //Activation des modifications
-                            modifActif(currentDoc.DocId);
-
-                            //// Récupération à nouveau des informations du document actuel
-                            //DocumentCourant(out PdmObjectIdCurrentDocumentId, out CurrentDocumentId, out CurrentDocumentIdLastRev);
-
-                            //------------- Récupération du commentaire (Repère) du document courant----------------------------------------------------------------------------------------------------------------------------
-                            CurrentDocumentCommentaireId = TSH.Parameters.GetCommentParameter(CurrentDocumentId);   // Récupération du commentaire (Repère)
-                            TextCurrentDocumentCommentaire = TSH.Parameters.GetTextLocalizedValue(currentDoc.CommentaireId);
-                            //RecupCommentaire(in CurrentDocumentId, out CurrentDocumentCommentaireId, out TextCurrentDocumentCommentaire);
-
-                            //----------- Récupération de la désignation du document courant----------------------------------------------------------------------------------------------------------------------------
-                            try
-                            {
-                                CurrentDocumentDesignationId = TSH.Parameters.GetDescriptionParameter(CurrentDocumentId);   // Récupération de la désignation
-                                TextCurrentDocumentDesignation = TSH.Parameters.GetTextLocalizedValue(currentDoc.DesignationId);
-
-                                textBox3.Text = TextCurrentDocumentDesignation; //Affichage du commentaire (Repère) dans la case texte
-
-
-                            }
-                            catch (Exception ex)
-                            {
-                                this.TopMost = false;
-                                MessageBox.Show(new Form { TopMost = true }, "Echec de la récupération du Commentaire " + ex.Message);
-                            }
-
-
-                            // Mise à jour des valeurs de commentaire et de désignation du document
-                            TSH.Parameters.SetTextValue(currentDoc.CommentaireId, TextBoxCommentaireValue);
-                            TSH.Parameters.SetTextValue(currentDoc.DesignationId, TextBoxDesignationValue);
-
-                            // Appeler la méthode de vérification pendant l'initialisation ou un événement
-
-                            try
-                            {
-                                // Initialisation
-                                string domain = "jbtecnics";
-                                string uName1 = "acierjbt";
-                                string uName2 = "aciertrempejbt";
-
-                                PdmObjectId MaterialAcierJbt = TSH.Pdm.SearchDocumentByUniversalId(PdmObjectId.Empty, domain, uName1);
-                                DocumentId MaterialAcierJbtId = TSH.Documents.GetDocument(MaterialAcierJbt);
-
-                                PdmObjectId MaterialAcierTrempeJbt = TSH.Pdm.SearchDocumentByUniversalId(PdmObjectId.Empty, domain, uName2);
-                                DocumentId MaterialAcierTrempeJbtId = TSH.Documents.GetDocument(MaterialAcierTrempeJbt);
-
-                                // Appeler la vérification pour s'assurer qu'une matière est sélectionnée dès le départ
-                                CheckAndSetMaterial(MaterialAcierJbtId, MaterialAcierTrempeJbtId);
-                            }
-                            catch (Exception ex)
-                            {
-                                MessageBox.Show("Erreur pendant l'initialisation : " + ex.Message);
-                            }
-
-
-
-
-
-                        // Fin des modifications avec sauvegarde des changements
-                        TSH.Application.EndModification(true, true);
-                        }
-                        catch (Exception ex)
-                        {
-                            this.TopMost = false;
-                            // Annulation des modifications en cas d'erreur
-                            TSH.Application.EndModification(true, true);
-                            // Affichage d'un message d'erreur en cas d'échec de l'édition du commentaire et de la désignation
-                            MessageBox.Show(new Form { TopMost = true }, "erreur lors de l'edition du commentaire et de la désignation du document " + ex.Message);
-                            return;
-                        }
-
-
-                        //--------------Recuperation des dossier du projet--------------------------
-                        TSH.Pdm.GetConstituents(AtelierFolderId, out FolderIds, out DocumentsIds);
-
-                        try
-                        {
-                            bool aucunDossierProjet = true;
-                            bool FichierExiste = false;
-                            bool BesoinDeTousLesDossier = false;
-                            if (FolderIds.Count != 0)
-                            {
-                                aucunDossierProjet = false;
-
-                                for (int i = 0; i < FolderIds.Count; i++) //Boucle de décompte
-                                {
-                                    // Obtention du nom du dossier actuel dans la boucle
-                                    ConstituantFolderName = TSH.Pdm.GetName(FolderIds[i]);
-
-                                    // Vérification si le nom du dossier commence par un format de commentaire spécifique
-                                    test00 = ConstituantFolderName.StartsWith(CommentaireTxtFormat00, StringComparison.OrdinalIgnoreCase);
-                                    test01 = ConstituantFolderName.StartsWith(CommentaireTxtFormat01, StringComparison.OrdinalIgnoreCase);
-
-                                    // Stockage de l'ID du dossier existant
-                                    DossierExistantId = FolderIds[i];
-
-                                    // Vérification si un seul des tests est vrai (opérateur XOR)
-                                    if (test00 ^ test01)
-                                    {
-                                        // Si le nom du dossier à créer est différent du nom du dossier existant
-                                        if (TexteDossierRep != ConstituantFolderName)
-                                        {
-                                            // Affichage d'un message d'avertissement à l'utilisateur concernant un doublon potentiel
-                                            DialogResult result = MessageBox.Show("Un dossier existe avec le même repère mais avec une désignation différente." + Environment.NewLine + "Merci de vérifier et de corriger avant de continuer " + Environment.NewLine + "Nom du dossier détecté = " + ConstituantFolderName + Environment.NewLine + "Nom du dossier qui doit être créé : " + TexteDossierRep, "Doublon potentiel ", MessageBoxButtons.RetryCancel);
-
-                                            // Si l'utilisateur choisit de réessayer, la variable 'recommencer' est définie sur true
-                                            if (result == DialogResult.Retry)
-                                            {
-                                                recommencer = true; // La boucle while recommencera
-                                            }
-                                            // Si l'utilisateur annule, la fonction retourne et arrête l'exécution
-                                            if (result == DialogResult.Cancel)
-                                            {
-                                                return;
-                                            }
-                                        }
-
-                                        // Si le nom du dossier à créer est identique au nom du dossier existant
-                                        if (TexteDossierRep == ConstituantFolderName)
-                                        {
-                                            // Affiche un message indiquant que le dossier existe déjà
-                                            MessageBox.Show("le dossier " + TexteDossierRep + " existe déjà. Recherche du dossier d'indice");
-
-                                            // Récupère les constituants du dossier existant
-                                            TSH.Pdm.GetConstituents(DossierExistantId, out IndiceFolderIds, out DocumentsInIndiceFolder);
-
-                                            // Vérifie l'existence du dossier indice
-                                            VerifDossierIndice(IndiceFolderIds, out FichierExiste);
-                                        }
-                                        if (FichierExiste)
-                                        {
-                                            return;
-                                        }
-                                        // Si le fichier n'existe pas, crée un nouveau dossier
-                                        if (!FichierExiste)
-                                        {
-                                            DossierIndiceId = TSH.Pdm.CreateFolder(DossierExistantId, TexteIndiceFolder);
-                                            dossier3DGenereId = creationAutreDossiers(DossierIndiceId);
-                                            DossierRepId = DossierExistantId;
-                                            break;
-                                        }
-                                        else
-                                            return;
-                                    }
-
-                                }
-
-                            }
-                            if ((!test00 && !test01) || BesoinDeTousLesDossier || aucunDossierProjet)
-                            {
-                                DossierRepId = TSH.Pdm.CreateFolder(AtelierFolderId, TexteDossierRep);
-                                DossierIndiceId = TSH.Pdm.CreateFolder(DossierRepId, TexteIndiceFolder);
-                                dossier3DGenereId = creationAutreDossiers(DossierIndiceId);
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            this.TopMost = false;
-                            MessageBox.Show(new Form { TopMost = true }, "erreur" + ex.Message);
-                        }
+                        // Sauvegarde du document actuel
+                        TSH.Documents.Save(currentDoc.DocId);
+                        // Fermeture du document actuel
+                        TSH.Documents.Close(currentDoc.DocId, false, false);
+                        // Ouverture du document dérivé
+                        DocumentId DerivéDocumentId = derivedCurrentDoc.DocId;
+                        TSH.Documents.Open(ref DerivéDocumentId);
+                        //PdmObjectId DerivéDocumentPdmId = TSH.Documents.GetPdmObject(DerivéDocumentId);
 
 
                     }
-                    while (recommencer); // La boucle while recommencera si recommencer est true
+                    catch (Exception ex)
+                    {
+                        this.TopMost = false;
+                        // Affichage d'un message d'erreur en cas d'échec de récupération de l'ID du document dérivé
+                        MessageBox.Show(new Form { TopMost = true }, "Echec de la récupération de l'id du document dérivé " + ex.Message);
+                        return;
+                    }
 
                     try
                     {
-                        try
+
+                        //DocumentCourant(out PdmObjectIdCurrentDocumentId, out CurrentDocumentId, out CurrentDocumentIdLastRev);
+                        modifActif(derivedCurrentDoc.DocId);
+                        derivedCurrentDoc.DocId = TSH.Documents.EditedDocument;
+
+                        //DocumentCourant(out PdmObjectIdCurrentDocumentId, out CurrentDocumentId, out CurrentDocumentIdLastRev);
+                        List<ElementId> OtherSystemParameters = new List<ElementId>();
+                        TopSolidDesignHost.Tools.SetDerivationInheritances(
+                                            derivedCurrentDoc.DocId, // Identifiant de la dernière révision du document courant
+                                            false, // inName
+                                            true,  // inDescription
+                                            false,  // inCode
+                                            true,  // inPartNumber
+                                            false,  // IinComplementaryPartNumber
+                                            false,  // inManufacturer
+                                            true,  //inManufacturerPartNumber
+                                            true,  // inComment
+                                            OtherSystemParameters,  // Inherit design parameters (null means default value)
+                                            false,  // inNonSystemParameters
+                                            false,  // inPoints
+                                            false,  // inAxes
+                                            false,  // inPlanes
+                                            false,  // inFrames
+                                            false,  // inSketches
+                                            true,  // inShapes
+                                            true,  // inPublishings
+                                            false,  // inFunctions
+                                            false,  // inSymmetries
+                                            false,  // inUnsectionabilities
+                                            true,  // inRepresentations
+                                            false,  // inSets
+                                            false  // inCameras
+                        );
+
+                        TSH.Application.EndModification(true, true);
+                    }
+                    catch (Exception ex)
+                    {
+                        this.TopMost = false;
+                        // Affichage d'un message d'erreur en cas d'échec de la dérivation
+                        MessageBox.Show(new Form { TopMost = true }, "Erreur a l'edition des parametre de derivation" + ex.Message);
+                        // Annulation des modifications en cas d'erreur
+                        TSH.Application.EndModification(false, false);
+                        return;
+                    }
+
+                    try
+                    {
+                        // Copie des PDF dans le dossier si la liste n'est pas vide
+                        if (CheckedItemsliste.Count > 0)
                         {
-                            // Récupération de l'ID du propriétaire du document actuel
-                            AuteurPdmObjectId = TSH.Pdm.GetOwner(currentDoc.PdmObject);
-                            // Création d'un document dérivé et récupération de son ID
-                            derivedCurrentDoc.DocId = TopSolidDesignHost.Tools.CreateDerivedDocument(AuteurPdmObjectId, currentDoc.DocId, false);
-                            DocumentId DerivéDocumentId = derivedCurrentDoc.DocId;
-
-                            // Récupération de l'ID Pdm du document dérivé
-                            DerivéDocumentPdmObjectId = TSH.Documents.GetPdmObject(derivedCurrentDoc.DocId);
-                            // Ajout de l'ID Pdm du document dérivé à la liste
-                            DerivéDocumentPdmObjectIds.Add(derivedCurrentDoc.PdmObject);
-
-                            // Sauvegarde du document actuel
-                            TSH.Documents.Save(currentDoc.DocId);
-                            // Fermeture du document actuel
-                            TSH.Documents.Close(currentDoc.DocId, false, false);
-                            // Ouverture du document dérivé
-                            TSH.Documents.Open(ref DerivéDocumentId);
-                            PdmObjectId DerivéDocumentPdmId = TSH.Documents.GetPdmObject(DerivéDocumentId);
-
-
+                            // Copie des PDF sélectionnés dans le dossier
+                            CheckedItemListeCopie = TSH.Pdm.CopySeveral(CheckedItemsliste, AuteurPdmObjectId);
+                            // Déplacement du document dérivé et des PDF
+                            TSH.Pdm.MoveSeveral(CheckedItemListeCopie, dossier3DGenereId);
                         }
-                        catch (Exception ex)
-                        {
-                            this.TopMost = false;
-                            // Affichage d'un message d'erreur en cas d'échec de récupération de l'ID du document dérivé
-                            MessageBox.Show(new Form { TopMost = true }, "Echec de la récupération de l'id du document dérivé " + ex.Message);
-                            return;
-                        }
-
-                        try
-                        {
-
-                            //DocumentCourant(out PdmObjectIdCurrentDocumentId, out CurrentDocumentId, out CurrentDocumentIdLastRev);
-                            modifActif(currentDoc.DocId);
-
-                            DocumentCourant(out PdmObjectIdCurrentDocumentId, out CurrentDocumentId, out CurrentDocumentIdLastRev);
-                            List<ElementId> OtherSystemParameters = new List<ElementId>();
-                            TopSolidDesignHost.Tools.SetDerivationInheritances(
-                                               currentDoc.DocId, // Identifiant de la dernière révision du document courant
-                                                false, // inName
-                                                true,  // inDescription
-                                                false,  // inCode
-                                                true,  // inPartNumber
-                                                false,  // IinComplementaryPartNumber
-                                                false,  // inManufacturer
-                                                true,  //inManufacturerPartNumber
-                                                true,  // inComment
-                                                OtherSystemParameters,  // Inherit design parameters (null means default value)
-                                                false,  // inNonSystemParameters
-                                                false,  // inPoints
-                                                false,  // inAxes
-                                                false,  // inPlanes
-                                                false,  // inFrames
-                                                false,  // inSketches
-                                                true,  // inShapes
-                                                true,  // inPublishings
-                                                false,  // inFunctions
-                                                false,  // inSymmetries
-                                                false,  // inUnsectionabilities
-                                                true,  // inRepresentations
-                                                false,  // inSets
-                                                false  // inCameras
-                                            );
-
-                            TSH.Application.EndModification(true, true);
-                        }
-                        catch (Exception ex)
-                        {
-                            this.TopMost = false;
-                            // Affichage d'un message d'erreur en cas d'échec de la dérivation
-                            MessageBox.Show(new Form { TopMost = true }, "Erreur a l'edition des parametre de derivation" + ex.Message);
-                            // Annulation des modifications en cas d'erreur
-                            TSH.Application.EndModification(false, false);
-                            return;
-                        }
-
-                        try
-                        {
-                            // Copie des PDF dans le dossier si la liste n'est pas vide
-                            if (CheckedItemsliste.Count > 0)
-                            {
-                                // Copie des PDF sélectionnés dans le dossier
-                                CheckedItemListeCopie = TSH.Pdm.CopySeveral(CheckedItemsliste, AuteurPdmObjectId);
-                                // Déplacement du document dérivé et des PDF
-                                TSH.Pdm.MoveSeveral(CheckedItemListeCopie, dossier3DGenereId);
-                            }
-                            // Déplacement des ID Pdm du document dérivé
-                            TSH.Pdm.MoveSeveral(DerivéDocumentPdmObjectIds, dossier3DGenereId);
-                        }
-                        catch (Exception ex)
-                        {
-                            // Affichage d'un message d'erreur en cas d'échec de la copie ou du déplacement des PDF
-                            MessageBox.Show(new Form { TopMost = true }, "Erreur lors de la copie ou du deplacement du PDF dans le dossier 3D" + ex.Message);
-                            return;
-                        }
+                        // Déplacement des ID Pdm du document dérivé
+                        TSH.Pdm.MoveSeveral(DerivéDocumentPdmObjectIds, dossier3DGenereId);
+                    }
+                    catch (Exception ex)
+                    {
+                        // Affichage d'un message d'erreur en cas d'échec de la copie ou du déplacement des PDF
+                        MessageBox.Show(new Form { TopMost = true }, "Erreur lors de la copie ou du deplacement du PDF dans le dossier 3D" + ex.Message);
+                        return;
+                    }
 
                         // Récupération des informations du document actuel et activation des modifications
-                        DocumentCourant(out PdmObjectIdCurrentDocumentId, out CurrentDocumentId, out CurrentDocumentIdLastRev);
+                        derivedCurrentDoc.DocId = TSH.Documents.EditedDocument;
+
+                        //DocumentCourant(out PdmObjectIdCurrentDocumentId, out CurrentDocumentId, out CurrentDocumentIdLastRev);
                         // Appelle une méthode personnalisée pour récupérer les identifiants du document actuel, 
                         // y compris l'identifiant de la dernière révision du document.
 
-                        modifActif(currentDoc.DocId);
+                        modifActif(derivedCurrentDoc.DocId);
                         // Active les modifications sur le document actuel.
 
                         //DocumentCourant(out PdmObjectIdCurrentDocumentId, out CurrentDocumentId, out CurrentDocumentIdLastRev);
                         //// Répète l'appel à la méthode pour mettre à jour les informations du document.
 
-                        TSH.Documents.SetName(currentDoc.DocId, nomDocu);
+                        TSH.Documents.SetName(derivedCurrentDoc.DocId, nomDocu);
                         // Change le nom du document (dernière révision) avec la nouvelle valeur fournie par 'nomDocu'.
 
-                        ElementId Indice3DNomParamId = TSH.Parameters.CreateTextParameter(CurrentDocumentId, TextBoxIndiceValue);
+                        ElementId Indice3DNomParamId = TSH.Parameters.CreateTextParameter(derivedCurrentDoc.DocId, TextBoxIndiceValue);
                         // Crée un paramètre texte dans le document actuel avec la valeur spécifiée et stocke son identifiant.
                         string Indice3DNomParamTxt = "Indice 3D";
                         // Définit une chaîne de caractères pour le nom du paramètre texte.
@@ -1282,14 +1132,14 @@ namespace Folder_Creator_Tool_V3
                         // Crée un objet SmartText à partir de la valeur contenue dans 'TextBoxIndiceValue'.
                         TSH.Elements.SetName(Indice3DNomParamId, Indice3DNomParamTxt);
                         // Attribue un nom au paramètre texte créé précédemment.
-                        ElementId publishedIndice3DNomParamId = TSH.Parameters.PublishText(CurrentDocumentId, Indice3DNomParamTxt, Indice3DNomParam);
+                        ElementId publishedIndice3DNomParamId = TSH.Parameters.PublishText(derivedCurrentDoc.DocId, Indice3DNomParamTxt, Indice3DNomParam);
                         // Publie le paramètre texte 'Indice 3D' dans le document actuel et récupère l'identifiant de l'entité publiée.
                         TSH.Elements.SetName(publishedIndice3DNomParamId, Indice3DNomParamTxt);
                         // Attribue le nom 'Indice 3D' à l'entité publiée.
 
 
 
-                         ElementId matierePlanParamId = TSH.Parameters.CreateTextParameter(currentDoc.DocId, textBox5.Text);
+                         ElementId matierePlanParamId = TSH.Parameters.CreateTextParameter(derivedCurrentDoc.DocId, textBox5.Text);
                         // Crée un paramètre texte dans le document actuel avec la valeur spécifiée et stocke son identifiant.
                         string matiereNomParamTxt = "Matiére plan";
                         // Définit une chaîne de caractères pour le nom du paramètre texte.
@@ -1297,12 +1147,12 @@ namespace Folder_Creator_Tool_V3
                         // Crée un objet SmartText à partir de la valeur contenue dans 'TextBoxIndiceValue'.
                         TSH.Elements.SetName(matierePlanParamId, matiereNomParamTxt);
                         // Attribue un nom au paramètre texte créé précédemment.
-                        ElementId publishedMatierePlanParamId = TSH.Parameters.PublishText(currentDoc.DocId, matiereNomParamTxt, matierePlanParam);
+                        ElementId publishedMatierePlanParamId = TSH.Parameters.PublishText(derivedCurrentDoc.DocId, matiereNomParamTxt, matierePlanParam);
                         // Publie le paramètre texte 'Indice 3D' dans le document actuel et récupère l'identifiant de l'entité publiée.
                         TSH.Elements.SetName(publishedMatierePlanParamId, matiereNomParamTxt);
                         // Attribue le nom 'Indice 3D' à l'entité publiée.
 
-                         ElementId traitementParamId = TSH.Parameters.CreateTextParameter(currentDoc.DocId, textBox6.Text);
+                         ElementId traitementParamId = TSH.Parameters.CreateTextParameter(derivedCurrentDoc.DocId, textBox6.Text);
                         // Crée un paramètre texte dans le document actuel avec la valeur spécifiée et stocke son identifiant.
                         string traitementNomParamTxt = "Traitement";
                         // Définit une chaîne de caractères pour le nom du paramètre texte.
@@ -1310,12 +1160,12 @@ namespace Folder_Creator_Tool_V3
                         // Crée un objet SmartText à partir de la valeur contenue dans 'TextBoxIndiceValue'.
                         TSH.Elements.SetName(traitementParamId, traitementNomParamTxt);
                         // Attribue un nom au paramètre texte créé précédemment.
-                        ElementId publishedTraitementParamId = TSH.Parameters.PublishText(currentDoc.DocId, traitementNomParamTxt, traitementParam);
+                        ElementId publishedTraitementParamId = TSH.Parameters.PublishText(derivedCurrentDoc.DocId, traitementNomParamTxt, traitementParam);
                         // Publie le paramètre texte 'Indice 3D' dans le document actuel et récupère l'identifiant de l'entité publiée.
                         TSH.Elements.SetName(publishedTraitementParamId, traitementNomParamTxt);
                         // Attribue le nom 'Indice 3D' à l'entité publiée.
 
-                         ElementId nbrPiecesParamId = TSH.Parameters.CreateTextParameter(currentDoc.DocId, textBox7.Text);
+                         ElementId nbrPiecesParamId = TSH.Parameters.CreateTextParameter(derivedCurrentDoc.DocId, textBox7.Text);
                         // Crée un paramètre texte dans le document actuel avec la valeur spécifiée et stocke son identifiant.
                         string nbrPiecesNomParamTxt = "Nombre de piéces";
                         // Définit une chaîne de caractères pour le nom du paramètre texte.
@@ -1323,39 +1173,40 @@ namespace Folder_Creator_Tool_V3
                         // Crée un objet SmartText à partir de la valeur contenue dans 'TextBoxIndiceValue'.
                         TSH.Elements.SetName(nbrPiecesParamId, nbrPiecesNomParamTxt);
                         // Attribue un nom au paramètre texte créé précédemment.
-                        ElementId publishedNbrPiecesParamId = TSH.Parameters.PublishText(currentDoc.DocId, nbrPiecesNomParamTxt, nbrPiecesParam);
+                        ElementId publishedNbrPiecesParamId = TSH.Parameters.PublishText(derivedCurrentDoc.DocId, nbrPiecesNomParamTxt, nbrPiecesParam);
                         // Publie le paramètre texte 'Indice 3D' dans le document actuel et récupère l'identifiant de l'entité publiée.
                         TSH.Elements.SetName(publishedNbrPiecesParamId, nbrPiecesNomParamTxt);
                         // Attribue le nom 'Indice 3D' à l'entité publiée.
 
                         // Récupération de l'identifiant du paramètre de description du système
-                        ElementId DesignationSystemeId = TSH.Parameters.GetDescriptionParameter(currentDoc.DocId);
+                        ElementId DesignationSystemeId = derivedCurrentDoc.DesignationId;
                         // Définition du nom du paramètre de description
                         string DesignationNomParam = "Designation";
                         // Création du paramètre de description avec l'identifiant récupéré
                         ElementId PubliedDesignationSystemeId = new ElementId();
-                        CréaetionParam(PubliedDesignationSystemeId, in DesignationSystemeId, in DesignationNomParam, in CurrentDocumentId);
+                        DocumentId derivedDocumentId = derivedCurrentDoc.DocId;
+                        CréaetionParam(PubliedDesignationSystemeId, in DesignationSystemeId, in DesignationNomParam, in derivedDocumentId);
 
                         // Récupération de l'identifiant du paramètre de commentaire du système
-                        ElementId CommentaireSystemeId = TSH.Parameters.GetCommentParameter(CurrentDocumentId);
+                        ElementId CommentaireSystemeId = derivedCurrentDoc.CommentaireId;
                         // Définition du nom du paramètre de commentaire
                         string CommentaireNomParam = "Commentaire";
                         // Création du paramètre de commentaire avec l'identifiant récupéré
                         ElementId PubliedCommentaireSystemeId = new ElementId();
-                        CréaetionParam(PubliedCommentaireSystemeId, in CommentaireSystemeId, in CommentaireNomParam, in CurrentDocumentId);
+                        CréaetionParam(PubliedCommentaireSystemeId, in CommentaireSystemeId, in CommentaireNomParam, in derivedDocumentId);
 
                         // Récupération de l'identifiant du paramètre de nom du document
-                        ElementId Nom_docu = TSH.Parameters.GetNameParameter(CurrentDocumentId);
+                        ElementId Nom_docu = TSH.Parameters.GetNameParameter(derivedCurrentDoc.DocId);
                         // Définition du nom du paramètre de nom du document
                         string NomDocuNomParam = "Nom_docu";
                         // Création du paramètre de nom du document avec l'identifiant récupéré
                         ElementId PubliedNom_docu = new ElementId();
 
                         //Modifiction tolérence de visualisation
-                        CréaetionParam(PubliedNom_docu, in Nom_docu, in NomDocuNomParam, in CurrentDocumentId);
+                        CréaetionParam(PubliedNom_docu, in Nom_docu, in NomDocuNomParam, in derivedDocumentId);
                         double LinearTol = 0.00001;
                         double AngularTol = 0.08726646259971647;
-                        TSH.Options.SetVisualizationTolerances(CurrentDocumentIdLastRev, LinearTol, AngularTol);
+                        TSH.Options.SetVisualizationTolerances(currentDoc.DocId, LinearTol, AngularTol);
 
                         
 
@@ -1384,22 +1235,21 @@ namespace Folder_Creator_Tool_V3
                     try
                     {
                         //DocumentCourant(out PdmObjectIdCurrentDocumentId, out CurrentDocumentId, out CurrentDocumentIdLastRev);
-                        modifActif(CurrentDocumentId);
-                        DocumentCourant(out PdmObjectIdCurrentDocumentId, out CurrentDocumentId, out CurrentDocumentIdLastRev);
-
+                        modifActif(derivedCurrentDoc.DocId);
+                        derivedCurrentDoc.DocId = TSH.Documents.EditedDocument;
 
                         // Boucle demandant à l'utilisateur de sélectionner le plan XY du repère jusqu'à obtenir une réponse
                         while (ReponseRepereUser == null)
                         {
-                            string titre = "Repére";
-                            string label = "Créer repére";
-                            UserQuestion QuestionPlan = new UserQuestion(titre, label);
-                            QuestionPlan.AllowsCreation = true;
-                            TopSolidHost.User.AskFrame3D(QuestionPlan, true, null, out ReponseRepereUser);
+                                string titre = "Repére";
+                                string label = "Créer repére";
+                                UserQuestion QuestionPlan = new UserQuestion(titre, label);
+                                QuestionPlan.AllowsCreation = true;
+                                TopSolidHost.User.AskFrame3D(QuestionPlan, true, null, out ReponseRepereUser);
                         }
 
-                        // Fin de la modification du document
-                        TopSolidHost.Application.EndModification(true, true);
+                            // Fin de la modification du document
+                            TopSolidHost.Application.EndModification(true, true);
                     }
                     catch (Exception ex)
                     {
@@ -1417,7 +1267,7 @@ namespace Folder_Creator_Tool_V3
                     Frame3D RepereUser = TopSolidHost.Geometries3D.GetFrameGeometry(RepereUserId);
 
                     // Récupération du repère absolu
-                    ElementId AbsRepId = TopSolidHost.Geometries3D.GetAbsoluteFrame(DerivéDocumentId);
+                    ElementId AbsRepId = TopSolidHost.Geometries3D.GetAbsoluteFrame(derivedCurrentDoc.DocId);
                     Frame3D AbsRep = TopSolidHost.Geometries3D.GetFrameGeometry(AbsRepId);
 
                     Direction3D dxABS = AbsRep.XDirection;
@@ -1475,7 +1325,7 @@ namespace Folder_Creator_Tool_V3
                     //--------------------------------------------------------------------------------------------------
 
                     // Recherche du dossier Formes dans le document
-                    ElementId DossierForme = TSH.Elements.SearchByName(DerivéDocumentId, "$TopSolid.Kernel.DB.D3.Shapes.Documents.ElementName.Shapes");
+                    ElementId DossierForme = TSH.Elements.SearchByName(derivedCurrentDoc.DocId, "$TopSolid.Kernel.DB.D3.Shapes.Documents.ElementName.Shapes");
 
                     // Récupération de tous les éléments du dossier Formes
                     List<ElementId> FormesList = TSH.Elements.GetConstituents(DossierForme);
@@ -1483,9 +1333,10 @@ namespace Folder_Creator_Tool_V3
                     try
                     {
                         // Activation de la modification du document courant
-                        modifActif(CurrentDocumentId);
+                        modifActif(currentDoc.DocId);
                         // Récupération des identifiants du document courant
-                        DocumentCourant(out PdmObjectIdCurrentDocumentId, out CurrentDocumentId, out CurrentDocumentIdLastRev);
+                        derivedCurrentDoc.DocId = TSH.Documents.EditedDocument;
+
 
                         // Si les directions sont parallèles et dans le même sens mais que les origines ne sont pas identiques
                         if (areDirectionsParallelAndSameDirection && !areOriginsIdentical)
@@ -1532,18 +1383,18 @@ namespace Folder_Creator_Tool_V3
                     try
                     {
                         // Active la modification du document actuel
-                        modifActif(CurrentDocumentId);
+                        modifActif(currentDoc.DocId);
 
                         // Récupère les identifiants du document actuel
-                        DocumentCourant(out PdmObjectIdCurrentDocumentId, out CurrentDocumentId, out CurrentDocumentIdLastRev);
+                        derivedCurrentDoc.DocId = TSH.Documents.EditedDocument;
 
                         // Récupère tous les identifiants d'éléments du document actuel
-                        List<ElementId> TotalElementIds = TSH.Elements.GetElements(CurrentDocumentId);
+                        //List<ElementId> TotalElementIds = TSH.Elements.GetElements(currentDoc.DocId);
 
                         // Cache tous les éléments du document
-                        for (int i = 0; i < TotalElementIds.Count; i++)
+                        for (int i = 0; i < currentDoc.ElementIds.Count; i++)
                         {
-                            TSH.Elements.Hide(TotalElementIds[i]);
+                            TSH.Elements.Hide(currentDoc.ElementIds[i]);
                         }
 
                         // Affiche uniquement les éléments spécifiés dans FormesList
@@ -1570,16 +1421,17 @@ namespace Folder_Creator_Tool_V3
                     try
                     {
                         // Active la modification du document actuel
-                        modifActif(CurrentDocumentId);
+                        modifActif(currentDoc.DocId);
 
                         // Récupère les identifiants du document actuel
-                        DocumentCourant(out PdmObjectIdCurrentDocumentId, out CurrentDocumentId, out CurrentDocumentIdLastRev);
+                        derivedCurrentDoc.DocId = TSH.Documents.EditedDocument;
+                        //DocumentCourant(out PdmObjectIdCurrentDocumentId, out CurrentDocumentId, out CurrentDocumentIdLastRev);
 
                         // Obtient l'identifiant de la vue graphique active
-                        int VueActiveInt = TSH.Visualization3D.GetActiveView(CurrentDocumentId);
+                        int VueActiveInt = TSH.Visualization3D.GetActiveView(derivedCurrentDoc.DocId);
 
                         // Récupère les paramètres actuels de la caméra de perspective
-                        ElementId PerspectiveCamera = TSH.Visualization3D.GetPerspectiveCamera(CurrentDocumentId);
+                        ElementId PerspectiveCamera = TSH.Visualization3D.GetPerspectiveCamera(derivedCurrentDoc.DocId);
                         Point3D outEyePosition = new Point3D();
                         Direction3D outLookAtDirection = new Direction3D();
                         Direction3D outUpDirection = new Direction3D();
@@ -1593,7 +1445,7 @@ namespace Folder_Creator_Tool_V3
                                                                 out outFieldRadius);
 
                         // Définit la caméra de la vue active avec les paramètres récupérés
-                        TSH.Visualization3D.SetViewCamera(CurrentDocumentId,
+                        TSH.Visualization3D.SetViewCamera(derivedCurrentDoc.DocId,
                                                             VueActiveInt,
                                                             outEyePosition,
                                                             outLookAtDirection,
@@ -1602,7 +1454,7 @@ namespace Folder_Creator_Tool_V3
                                                             outFieldRadius);
 
                         // Effectue un zoom pour adapter la vue à l'écran
-                        TSH.Visualization3D.ZoomToFitView(CurrentDocumentId, VueActiveInt);
+                        TSH.Visualization3D.ZoomToFitView(derivedCurrentDoc.DocId, VueActiveInt);
 
                         // Termine la modification avec succès
                         TSH.Application.EndModification(true, true);
@@ -1621,32 +1473,33 @@ namespace Folder_Creator_Tool_V3
 
 
 
-                    try
-                    {
+                try
+                {
                         // Affiche le document dans l'arborescence du projet TopSolid
-                        TSH.Pdm.ShowInProjectTree(PdmObjectIdCurrentDocumentId);
+                        TSH.Pdm.ShowInProjectTree(derivedCurrentDoc.PdmObject);
 
                         // Active la modification du document actuel
-                        modifActif(CurrentDocumentId);
-
+                        modifActif(derivedCurrentDoc.DocId);
+                        derivedCurrentDoc.DocId = TSH.Documents.EditedDocument;
 
                         // Récupère les identifiants du document actuel
-                        DocumentCourant(out PdmObjectIdCurrentDocumentId, out CurrentDocumentId, out CurrentDocumentIdLastRev);
+                        //DocumentCourant(out PdmObjectIdCurrentDocumentId, out CurrentDocumentId, out CurrentDocumentIdLastRev);
 
                         // Termine la modification avec succès
                         TSH.Application.EndModification(true, true);
-                        PdmMinorRevisionId minorRevisionId = TSH.Pdm.GetFinalMinorRevision(PdmObjectIdCurrentDocumentId);
-
-                        TSH.Documents.Open(ref CurrentDocumentIdLastRev);
+                        derivedCurrentDoc.DocId = TSH.Documents.EditedDocument;
+                        //PdmMinorRevisionId minorRevisionId = TSH.Pdm.GetFinalMinorRevision(currentDoc.PdmObject);
+                        DocumentId derivedDocumentLastRev = derivedCurrentDoc.DocId;
+                        TSH.Documents.Open(ref derivedDocumentLastRev);
 
                         // Sauvegarde du document actuel
-                        TSH.Documents.Save(CurrentDocumentIdLastRev);
+                        TSH.Documents.Save(derivedCurrentDoc.DocId);
 
                         // Enregistre le document dans le dossier de stockage
                         TSH.Pdm.CheckIn(DossierRepId, true);
 
                         // Définit l'état du cycle de vie du document sur "Validé"
-                        TSH.Pdm.SetLifeCycleMainState(PdmObjectIdCurrentDocumentId, PdmLifeCycleMainState.Validated);
+                        TSH.Pdm.SetLifeCycleMainState(derivedCurrentDoc.PdmObject, PdmLifeCycleMainState.Validated);
 
                         // Quitte l'application
                         //Environment.Exit(0);
@@ -1777,8 +1630,8 @@ namespace Folder_Creator_Tool_V3
                             ExporterFichiers = true;
                         }
                     }
-                    string nomDocument = TSH.Documents.GetName(CurrentDocumentId);
-                    string nomFichier = $"{nomDocument}.x_t"; // Ajoutez l'extension souhaitée
+                    //string nomDocument = TSH.Documents.GetName(derivedCurrentDoc.DocId);
+                    string nomFichier = $"{derivedCurrentDoc.Nom}.x_t"; // Ajoutez l'extension souhaitée
                     if (DossierRepExiste)
                     {
                         // Le dossier DossierRep a été trouvé
@@ -1839,7 +1692,7 @@ namespace Folder_Creator_Tool_V3
                         try
                         {
                             cheminComplet = System.IO.Path.Combine(path3D, nomFichier);
-                            TSH.Documents.ExportWithOptions(X_TExporterIndex, options, CurrentDocumentId, cheminComplet);
+                            TSH.Documents.ExportWithOptions(X_TExporterIndex, options, derivedCurrentDoc.DocId, cheminComplet);
 
                             for (int i = 0; i < CheckedItemListeCopie.Count; i++)
                             {
@@ -1925,7 +1778,6 @@ namespace Folder_Creator_Tool_V3
             
         }
 
-
         //fonction pour selectionner le chemin du dossier atelier
         private void button3_Click_1(object sender, EventArgs e)
         {
@@ -1975,8 +1827,6 @@ namespace Folder_Creator_Tool_V3
                 }
             }
         }
-
-
 
         private void VerifierCheminAuDemarrage()
         {
@@ -2088,12 +1938,12 @@ namespace Folder_Creator_Tool_V3
             if (matiereButton1.Checked)
             {
                 // Si matiereButton1 est coché, assigner MaterialAcierJbtId
-                TopSolidDesignHost.Parts.SetMaterial(CurrentDocumentIdLastRev, MaterialAcierJbtId);
+                TopSolidDesignHost.Parts.SetMaterial(currentDoc.DocId, MaterialAcierJbtId);
             }
             else if (matiereButton2.Checked)
             {
                 // Si matiereButton2 est coché, assigner MaterialAcierTrempeJbtId
-                TopSolidDesignHost.Parts.SetMaterial(CurrentDocumentIdLastRev, MaterialAcierTrempeJbtId);
+                TopSolidDesignHost.Parts.SetMaterial(currentDoc.DocId, MaterialAcierTrempeJbtId);
             }
             else
             {
@@ -2109,7 +1959,5 @@ namespace Folder_Creator_Tool_V3
             // Restaurer le choix de matière au démarrage
             RestoreMaterialChoice();
         }
-
-        
     }
 }

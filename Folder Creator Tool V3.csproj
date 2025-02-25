@@ -16,7 +16,7 @@
     </NuGetPackageImportStamp>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
+    <PlatformTarget>x64</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
@@ -72,26 +72,31 @@
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
-    <Reference Include="TopSolid.Cad.Design.Automating">
+    <Reference Include="TopSolid.Cad.Design.Automating, Version=7.18.400.190, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\..\..\..\Program Files\TOPSOLID\TopSolid 7.18\bin\TopSolid.Cad.Design.Automating.dll</HintPath>
     </Reference>
-    <Reference Include="TopSolid.Cad.Drafting.Automating">
+    <Reference Include="TopSolid.Cad.Drafting.Automating, Version=7.18.400.190, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\..\..\..\Program Files\TOPSOLID\TopSolid 7.18\bin\TopSolid.Cad.Drafting.Automating.dll</HintPath>
     </Reference>
-    <Reference Include="TopSolid.Cad.Electrode.Automating">
+    <Reference Include="TopSolid.Cad.Electrode.Automating, Version=7.18.400.190, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\..\..\..\Program Files\TOPSOLID\TopSolid 7.18\bin\TopSolid.Cad.Electrode.Automating.dll</HintPath>
     </Reference>
-    <Reference Include="TopSolid.Cam.NC.Kernel.Automating">
+    <Reference Include="TopSolid.Cam.NC.Kernel.Automating, Version=7.18.400.190, Culture=neutral, processorArchitecture=AMD64">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\..\..\..\Program Files\TOPSOLID\TopSolid 7.18\bin\TopSolid.Cam.NC.Kernel.Automating.dll</HintPath>
     </Reference>
-    <Reference Include="TopSolid.Kernel.Automating">
+    <Reference Include="TopSolid.Kernel.Automating, Version=7.18.400.190, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\..\..\..\Program Files\TOPSOLID\TopSolid 7.18\bin\TopSolid.Kernel.Automating.dll</HintPath>
     </Reference>
-    <Reference Include="TopSolid.Kernel.SX">
+    <Reference Include="TopSolid.Kernel.SX, Version=7.18.400.190, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\..\..\..\Program Files\TOPSOLID\TopSolid 7.18\bin\TopSolid.Kernel.SX.dll</HintPath>
     </Reference>
-    <Reference Include="TopSolid.Kernel.SX.NetStandard, Version=7.18.400.190, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
+    <Reference Include="TopSolid.Kernel.SX.NetStandard">
       <HintPath>..\..\..\..\..\..\Program Files\TOPSOLID\TopSolid 7.18\bin\TopSolid.Kernel.SX.NetStandard.dll</HintPath>
     </Reference>
   </ItemGroup>

@@ -1,29 +1,37 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq.Expressions;
+using System.Runtime.InteropServices;
+using System.Text;
+using System.Windows.Forms;
+using TopSolid.Cad.Design.Automating;
+using TopSolid.Kernel.Automating;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement;
+using TSH = TopSolid.Kernel.Automating.TopSolidHost;
+using System.Management;
+using System.Linq;
+using System.Net.NetworkInformation;
+using System.Diagnostics;
+using System.Threading;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using System.Windows.Forms;
-using TopSolid.Kernel.Automating;
-using TopSolid.Cad.Design.Automating;
 using TopSolid.Cad.Drafting.Automating;
 using TopSolid.Cam.NC.Kernel.Automating;
-using TSH = TopSolid.Kernel.Automating.TopSolidHost;
 using TSHD = TopSolid.Cad.Design.Automating.TopSolidDesignHost;
-using System.Diagnostics;
 using TSCH = TopSolid.Cam.NC.Kernel.Automating.TopSolidCamHost;
 using S = System.Collections.Generic;
-using System.Runtime.InteropServices;
 using System.Security;
 using System.Security.Cryptography;
+using System.Xml.Linq;
 
-namespace TSCamPgmRename_V2
+namespace Folder_Creator_Tool_V3
 {
     public class StartConnect
     {
+
         //Connection topsolid
         private void ConnectToTopSolid()
         {
@@ -143,7 +151,7 @@ namespace TSCamPgmRename_V2
         {
             ConnectToTopSolid();
             ConnectToTopSolidDesignHost();
-            ConnectToTopSolidCamHost();
+            //ConnectToTopSolidCamHost();
         }
 
     }

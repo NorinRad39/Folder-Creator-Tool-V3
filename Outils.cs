@@ -1,23 +1,28 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq.Expressions;
+using System.Runtime.InteropServices;
+using System.Text;
+using System.Windows.Forms;
+using TopSolid.Cad.Design.Automating;
+using TopSolid.Kernel.Automating;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement;
+using TSH = TopSolid.Kernel.Automating.TopSolidHost;
+using System.Management;
+using System.Linq;
+using System.Net.NetworkInformation;
+using System.Diagnostics;
+using System.Threading;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using System.Windows.Forms;
-using TopSolid.Kernel.Automating;
-using TopSolid.Cad.Design.Automating;
 using TopSolid.Cad.Drafting.Automating;
 using TopSolid.Cam.NC.Kernel.Automating;
-using TSH = TopSolid.Kernel.Automating.TopSolidHost;
 using TSHD = TopSolid.Cad.Design.Automating.TopSolidDesignHost;
-using System.Diagnostics;
 using TSCH = TopSolid.Cam.NC.Kernel.Automating.TopSolidCamHost;
 using S = System.Collections.Generic;
-using System.Runtime.InteropServices;
 using System.Security;
 using System.Security.Cryptography;
 using System.Xml.Linq;
@@ -53,11 +58,17 @@ namespace Folder_Creator_Tool_V3
         // Numéro OP du document (si applicable)
         public string OP => NumOP(DocId);
 
-        // Numéro OP du document (si applicable)
+        // ElementId commentaire system du document (si applicable)
         public ElementId CommentaireId => GetCommentaireId(DocId);
 
-        // Numéro OP du document (si applicable)
+        // ElementId designation system du document (si applicable)
         public ElementId DesignationId => GetDesignationId(DocId);
+
+        // PdmObjectId du projet du document 
+        public PdmObjectId ProjetId => GetProjetId(PdmObject);
+
+        // Liste des elementId du document 
+        public List<ElementId> ElementIds => GetElementIds(DocId);
 
         // Cache pour stocker les noms des documents déjà récupérés afin d'éviter des appels répétés à TopSolid
         private static Dictionary<DocumentId, string> _cacheNomDocuments = new Dictionary<DocumentId, string>();
@@ -268,7 +279,7 @@ namespace Folder_Creator_Tool_V3
         }
 
         /// <summary>
-        /// Récupère le parametre Commentaire du document (si applicable)
+        /// Récupère le parametre Designation du document
         /// </summary>
         private ElementId GetDesignationId(DocumentId document)
         {
@@ -277,7 +288,7 @@ namespace Folder_Creator_Tool_V3
 
             try
             {
-                ElementId designationId = TSH.Parameters.GetCommentParameter(document);
+                ElementId designationId = TSH.Parameters.GetDescriptionParameter(document);
                 return designationId;
             }
             catch (Exception ex)
@@ -286,5 +297,46 @@ namespace Folder_Creator_Tool_V3
                 return ElementId.Empty;
             }
         }
+
+        /// <summary>
+        /// Récupère le PdmOjectId du projet du document
+        /// </summary>
+        private PdmObjectId GetProjetId(PdmObjectId document)
+        {
+            
+            try
+            {
+                PdmObjectId projetId = TSH.Pdm.GetProject(document);
+                return projetId;
+            }
+            catch (Exception ex)
+            {
+                HandleException(ex, "Impossible de récupérer le numéro OP.");
+                return PdmObjectId.Empty;
+            }
+        }
+
+        /// <summary>
+        /// Récupère les ElementIds du document
+        /// </summary>
+        private List<ElementId> GetElementIds(DocumentId document)
+        {
+            List<ElementId> elementsId = new List<ElementId>();
+
+            if (!IsValidDocument(document))
+                return elementsId;
+
+            try
+            {
+               elementsId = TSH.Elements.GetElements(document);
+                return elementsId;
+            }
+            catch (Exception ex)
+            {
+                HandleException(ex, "Impossible de récupérer le numéro OP.");
+                return elementsId;
+            }
+        }
+
     }
 }
