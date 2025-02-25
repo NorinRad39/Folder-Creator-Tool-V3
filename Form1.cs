@@ -45,552 +45,6 @@ namespace Folder_Creator_Tool_V3
         [DllImport("user32.dll")]
         [return: MarshalAs(UnmanagedType.Bool)]
         static extern bool SetForegroundWindow(IntPtr hWnd);
-      
-        // Classe pour récupérer le chemin réseau complet
-        public class NetworkPathHelper
-        {
-            [DllImport("mpr.dll")]
-            private static extern int WNetGetConnection(string localName, StringBuilder remoteName, ref int length);
-
-            public static string GetNetworkPath(string driveLetter)
-            {
-                StringBuilder remoteName = new StringBuilder(256);
-                int length = remoteName.Capacity;
-
-                int result = WNetGetConnection(driveLetter, remoteName, ref length);
-                if (result == 0)
-                {
-                    return remoteName.ToString();
-                }
-                else
-                {
-                    return null;
-                }
-
-            }
-            public static string GetMappedDriveName(string driveLetter) 
-            {
-                using (ManagementObjectSearcher searcher = new ManagementObjectSearcher($"SELECT VolumeName FROM Win32_LogicalDisk WHERE DeviceID='{driveLetter}'")) 
-                {
-                    foreach (ManagementObject disk in searcher.Get()) 
-                    { 
-                        return disk["VolumeName"]?.ToString(); 
-                    } 
-                }
-                return null;
-            }
-        }
-
-        #region Variable divers
-
-        PdmObjectId AtelierFolderId = new PdmObjectId(); //Id du dossier atelier
-
-
-        #endregion Fin variable divers
-        //------------------------------------------------------------------
-
-
-        //Fonction de création des dossier apres ind
-        static PdmObjectId creationAutreDossiers(PdmObjectId DossierIndiceIdFonction)
-        {
-            PdmObjectId dossier3DFonctionId; //Recuperation de l'Id du dossier Indice pour creation du reste des dossiers
-                                             //PdmObjectId DossierIndiceIdFonction; //Recuperation de l'Id du dossier Indice pour creation du reste des dossiers
-            PdmObjectId DossierElectrodeId; //Recuperation de l'Id du dossier electrode pour creation des dossiers
-            PdmObjectId DossierFraisageId; //Recuperation de l'Id du dossier fraisage pour creation des dossiers utilisateursP
-            PdmObjectId DossierMethodeId;  //Recuperation de l'Id du dossier Methode pour creation des dossiers controle et tournage
-            PdmObjectId DossierFLFA; //Recuperation de l'Id du dossier FLFA pour creation du dossier OP1
-            PdmObjectId DossierBEHE; //Recuperation de l'Id du dossier FLFA pour creation du dossier OP1
-            PdmObjectId DossierSETE; //Recuperation de l'Id du dossier FLFA pour creation du dossier OP1
-
-
-            try
-            {
-
-                //Creation du reste des dossiers
-                dossier3DFonctionId = TSH.Pdm.CreateFolder(DossierIndiceIdFonction, "3D");
-                DossierElectrodeId = TSH.Pdm.CreateFolder(DossierIndiceIdFonction, "Electrode");
-                DossierFraisageId = TSH.Pdm.CreateFolder(DossierIndiceIdFonction, "Fraisage");
-                DossierMethodeId = TSH.Pdm.CreateFolder(DossierIndiceIdFonction, "Methode");
-                TSH.Pdm.CreateFolder(DossierMethodeId, "Contrôle");
-                TSH.Pdm.CreateFolder(DossierMethodeId, "Tournage");
-
-                //Cration des dossier utilisateur dans le dossier fraisage
-
-                DossierBEHE = TSH.Pdm.CreateFolder(DossierFraisageId, "BEHE");
-                DossierFLFA = TSH.Pdm.CreateFolder(DossierFraisageId, "FLFA");
-                DossierSETE = TSH.Pdm.CreateFolder(DossierFraisageId, "SETE");
-
-                //Creation des dossier OP1
-                TSH.Pdm.CreateFolder(DossierBEHE, "OP1");
-                TSH.Pdm.CreateFolder(DossierFLFA, "OP1");
-                TSH.Pdm.CreateFolder(DossierSETE, "OP1");
-
-                //Creation des dossiers dans le dossier Electrode
-
-                TSH.Pdm.CreateFolder(DossierElectrodeId, "Air projetée");
-                TSH.Pdm.CreateFolder(DossierElectrodeId, "Parallélisée");
-                TSH.Pdm.CreateFolder(DossierElectrodeId, "Plan brut");
-                TSH.Pdm.CreateFolder(DossierElectrodeId, "Usinage");
-                //MessageBox.Show("Succés de la creation des dossiers");
-
-            }
-
-            catch (Exception ex)
-            {
-
-                MessageBox.Show("Erreur dans la fonction autre dossier " + ex.Message);
-
-            }
-            return (dossier3DFonctionId);
-
-        }
-
-        //------------Activation mode modification----------------------
-        void modifActif (DocumentId DocuCourent = new DocumentId())
-        {
-            // Vérification de la connexion à TSH   
-            if (!TSH.IsConnected) return;
-
-            // Vérification de l'ID du document
-            if (DocuCourent.IsEmpty) return;
-
-            // Démarrage de la modification du document
-            if (!TSH.Application.StartModification("My Action", false)) return;
-
-            // Marquage du document comme modifié et récupération de l'ID du document en cours de modification
-            TSH.Documents.EnsureIsDirty(ref DocuCourent);
-            
-        }
-
-        //----------------------------------------Fonction treeview-----------------------------------
-        // Cette fonction ajoute les nœuds cochés à une liste.
-        void AddCheckedNodesToList(TreeNodeCollection nodes, List<PdmObjectId> list)
-        {
-            // Parcourir tous les nœuds dans la collection de nœuds donnée.
-            foreach (TreeNode node in nodes)
-            {
-                // Si le nœud est coché...
-                if (node.Checked)
-                {
-                    // Ajouter l'identifiant de l'objet PDM associé au nœud à la liste.
-                    list.Add((PdmObjectId)node.Tag);
-                }
-                // Appeler cette fonction de manière récursive pour tous les nœuds enfants du nœud actuel.
-                AddCheckedNodesToList(node.Nodes, list);
-            }
-        }
-
-        //-------------------------------Fonction de recupéaration des pdf-------------------
-        TreeNode rootFolderNode = new TreeNode();
-        string targetName = "";
-        void listePdf(string indice)
-        {
-            List<PdmObjectId> dossiers2Ds = new List<PdmObjectId>();
-            PdmObjectId dossiers2D = new PdmObjectId();
-            List<PdmObjectId> FoldersInPDFFolder = new List<PdmObjectId>();
-            List<PdmObjectId> PDFIds = new List<PdmObjectId>();
-
-            try
-            {
-                dossiers2Ds = TSH.Pdm.SearchFolderByName(currentDoc.ProjetId, "01-2D");
-                dossiers2D = dossiers2Ds[0];
-            }
-            catch (Exception ex)
-            {
-                this.TopMost = false;
-                MessageBox.Show(new Form { TopMost = true }, "Dossier '01-2D' introuvable" + ex.Message);
-                return;
-            }
-
-            string rootFolderName = TSH.Pdm.GetName(dossiers2D);
-            rootFolderNode = new TreeNode(rootFolderName);
-
-            TSH.Pdm.GetConstituents(dossiers2D, out FoldersInPDFFolder, out PDFIds);
-
-            bool isEventTriggeredByCode = false;
-            treeView1.AfterCheck += (s, e) =>
-            {
-                if (isEventTriggeredByCode)
-                    return;
-
-                if (e.Node.Nodes.Count > 0)
-                {
-                    isEventTriggeredByCode = true;
-                    e.Node.Checked = false;
-                    isEventTriggeredByCode = false;
-                }
-            };
-
-            foreach (PdmObjectId folderId in FoldersInPDFFolder)
-            {
-                ProcessFolder(folderId, rootFolderNode, indice);
-            }
-
-            treeView1.Nodes.Add(rootFolderNode);
-
-           
-
-            targetName = "Ind " +indice;
-
-            
-        }
-
-        void ProcessFolder(PdmObjectId folderId, TreeNode parentNode, string indice)
-        {
-            string folderName = TSH.Pdm.GetName(folderId);
-            TreeNode folderNode = new TreeNode(folderName);
-
-            List<PdmObjectId> subFolderIds;
-            List<PdmObjectId> fileIdsInFolder;
-            TSH.Pdm.GetConstituents(folderId, out subFolderIds, out fileIdsInFolder);
-
-            // Liste pour les sous-dossiers "Ind" à trier
-            List<TreeNode> indFolderNodes = new List<TreeNode>();
-
-            // Parcours des sous-dossiers
-            foreach (PdmObjectId subFolderId in subFolderIds)
-            {
-                string subFolderName = TSH.Pdm.GetName(subFolderId);
-
-                // Si le nom du sous-dossier commence par "Ind"
-                if (subFolderName.StartsWith("Ind", StringComparison.OrdinalIgnoreCase))
-                {
-                    // Création du nœud pour ce sous-dossier
-                    TreeNode subFolderNode = new TreeNode(subFolderName);
-                    indFolderNodes.Add(subFolderNode); // Ajout du nœud à la liste
-                }
-                else
-                {
-                    // Traitement récursif pour les autres sous-dossiers
-                    ProcessFolder(subFolderId, folderNode, indice);
-                }
-            }
-
-            // Tri des sous-dossiers "Ind" par ordre alphabétique
-            indFolderNodes.Sort((node1, node2) => string.Compare(node1.Text, node2.Text, StringComparison.OrdinalIgnoreCase));
-
-            // Ajout des sous-dossiers "Ind" triés au dossier actuel
-            foreach (TreeNode indFolderNode in indFolderNodes)
-            {
-                folderNode.Nodes.Add(indFolderNode);
-            }
-
-            // Ajouter les fichiers dans le dossier
-            foreach (PdmObjectId fileId in fileIdsInFolder)
-            {
-                string fileName = TSH.Pdm.GetName(fileId);
-                TreeNode fileNode = new TreeNode(fileName);
-                fileNode.Tag = fileId;
-                folderNode.Nodes.Add(fileNode);
-            }
-
-            // Ajouter le dossier actuel à l'arbre
-            parentNode.Nodes.Add(folderNode);
-        }
-
-        void ExpandTargetNode(TreeNode rootNode, string targetName)
-        {
-            // Supprimer les espaces et convertir les deux chaînes en minuscules pour ne pas tenir compte de la casse et des espaces
-            string normalizedTargetName = targetName.Replace(" ", "").ToLower();
-
-            // Parcours récursif des nœuds enfants
-            foreach (TreeNode node in rootNode.Nodes)
-            {
-                // Normalisation du nom du nœud
-                string normalizedNodeName = node.Text.Replace(" ", "").ToLower();
-
-                // Vérification si le nom du nœud correspond à la cible (en ignorant la casse et les espaces)
-                if (normalizedNodeName == normalizedTargetName)
-                {
-                    // Déplie le nœud cible
-                    node.Expand();
-
-                    // Remonte la hiérarchie pour déplier les parents
-                    TreeNode parent = node.Parent;
-                    while (parent != null)
-                    {
-                        parent.Expand();
-                        parent = parent.Parent;
-                    }
-
-                    // Tri des nœuds enfants après dépliage
-                    SortTreeNodes(rootNode); // Ajouter le tri ici si nécessaire
-
-                    return; // Sort de la fonction après avoir déplié le nœud
-                }
-                else
-                {
-                    // Appel récursif pour vérifier les sous-dossiers
-                    ExpandTargetNode(node, targetName);
-                }
-            }
-        }
-
-        void SortTreeNodes(TreeNode rootNode)
-        {
-            // Tri des nœuds enfants par ordre alphabétique
-            var sortedNodes = rootNode.Nodes.Cast<TreeNode>().OrderBy(n => n.Text, StringComparer.OrdinalIgnoreCase).ToList();
-
-            // Réaffecter les nœuds triés à la collection de nœuds
-            rootNode.Nodes.Clear();
-            foreach (var node in sortedNodes)
-            {
-                rootNode.Nodes.Add(node);
-            }
-        }
-
-        void ExpandNodeByName(TreeNodeCollection nodes, string targetName)
-        {
-            foreach (TreeNode node in nodes)
-            {
-                // Vérifie si le nom du nœud correspond au dossier recherché
-                if (node.Text.Equals(targetName, StringComparison.OrdinalIgnoreCase))
-                {
-                    // Déplie le nœud correspondant
-                    node.Expand();
-                    return;
-                }
-
-                // Appel récursif pour vérifier les sous-nœuds
-                ExpandNodeByName(node.Nodes, targetName);
-            }
-        }
-
-        //Fonction recuperation de l'indice pour valeur par defaut formulaire------------------------------------------------
-
-        void ChercherDossierDocumentEnCours(PdmObjectId PdmObjectIdCurrentDocumentId, out string IndiceTxtBox)
-        {
-            IndiceTxtBox = "";
-
-            List<PdmObjectId> dossiers3Ds = new List<PdmObjectId>();
-            try
-            {
-                // Recherche du dossier "02-3D" dans le projet courant
-                dossiers3Ds = TSH.Pdm.SearchFolderByName(currentDoc.ProjetId, "02-3D");
-                if (dossiers3Ds.Count > 0)
-                {
-                    Dictionary<PdmObjectId, PdmObjectId> parentMapping = new Dictionary<PdmObjectId, PdmObjectId>();
-                    if (ChercherDossierAvecParentMapping(dossiers3Ds[0], PdmObjectIdCurrentDocumentId, out IndiceTxtBox, parentMapping))
-                    {
-                        return;
-                    }
-                }
-                else
-                {
-                    throw new Exception("Aucun dossier '02-3D' trouvé.");
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(new Form { TopMost = true }, "Erreur : " + ex.Message);
-            }
-        }
-
-        // Fonction récursive pour rechercher le dossier et construire la map des parents
-        bool ChercherDossierAvecParentMapping(PdmObjectId dossierActuel, PdmObjectId documentIdRecherche, out string IndiceTxtBox, Dictionary<PdmObjectId, PdmObjectId> parentMapping)
-        {
-            IndiceTxtBox = "";
-
-            List<PdmObjectId> sousDossiers = new List<PdmObjectId>();
-            List<PdmObjectId> documents = new List<PdmObjectId>();
-            TSH.Pdm.GetConstituents(dossierActuel, out sousDossiers, out documents);
-
-            // Mappe les sous-dossiers à leur parent actuel
-            foreach (PdmObjectId sousDossier in sousDossiers)
-            {
-                parentMapping[sousDossier] = dossierActuel;
-            }
-
-            // Si le document est trouvé
-            if (documents.Contains(documentIdRecherche))
-            {
-                // Remonte jusqu'au dossier commençant par "ind"
-                return RemonterJusquAuDossierInd(dossierActuel, out IndiceTxtBox, parentMapping);
-            }
-
-            // Recherche récursive dans les sous-dossiers
-            foreach (PdmObjectId sousDossier in sousDossiers)
-            {
-                if (ChercherDossierAvecParentMapping(sousDossier, documentIdRecherche, out IndiceTxtBox, parentMapping))
-                {
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
-        // Fonction récursive pour remonter jusqu'à un dossier qui commence par "ind"
-        bool RemonterJusquAuDossierInd(PdmObjectId dossierActuel, out string IndiceTxtBox, Dictionary<PdmObjectId, PdmObjectId> parentMapping)
-        {
-            IndiceTxtBox = "";
-
-            // Vérifie le nom du dossier actuel
-            string nomDossier = TSH.Pdm.GetName(dossierActuel).ToLower();
-            if (nomDossier.StartsWith("ind"))
-            {
-                char derniereLettre = nomDossier[nomDossier.Length - 1];
-                IndiceTxtBox = derniereLettre.ToString().ToUpper();
-                return true;
-            }
-
-            // Vérifie si le parent existe et continue à remonter
-            if (parentMapping.ContainsKey(dossierActuel))
-            {
-                return RemonterJusquAuDossierInd(parentMapping[dossierActuel], out IndiceTxtBox, parentMapping);
-            }
-
-            return false;
-        }
-
-        //-----------Fonction Récupération Commentaire----------------------------------------------------------------------------------------------------------------------------
-
-        class MyDocumentsEventsHost : IDocumentsEvents
-        {
-            // Variable pour suivre l'état d'édition du document
-            private bool isEditing = false;
-            // Variable pour la boîte de dialogue
-            public Form myDialog;
-
-
-            public void OnDocumentEditingStarted(DocumentId inDocumentId)
-                    {
-                        string name = TSH.Documents.GetName(inDocumentId);
-
-                        // Le document est maintenant en mode d'édition
-                        isEditing = true;
-
-                        // Si le document est en mode d'édition, fermez la boîte de dialogue
-                        if (isEditing && myDialog != null)
-                        {
-                            myDialog.Close();
-                            myDialog = null;
-                        }
-            }
-
-            public void OnDocumentEditingEnded(DocumentId inDocumentId)
-            {
-                string name = TSH.Documents.GetName(inDocumentId);
-
-                // Le document n'est plus en mode d'édition
-                isEditing = false;
-            }
-
-            // Méthode pour afficher la boîte de dialogue
-            public void ShowDialog()
-            {
-                myDialog = new Form { TopMost = true };
-                myDialog.Show();
-            }
-        }
-
-        ///----------------------------Fonction verification dossier indice---------------------------------
-        string IndiceTxtFormat00 = ""; //Different format d'indice
-        string IndiceTxtFormat01 = "";
-        string nomDocu = string.Empty;
-
-        bool VerifDossierIndice(List<PdmObjectId> IndiceFolderIds, out bool FichierExiste)
-        {
-            // Initialisation de la variable de sortie
-            FichierExiste = false;
-           nomDocu = textBox2.Text + " Ind " + textBox8.Text + " " + textBox10.Text;
-
-            
-
-            // Vérification si la liste des IDs de dossier n'est pas vide
-            if (IndiceFolderIds.Count != 0)
-            {
-
-                // Parcours de la liste des IDs de dossier
-                for (int i = 0; i < IndiceFolderIds.Count; i++)
-                {
-                    
-
-                    // Obtention du nom du dossier à partir de l'ID
-                    string IndiceFolderName = TSH.Pdm.GetName(IndiceFolderIds[i]);
-                    // Vérification si le nom du dossier correspond à un format spécifique
-                    bool test02 = IndiceFolderName.Equals(IndiceTxtFormat00, StringComparison.OrdinalIgnoreCase);
-                    bool test03 = IndiceFolderName.Equals(IndiceTxtFormat01, StringComparison.OrdinalIgnoreCase);
-
-                    // Stockage de l'ID du dossier courant
-                    PdmObjectId IndiceFolderId = IndiceFolderIds[i];
-                    // Si le nom du dossier correspond à l'un des formats spécifiés
-                    if (test02 || test03)
-                    {
-                        // Recherche de documents par nom dans le projet actuel
-                        List<PdmObjectId> nomDocuIds = TSH.Pdm.SearchDocumentByName(currentDoc.ProjetId, nomDocu);
-                        // Si aucun document n'est trouvé, affichage d'un message
-                        if (nomDocuIds.Count > 0)
-                        {
-                            MessageBox.Show(new Form { TopMost = true }, "Un fichier " + nomDocu + " existe déjà dans le dossier");
-                         
-                        }
-                            return FichierExiste = true;
-                        
-                    }
-                    // Si le fichier existe, la boucle continue sans modifier FichierExiste                      
-                }
-                   
-            }
-
-            return
-                    !FichierExiste;
-            
-            // Retour de la valeur de FichierExiste après la fin de la boucle
-            
-        }
-        
-        private void FindParasolidExporterIndex(out int X_TExporterIndex)
-        {
-            //search the Parasolid exporter index
-
-            X_TExporterIndex = -1;
-            for (int i = 0; i < TopSolidHost.Application.ExporterCount; i++)
-            {
-                TopSolidHost.Application.GetExporterFileType(i, out string fileTypeName, out string[] outFileExtensions);
-                if (fileTypeName != "Parasolid") { continue; }
-
-                else
-                {
-                    X_TExporterIndex = i;
-                    break;
-                }
-            }
-        }
-            
-        private List<KeyValue> VersionX_T(int X_TExporterIndex, string version)
-        {
-            List<KeyValue> options = TSH.Application.GetExporterOptions(X_TExporterIndex);
-
-            // Modification de la valeur associée à "SAVE_VERSION"
-            for (int i = 0; i < options.Count; i++)
-            {
-                if (options[i].Key == "SAVE_VERSION")
-                {
-                    options[i] = new KeyValue("SAVE_VERSION", version); // Remplacement par un nouvel objet                                                      //break; // Sortie de la boucle après la modification
-                }
-            } 
-                    return options;
-        }
-
-        void CréaetionParam(ElementId parametrePubliedId, in ElementId ParamSytemElementId, in string NomParamTxt, in DocumentId document)
-        {
-            // Récupère la valeur du paramètre système en texte à partir de son identifiant
-            string parametreValueTxt = TSH.Parameters.GetTextValue(ParamSytemElementId);
-
-            // Crée un objet SmartText avec la valeur récupérée
-            SmartText parametreValueSmartTxt = new SmartText(ParamSytemElementId);
-
-            // Publie le paramètre texte dans le document spécifié avec le nom et la valeur fournis
-            parametrePubliedId = TSH.Parameters.PublishText(document, NomParamTxt, parametreValueSmartTxt);
-
-            // Attribue le nom spécifié à l'identifiant du paramètre publié
-            TSH.Elements.SetName(parametrePubliedId, NomParamTxt);
-
-        }
-        
-        int X_TExporterIndex = new int();
-
         public Form1()
         {
             InitializeComponent();
@@ -614,7 +68,7 @@ namespace Folder_Creator_Tool_V3
 
 
             string versionX_T = "31";
-                    List<KeyValue> options = new List<KeyValue>();
+                   
 
             //Configuartion version parasolid
             List<KeyValue> options = new List<KeyValue>();
@@ -705,22 +159,16 @@ namespace Folder_Creator_Tool_V3
 
             //Liste PDF--------------------------------
 
-            listePdf(IndiceTxtBox);
+            TreeNode rootFolderNode = listePdf(IndiceTxtBox);
 
             string DossierIndicePdf = "Ind " + IndiceTxtBox;
 
             // Trouver et déplier le nœud cible
             ExpandTargetNode(rootFolderNode, DossierIndicePdf);
 
-
-            //treeView1.ExpandAll();
-            // Fonction pour ajouter les nœuds cochés à la liste
-
-
         }
 
-        //------------------------------Bouton click dossier-------------
-
+        #region Formulaire
         private void button2_Click_1(object sender, EventArgs e)
         {
             string celluleVideErreur = "Merci de remplir toute les cases";
@@ -806,7 +254,6 @@ namespace Folder_Creator_Tool_V3
                 recommencer = false; // Réinitialisez recommencer à false à chaque début de boucle
                                      //Récuperation des noms de dossiers
                 PdmObjectId dossier3DGenereId = new PdmObjectId();
-
 
                 do
                 {
@@ -974,7 +421,7 @@ namespace Folder_Creator_Tool_V3
                                     if (!FichierExiste)
                                     {
                                         DossierIndiceId = TSH.Pdm.CreateFolder(DossierExistantId, TexteIndiceFolder);
-                                        dossier3DGenereId = creationAutreDossiers(DossierIndiceId);
+                                        dossier3DGenereId = CreationAutreDossiers(DossierIndiceId);
                                         DossierRepId = DossierExistantId;
                                         break;
                                     }
@@ -989,7 +436,7 @@ namespace Folder_Creator_Tool_V3
                         {
                             DossierRepId = TSH.Pdm.CreateFolder(AtelierFolderId, TexteDossierRep);
                             DossierIndiceId = TSH.Pdm.CreateFolder(DossierRepId, TexteIndiceFolder);
-                            dossier3DGenereId = creationAutreDossiers(DossierIndiceId);
+                            dossier3DGenereId = CreationAutreDossiers(DossierIndiceId);
                         }
                     }
                     catch (Exception ex)
@@ -1828,6 +1275,533 @@ namespace Folder_Creator_Tool_V3
             }
         }
 
+        private void buttonSetMaterial_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                string domain = "jbtecnics";
+                string uName1 = "acierjbt";
+                string uName2 = "aciertrempejbt";
+
+                // Rechercher les documents de matériau dans le PDM
+                PdmObjectId MaterialAcierJbt = TSH.Pdm.SearchDocumentByUniversalId(PdmObjectId.Empty, domain, uName1);
+                DocumentId MaterialAcierJbtId = TSH.Documents.GetDocument(MaterialAcierJbt);
+
+                PdmObjectId MaterialAcierTrempeJbt = TSH.Pdm.SearchDocumentByUniversalId(PdmObjectId.Empty, domain, uName2);
+                DocumentId MaterialAcierTrempeJbtId = TSH.Documents.GetDocument(MaterialAcierTrempeJbt);
+
+                // Appeler la vérification de la matière
+                CheckAndSetMaterial(MaterialAcierJbtId, MaterialAcierTrempeJbtId);
+
+                // Sauvegarder le choix de matière
+                SaveMaterialChoice();
+
+                // Message de confirmation (facultatif)
+                MessageBox.Show("La matière a été définie pour la pièce.");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Erreur lors de la définition de la matière : " + ex.Message);
+            }
+        }
+
+        #endregion Fin Formulaire
+
+        // Classe pour récupérer le chemin réseau complet
+        public class NetworkPathHelper
+        {
+            [DllImport("mpr.dll")]
+            private static extern int WNetGetConnection(string localName, StringBuilder remoteName, ref int length);
+
+            public static string GetNetworkPath(string driveLetter)
+            {
+                StringBuilder remoteName = new StringBuilder(256);
+                int length = remoteName.Capacity;
+
+                int result = WNetGetConnection(driveLetter, remoteName, ref length);
+                if (result == 0)
+                {
+                    return remoteName.ToString();
+                }
+                else
+                {
+                    return null;
+                }
+
+            }
+            public static string GetMappedDriveName(string driveLetter) 
+            {
+                using (ManagementObjectSearcher searcher = new ManagementObjectSearcher($"SELECT VolumeName FROM Win32_LogicalDisk WHERE DeviceID='{driveLetter}'")) 
+                {
+                    foreach (ManagementObject disk in searcher.Get()) 
+                    { 
+                        return disk["VolumeName"]?.ToString(); 
+                    } 
+                }
+                return null;
+            }
+        }
+
+        #region Variable divers
+
+        PdmObjectId AtelierFolderId = new PdmObjectId(); //Id du dossier atelier
+
+
+        #endregion Fin variable divers
+
+        #region Fonction de creation des dossier dans le dossier PDM Indice
+        /// <summary>
+        /// Vérifie si le chemin du dossier est valide et s'il existe
+        /// </summary>
+        /// <param name="parent"></param>
+        /// <param name="name"></param>
+        /// <returns></returns>
+        /// <exception cref="Exception"></exception>
+        private static PdmObjectId CreateFolderWithCheck(PdmObjectId parent, string name)
+        {
+            PdmObjectId folder = TSH.Pdm.CreateFolder(parent, name);
+            if (folder.IsEmpty)
+                throw new Exception($"Échec de la création du dossier {name} sous {parent}");
+            return folder;
+        }
+
+
+
+        /// <summary>
+        /// Crée les dossiers après le dossier "Ind" dans le dossier parent spécifié.
+        /// </summary>
+        /// <param name="dossierIndicePdmId"></param>
+        /// <returns>Dossier 3D dans le PDM</returns>
+        static PdmObjectId CreationAutreDossiers(PdmObjectId dossierIndicePdmId)
+        {
+            Dictionary<string, PdmObjectId> dossiers = new Dictionary<string, PdmObjectId>();
+
+            try
+            {
+                dossiers["3D"] = CreateFolderWithCheck(dossierIndicePdmId, "3D");
+                dossiers["Electrode"] = CreateFolderWithCheck(dossierIndicePdmId, "Electrode");
+                dossiers["Fraisage"] = CreateFolderWithCheck(dossierIndicePdmId, "Fraisage");
+                dossiers["Methode"] = CreateFolderWithCheck(dossierIndicePdmId, "Methode");
+
+                CreateFolderWithCheck(dossiers["Methode"], "Contrôle");
+                CreateFolderWithCheck(dossiers["Methode"], "Tournage");
+
+                dossiers["BEHE"] = CreateFolderWithCheck(dossiers["Fraisage"], "BEHE");
+                dossiers["FLFA"] = CreateFolderWithCheck(dossiers["Fraisage"], "FLFA");
+                dossiers["SETE"] = CreateFolderWithCheck(dossiers["Fraisage"], "SETE");
+
+                CreateFolderWithCheck(dossiers["BEHE"], "OP1");
+                CreateFolderWithCheck(dossiers["FLFA"], "OP1");
+                CreateFolderWithCheck(dossiers["SETE"], "OP1");
+
+                CreateFolderWithCheck(dossiers["Electrode"], "Air projetée");
+                CreateFolderWithCheck(dossiers["Electrode"], "Parallélisée");
+                CreateFolderWithCheck(dossiers["Electrode"], "Plan brut");
+                CreateFolderWithCheck(dossiers["Electrode"], "Usinage");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Erreur dans la fonction autre dossier : " + ex.Message);
+            }
+
+            return dossiers["3D"];
+        }
+
+        #endregion Fin fonction de creation des dossier dans le dossier PDM Indice
+
+        #region Activation modification document
+        /// <summary>
+        /// Active le mode modification pour le document spécifié. 
+        /// </summary>
+        /// <param name="DocuCourent"></param>
+        void modifActif (DocumentId DocuCourent)
+        {
+            // Vérification de la connexion à TSH   
+            if (!TSH.IsConnected) return;
+
+            // Vérification de l'ID du document
+            if (DocuCourent.IsEmpty) return;
+
+            // Démarrage de la modification du document
+            if (!TSH.Application.StartModification("My Action", false)) return;
+
+            // Marquage du document comme modifié et récupération de l'ID du document en cours de modification
+            TSH.Documents.EnsureIsDirty(ref DocuCourent);
+            
+        }
+        #endregion Fin Activation modification document
+
+        #region Fonction treeview liste PDF----------------------------------------------------------------------------------------------------------------------------
+        
+        /// <summary>
+        /// Crée un arbre de nœuds à partir des dossiers et des fichiers PDF dans le dossier "01-2D".
+        /// </summary>
+        /// <param name="indice"></param>
+        /// <returns></returns>
+        private TreeNode listePdf(string indice)
+        {
+            if (!TSH.Pdm.SearchFolderByName(currentDoc.ProjetId, "01-2D").Any())
+            {
+                MessageBox.Show("Dossier '01-2D' introuvable.");
+                return null;
+            }
+
+            PdmObjectId dossiers2D = TSH.Pdm.SearchFolderByName(currentDoc.ProjetId, "01-2D").First();
+            TreeNode rootFolderNode = new TreeNode(TSH.Pdm.GetName(dossiers2D));
+
+            List<PdmObjectId> FoldersInPDFFolder = new List<PdmObjectId>();
+            List<PdmObjectId> PDFIds = new List<PdmObjectId>();
+            TSH.Pdm.GetConstituents(dossiers2D, out FoldersInPDFFolder, out PDFIds);
+
+            foreach (PdmObjectId folderId in FoldersInPDFFolder)
+            {
+                ProcessFolder(folderId, rootFolderNode, indice);
+            }
+
+            treeView1.Nodes.Add(rootFolderNode);
+            return rootFolderNode;
+        }
+
+        /// <summary>
+        /// Fonction treeview. Ajoute les nœuds cochés à une liste.
+        /// </summary>
+        /// <param name="nodes"></param>
+        /// <param name="list"></param>
+        void AddCheckedNodesToList(TreeNodeCollection nodes, List<PdmObjectId> list)
+        {
+            // Parcourir tous les nœuds dans la collection de nœuds donnée.
+            foreach (TreeNode node in nodes)
+            {
+                // Si le nœud est coché...
+                if (node.Checked && node.Tag is PdmObjectId folderId)
+                {
+                    // Ajouter l'identifiant de l'objet PDM associé au nœud à la liste.
+                    list.Add((PdmObjectId)node.Tag);
+                }
+                // Appeler cette fonction de manière récursive pour tous les nœuds enfants du nœud actuel.
+                AddCheckedNodesToList(node.Nodes, list);
+            }
+        }
+
+        void ProcessFolder(PdmObjectId folderId, TreeNode parentNode, string indice)
+        {
+            string folderName = TSH.Pdm.GetName(folderId);
+            TreeNode folderNode = new TreeNode(folderName);
+
+            List<PdmObjectId> subFolderIds;
+            List<PdmObjectId> fileIdsInFolder;
+            TSH.Pdm.GetConstituents(folderId, out subFolderIds, out fileIdsInFolder);
+
+            // Ajout des fichiers (par exemple, les PDF)
+            foreach (PdmObjectId fileId in fileIdsInFolder)
+            {
+                string fileName = TSH.Pdm.GetName(fileId);    
+                folderNode.Nodes.Add(new TreeNode(fileName) { Tag = fileId });
+            }
+
+            // Appel récursif sur les sous-dossiers filtrés (par exemple, ceux qui commencent par "Ind")
+            foreach (PdmObjectId subFolderId in subFolderIds)
+            {
+                string subFolderName = TSH.Pdm.GetName(subFolderId);
+                if (subFolderName.StartsWith("Ind", StringComparison.OrdinalIgnoreCase))
+                {
+                    ProcessFolder(subFolderId, folderNode, indice);
+                }
+            }
+
+            parentNode.Nodes.Add(folderNode);
+        }
+
+        void ExpandTargetNode(TreeNode rootNode, string targetName)
+        {
+            string normalizedTargetName = targetName.Replace(" ", "").ToLower();
+
+            foreach (TreeNode node in rootNode.Nodes)
+            {
+                string normalizedNodeName = node.Text.Replace(" ", "").ToLower();
+
+                if (normalizedNodeName == normalizedTargetName)
+                {
+                    node.Expand();
+                    for (TreeNode parent = node.Parent; parent != null; parent = parent.Parent)
+                    {
+                        parent.Expand();
+                    }
+
+                    SortTreeNodes(rootNode); // Placer ici avant de sortir
+                    return;
+                }
+
+                ExpandTargetNode(node, targetName);
+            }
+        }
+
+        void SortTreeNodes(TreeNode rootNode)
+        {
+            // Tri des nœuds enfants par ordre alphabétique
+            var sortedNodes = rootNode.Nodes.Cast<TreeNode>().OrderBy(n => n.Text, StringComparer.OrdinalIgnoreCase).ToList();
+
+            // Réaffecter les nœuds triés à la collection de nœuds
+            rootNode.Nodes.Clear();
+            foreach (var node in sortedNodes)
+            {
+                rootNode.Nodes.Add(node);
+            }
+        }
+
+        void ExpandNodeByName(TreeNodeCollection nodes, string targetName)
+        {
+            foreach (TreeNode node in nodes)
+            {
+                // Vérifie si le nom du nœud correspond au dossier recherché
+                if (node.Text.Equals(targetName, StringComparison.OrdinalIgnoreCase))
+                {
+                    // Déplie le nœud correspondant
+                    node.Expand();
+                    return;
+                }
+
+                // Appel récursif pour vérifier les sous-nœuds
+                ExpandNodeByName(node.Nodes, targetName);
+            }
+        }
+
+        // Fonction récursive pour rechercher le dossier et construire la map des parents
+        bool ChercherDossierAvecParentMapping(PdmObjectId dossierActuel, PdmObjectId documentIdRecherche, out string IndiceTxtBox, Dictionary<PdmObjectId, PdmObjectId> parentMapping)
+        {
+            IndiceTxtBox = "";
+            List<PdmObjectId> sousDossiers = new List<PdmObjectId>();
+            List<PdmObjectId> documents = new List<PdmObjectId>();
+            TSH.Pdm.GetConstituents(dossierActuel, out sousDossiers, out documents);
+
+            // Ajout des sous-dossiers dans le dictionnaire
+            foreach (PdmObjectId sousDossier in sousDossiers)
+            {
+                if (!parentMapping.ContainsKey(sousDossier))
+                {
+                    parentMapping[sousDossier] = dossierActuel;
+                }
+            }
+
+            // Vérification si le document est présent
+            if (documents.Contains(documentIdRecherche))
+            {
+                return RemonterJusquAuDossierInd(dossierActuel, out IndiceTxtBox, parentMapping);
+            }
+
+            // Recherche récursive dans chaque sous-dossier
+            foreach (PdmObjectId sousDossier in sousDossiers)
+            {
+                if (ChercherDossierAvecParentMapping(sousDossier, documentIdRecherche, out IndiceTxtBox, parentMapping))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        // Fonction récursive pour remonter jusqu'à un dossier qui commence par "ind"
+        bool RemonterJusquAuDossierInd(PdmObjectId dossierActuel, out string IndiceTxtBox, Dictionary<PdmObjectId, PdmObjectId> parentMapping)
+        {
+            IndiceTxtBox = "";
+            string nomDossier = TSH.Pdm.GetName(dossierActuel);
+
+            if (nomDossier.StartsWith("Ind", StringComparison.OrdinalIgnoreCase))
+            {
+                char derniereLettre = nomDossier[nomDossier.Length - 1];  
+                IndiceTxtBox = derniereLettre.ToString().ToUpper();
+                return true;
+            }
+
+            if (parentMapping.ContainsKey(dossierActuel))
+            {
+                return RemonterJusquAuDossierInd(parentMapping[dossierActuel], out IndiceTxtBox, parentMapping);
+            }
+
+            return false;
+        }
+
+        #endregion Fin fonction treeview----------------------------------------------------------------------------------------------------------------------
+
+        //Fonction recuperation de l'indice pour valeur par defaut formulaire------------------------------------------------
+        void ChercherDossierDocumentEnCours(PdmObjectId PdmObjectIdCurrentDocumentId, out string IndiceTxtBox)
+        {
+            IndiceTxtBox = "";
+
+            List<PdmObjectId> dossiers3Ds = new List<PdmObjectId>();
+            try
+            {
+                // Recherche du dossier "02-3D" dans le projet courant
+                dossiers3Ds = TSH.Pdm.SearchFolderByName(currentDoc.ProjetId, "02-3D");
+                if (dossiers3Ds.Count > 0)
+                {
+                    Dictionary<PdmObjectId, PdmObjectId> parentMapping = new Dictionary<PdmObjectId, PdmObjectId>();
+                    if (ChercherDossierAvecParentMapping(dossiers3Ds[0], PdmObjectIdCurrentDocumentId, out IndiceTxtBox, parentMapping))
+                    {
+                        return;
+                    }
+                }
+                else
+                {
+                    throw new Exception("Aucun dossier '02-3D' trouvé.");
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(new Form { TopMost = true }, "Erreur : " + ex.Message);
+            }
+        }
+
+        //-----------Fonction Récupération Commentaire----------------------------------------------------------------------------------------------------------------------------
+        class MyDocumentsEventsHost : IDocumentsEvents
+        {
+            // Variable pour suivre l'état d'édition du document
+            private bool isEditing = false;
+            // Variable pour la boîte de dialogue
+            public Form myDialog;
+
+
+            public void OnDocumentEditingStarted(DocumentId inDocumentId)
+                    {
+                        string name = TSH.Documents.GetName(inDocumentId);
+
+                        // Le document est maintenant en mode d'édition
+                        isEditing = true;
+
+                        // Si le document est en mode d'édition, fermez la boîte de dialogue
+                        if (isEditing && myDialog != null)
+                        {
+                            myDialog.Close();
+                            myDialog = null;
+                        }
+            }
+
+            public void OnDocumentEditingEnded(DocumentId inDocumentId)
+            {
+                string name = TSH.Documents.GetName(inDocumentId);
+
+                // Le document n'est plus en mode d'édition
+                isEditing = false;
+            }
+
+            // Méthode pour afficher la boîte de dialogue
+            public void ShowDialog()
+            {
+                myDialog = new Form { TopMost = true };
+                myDialog.Show();
+            }
+        }
+
+        ///----------------------------Fonction verification dossier indice---------------------------------
+        string IndiceTxtFormat00 = ""; //Different format d'indice
+        string IndiceTxtFormat01 = "";
+        string nomDocu = string.Empty;
+
+        bool VerifDossierIndice(List<PdmObjectId> IndiceFolderIds, out bool FichierExiste)
+        {
+            // Initialisation de la variable de sortie
+            FichierExiste = false;
+           nomDocu = textBox2.Text + " Ind " + textBox8.Text + " " + textBox10.Text;
+
+            
+
+            // Vérification si la liste des IDs de dossier n'est pas vide
+            if (IndiceFolderIds.Count != 0)
+            {
+
+                // Parcours de la liste des IDs de dossier
+                for (int i = 0; i < IndiceFolderIds.Count; i++)
+                {
+                    
+
+                    // Obtention du nom du dossier à partir de l'ID
+                    string IndiceFolderName = TSH.Pdm.GetName(IndiceFolderIds[i]);
+                    // Vérification si le nom du dossier correspond à un format spécifique
+                    bool test02 = IndiceFolderName.Equals(IndiceTxtFormat00, StringComparison.OrdinalIgnoreCase);
+                    bool test03 = IndiceFolderName.Equals(IndiceTxtFormat01, StringComparison.OrdinalIgnoreCase);
+
+                    // Stockage de l'ID du dossier courant
+                    PdmObjectId IndiceFolderId = IndiceFolderIds[i];
+                    // Si le nom du dossier correspond à l'un des formats spécifiés
+                    if (test02 || test03)
+                    {
+                        // Recherche de documents par nom dans le projet actuel
+                        List<PdmObjectId> nomDocuIds = TSH.Pdm.SearchDocumentByName(currentDoc.ProjetId, nomDocu);
+                        // Si aucun document n'est trouvé, affichage d'un message
+                        if (nomDocuIds.Count > 0)
+                        {
+                            MessageBox.Show(new Form { TopMost = true }, "Un fichier " + nomDocu + " existe déjà dans le dossier");
+                         
+                        }
+                            return FichierExiste = true;
+                        
+                    }
+                    // Si le fichier existe, la boucle continue sans modifier FichierExiste                      
+                }
+                   
+            }
+
+            return
+                    !FichierExiste;
+            
+            // Retour de la valeur de FichierExiste après la fin de la boucle
+            
+        }
+        
+        private void FindParasolidExporterIndex(out int X_TExporterIndex)
+        {
+            //search the Parasolid exporter index
+
+            X_TExporterIndex = -1;
+            for (int i = 0; i < TopSolidHost.Application.ExporterCount; i++)
+            {
+                TopSolidHost.Application.GetExporterFileType(i, out string fileTypeName, out string[] outFileExtensions);
+                if (fileTypeName != "Parasolid") { continue; }
+
+                else
+                {
+                    X_TExporterIndex = i;
+                    break;
+                }
+            }
+        }
+            
+        private List<KeyValue> VersionX_T(int X_TExporterIndex, string version)
+        {
+            List<KeyValue> options = TSH.Application.GetExporterOptions(X_TExporterIndex);
+
+            // Modification de la valeur associée à "SAVE_VERSION"
+            for (int i = 0; i < options.Count; i++)
+            {
+                if (options[i].Key == "SAVE_VERSION")
+                {
+                    options[i] = new KeyValue("SAVE_VERSION", version); // Remplacement par un nouvel objet                                                      //break; // Sortie de la boucle après la modification
+                }
+            } 
+                    return options;
+        }
+
+        void CréaetionParam(ElementId parametrePubliedId, in ElementId ParamSytemElementId, in string NomParamTxt, in DocumentId document)
+        {
+            // Récupère la valeur du paramètre système en texte à partir de son identifiant
+            string parametreValueTxt = TSH.Parameters.GetTextValue(ParamSytemElementId);
+
+            // Crée un objet SmartText avec la valeur récupérée
+            SmartText parametreValueSmartTxt = new SmartText(ParamSytemElementId);
+
+            // Publie le paramètre texte dans le document spécifié avec le nom et la valeur fournis
+            parametrePubliedId = TSH.Parameters.PublishText(document, NomParamTxt, parametreValueSmartTxt);
+
+            // Attribue le nom spécifié à l'identifiant du paramètre publié
+            TSH.Elements.SetName(parametrePubliedId, NomParamTxt);
+
+        }
+        
+        int X_TExporterIndex = new int();
+        //Configuartion version parasolid
+        List<KeyValue> options = new List<KeyValue>();
+
         private void VerifierCheminAuDemarrage()
         {
             // Récupérer le chemin enregistré dans les paramètres de l'application
@@ -1899,36 +1873,6 @@ namespace Folder_Creator_Tool_V3
                 // Aucun choix sauvegardé ou choix vide, laisser les boutons décochés
                 matiereButton1.Checked = false;
                 matiereButton2.Checked = false;
-            }
-        }
-
-        private void buttonSetMaterial_Click(object sender, EventArgs e)
-        {
-            try
-            {
-                string domain = "jbtecnics";
-                string uName1 = "acierjbt";
-                string uName2 = "aciertrempejbt";
-
-                // Rechercher les documents de matériau dans le PDM
-                PdmObjectId MaterialAcierJbt = TSH.Pdm.SearchDocumentByUniversalId(PdmObjectId.Empty, domain, uName1);
-                DocumentId MaterialAcierJbtId = TSH.Documents.GetDocument(MaterialAcierJbt);
-
-                PdmObjectId MaterialAcierTrempeJbt = TSH.Pdm.SearchDocumentByUniversalId(PdmObjectId.Empty, domain, uName2);
-                DocumentId MaterialAcierTrempeJbtId = TSH.Documents.GetDocument(MaterialAcierTrempeJbt);
-
-                // Appeler la vérification de la matière
-                CheckAndSetMaterial(MaterialAcierJbtId, MaterialAcierTrempeJbtId);
-
-                // Sauvegarder le choix de matière
-                SaveMaterialChoice();
-
-                // Message de confirmation (facultatif)
-                MessageBox.Show("La matière a été définie pour la pièce.");
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Erreur lors de la définition de la matière : " + ex.Message);
             }
         }
 
