@@ -26,6 +26,8 @@ using S = System.Collections.Generic;
 using System.Security;
 using System.Security.Cryptography;
 using System.Xml.Linq;
+using System.Drawing.Text;
+
 
 
 
@@ -57,7 +59,6 @@ namespace Folder_Creator_Tool_V3
             currentDoc = new Document();
             currentDoc.DocId = TSH.Documents.EditedDocument;
             derivedCurrentDoc = new Document();
-
 
             // Charger le chemin sauvegardé et l'afficher dans la TextBox
             textBox4.Text = Properties.Settings.Default.FolderPath;
@@ -120,8 +121,6 @@ namespace Folder_Creator_Tool_V3
             ChercherDossierDocumentEnCours(currentDoc.PdmObject, out IndiceTxtBox);
 
             //-------------Creation de la variable pour la recherche du dossier atelier-------------------------------------------------------------------------------------------------------------------
-            
-
             try
             {
                 List<PdmObjectId> AtelierFolderIds = TSH.Pdm.SearchFolderByName(currentDoc.ProjetId, "02-Atelier");
@@ -133,6 +132,8 @@ namespace Folder_Creator_Tool_V3
                 this.TopMost = false;
                 MessageBox.Show(new Form { TopMost = true }, "Dossier ''02-Atelier'' introuvable dans le projet " + ex.Message);
             }
+
+            
 
             //------------- Récupération du commentaire (Repère) du document courant----------------------------------------------------------------------------------------------------------------------------
 
@@ -146,8 +147,6 @@ namespace Folder_Creator_Tool_V3
                 //TextCurrentDocumentDesignation = TSH.Parameters.GetTextLocalizedValue(currentDoc.CommentaireId);
                 textBox2.Text = TSH.Parameters.GetTextLocalizedValue(currentDoc.CommentaireId);
                 textBox3.Text = TSH.Parameters.GetTextLocalizedValue(currentDoc.DesignationId); //Affichage du commentaire (Repère) dans la case texte
-
-
             }
             catch (Exception ex)
             {
@@ -205,7 +204,7 @@ namespace Folder_Creator_Tool_V3
                         return extension == ".pdf";
                     })
                     .ToList();
-
+                
                 bool recommencer;
                 do
                 {
@@ -213,9 +212,42 @@ namespace Folder_Creator_Tool_V3
                     string texteDossierRep = $"{textBox2.Text} - {textBox3.Text}";
                     string texteIndiceFolder = $"Ind {textBox8.Text}";
 
-                    PdmObjectId dossierRepId = CreateFolderIfNotExists(AtelierFolderId, texteDossierRep);
-                    PdmObjectId dossierIndiceId = CreateFolderIfNotExists(dossierRepId, texteIndiceFolder);
-                    PdmObjectId dossier3D = CreationAutreDossiers(dossierIndiceId);
+                    List<PdmObjectId> pdmObjectAtelierFolderConstituant = DossierPdmInAtelier(currentDoc.ProjetId);
+
+                    List<string> folderNames = GetAllProjectFolderNames(AtelierFolderId);
+
+                    PdmObjectId dossier3D = new PdmObjectId();
+
+                    var result = DossierRepExiste(textBox2.Text, textBox3.Text, folderNames);
+                    bool existe = result.Item1;
+                    string folderName = result.Item2;
+                    PdmObjectId dossierRepId = new PdmObjectId();
+
+                    if (!existe)
+                    {
+                        dossierRepId = CreateFolderIfNotExists(AtelierFolderId, texteDossierRep);
+                        PdmObjectId dossierIndiceId = CreateFolderIfNotExists(dossierRepId, texteIndiceFolder);
+                        dossier3D = CreationAutreDossiers(dossierIndiceId);
+                    }
+                    else if(!DossierIndExiste(textBox8.Text, folderNames))
+                    {
+                        dossierRepId = 
+                        PdmObjectId dossierIndiceId = CreateFolderIfNotExists(dossierRepId, texteIndiceFolder);
+                    }
+                    else
+                    {
+                        MessageBox.Show(
+                         "Un dossier avec le même repère ou avec la même désignation existe déjà.\n" +
+                         "Merci de vérifier et de relancer l'application si nécessaire.\n" +
+                         folderName,
+                         "Erreur",
+                         MessageBoxButtons.OK,
+                         MessageBoxIcon.Error
+                        );
+                        return;
+
+                    }
+
 
                     PdmObjectId auteurPdmObjectId = new PdmObjectId();
 
@@ -320,7 +352,6 @@ namespace Folder_Creator_Tool_V3
 
             return folderId;
         }
-
 
         private void UpdateDocumentParameters(string commentaire, string designation, string indice)
         {
@@ -433,7 +464,6 @@ namespace Folder_Creator_Tool_V3
             // Fin des modifications
             TSH.Application.EndModification(true, true);
         }
-
 
         private void HideAllExceptShapes(DocumentId docId)
         {
@@ -594,47 +624,166 @@ namespace Folder_Creator_Tool_V3
 
         #endregion Fin bouton formulaire
 
-        // Classe pour récupérer le chemin réseau complet
-        public class NetworkPathHelper
-        {
-            [DllImport("mpr.dll")]
-            private static extern int WNetGetConnection(string localName, StringBuilder remoteName, ref int length);
-
-            public static string GetNetworkPath(string driveLetter)
-            {
-                StringBuilder remoteName = new StringBuilder(256);
-                int length = remoteName.Capacity;
-
-                int result = WNetGetConnection(driveLetter, remoteName, ref length);
-                if (result == 0)
-                {
-                    return remoteName.ToString();
-                }
-                else
-                {
-                    return null;
-                }
-
-            }
-            public static string GetMappedDriveName(string driveLetter) 
-            {
-                using (ManagementObjectSearcher searcher = new ManagementObjectSearcher($"SELECT VolumeName FROM Win32_LogicalDisk WHERE DeviceID='{driveLetter}'")) 
-                {
-                    foreach (ManagementObject disk in searcher.Get()) 
-                    { 
-                        return disk["VolumeName"]?.ToString(); 
-                    } 
-                }
-                return null;
-            }
-        }
-
         #region Variable divers
 
         PdmObjectId AtelierFolderId = new PdmObjectId(); //Id du dossier atelier
 
 
         #endregion Fin variable divers
+
+        #region Fonction de verification de l'existence du dossier repere dans le dossier atelier du projet courant
+        (bool,string) DossierRepExiste(string Repere, string designation, List<string> folderNames)
+        {
+            foreach (string folderName in folderNames)
+            {
+                string normalizedDossierName = folderName.Replace(" ", "").ToLower();
+                string normalizedRepere = Repere.Replace(" ", "").ToLower();
+                string normalizedDesignation = designation.Replace(" ", "").ToLower();
+
+                bool startsWithRepere = normalizedDossierName.StartsWith(normalizedRepere);
+                bool endsWithDesignation = normalizedDossierName.EndsWith(normalizedDesignation);
+
+                if (startsWithRepere || (startsWithRepere && endsWithDesignation))
+                {
+                    return (true, folderName);
+                }
+            }
+            return (false,"");
+        }
+        #endregion Fin fonction de verification de l'existence du dossier repere dans le dossier atelier du projet courant
+
+        #region Fonction de verification de l'existence du dossier Indice dans le dossier du repére
+        bool DossierIndExiste(string indice, List<string> folderNames)
+        {
+            foreach (string folderName in folderNames)
+            {
+                if (folderName.EndsWith(indice))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+        #endregion Fin fonction de verification de l'existence du dossier repere dans le dossier atelier du projet courant
+
+        #region  Récupération de la liste des dossiers dans le dossier atelier du projet----------------------------------------------------------------------------------------------------------------------------
+        /// <summary>
+        /// Récupère la liste des dossiers situés dans un atelier donné.
+        /// </summary>
+        /// <param name="dossierAtelierPdmId">L'ID du dossier d'atelier à explorer.</param>
+        /// <returns>Une liste d'IDs de dossiers PDM trouvés dans l'atelier.</returns>
+        private List<PdmObjectId> DossierPdmInAtelier(PdmObjectId dossierAtelierPdmId)
+        {
+            // Liste qui contiendra les IDs des dossiers trouvés dans l'atelier
+            List<PdmObjectId> folderIds = new List<PdmObjectId>();
+
+            // Liste temporaire pour stocker les IDs des documents (non utilisée ici)
+            List<PdmObjectId> documentIds = new List<PdmObjectId>();
+
+            try
+            {
+                // Récupération des dossiers et documents contenus dans le dossier d'atelier
+                TopSolidHost.Pdm.GetConstituents(dossierAtelierPdmId, out folderIds, out documentIds);
+            }
+            catch (Exception ex)
+            {
+                // Affichage d'un message en cas d'erreur lors de la récupération des données
+                Console.WriteLine("Échec de la récupération des dossiers racine: " + ex.Message);
+            }
+
+            // Retourne la liste des dossiers trouvés dans l'atelier
+            return folderIds;
+        }
+
+
+        /// <summary>
+        /// Récupère récursivement tous les dossiers et sous-dossiers à partir d'un dossier parent donné.
+        /// </summary>
+        /// <param name="parentFolderId">L'ID du dossier parent à explorer.</param>
+        /// <returns>Une liste contenant tous les dossiers et sous-dossiers trouvés.</returns>
+        public List<PdmObjectId> GetAllSubFolders(PdmObjectId parentFolderId)
+        {
+            // Liste pour stocker tous les dossiers trouvés
+            List<PdmObjectId> allFolders = new List<PdmObjectId>();
+
+            // Pile pour gérer l'exploration des dossiers sans récursion (évite un dépassement de pile)
+            Stack<PdmObjectId> stack = new Stack<PdmObjectId>();
+            stack.Push(parentFolderId); // Ajoute le dossier parent dans la pile
+
+            // Tant qu'il reste des dossiers à explorer
+            while (stack.Count > 0)
+            {
+                // Récupère et enlève le dernier dossier ajouté à la pile
+                PdmObjectId currentFolder = stack.Pop();
+
+                // Ajoute ce dossier à la liste des dossiers récupérés
+                allFolders.Add(currentFolder);
+
+                // Listes temporaires pour stocker les sous-dossiers et documents contenus dans le dossier courant
+                List<PdmObjectId> subFolderIds = new List<PdmObjectId>();
+                List<PdmObjectId> subDocumentIds = new List<PdmObjectId>();
+
+                try
+                {
+                    // Récupère les constituants du dossier courant (dossiers et documents)
+                    TopSolidHost.Pdm.GetConstituents(currentFolder, out subFolderIds, out subDocumentIds);
+                }
+                catch (Exception ex)
+                {
+                    // En cas d'erreur, affiche un message et continue le traitement
+                    Console.WriteLine("Erreur lors de la récupération des sous-dossiers: " + ex.Message);
+                    continue;
+                }
+
+                // Ajoute tous les sous-dossiers trouvés dans la pile pour les explorer ensuite
+                foreach (PdmObjectId subFolderId in subFolderIds)
+                {
+                    stack.Push(subFolderId);
+                }
+            }
+
+            // Retourne la liste complète des dossiers et sous-dossiers récupérés
+            return allFolders;
+        }
+
+
+        /// <summary>
+        /// Récupère tous les noms des dossiers et sous-dossiers d'un projet à partir d'un dossier d'atelier donné.
+        /// </summary>
+        /// <param name="dossierAtelierPdmId">L'ID du dossier d'atelier du projet.</param>
+        /// <returns>Une liste contenant les noms de tous les dossiers et sous-dossiers.</returns>
+        public List<string> GetAllProjectFolderNames(PdmObjectId dossierAtelierPdmId)
+        {
+            // Vérifie si l'ID du dossier est valide
+            if (dossierAtelierPdmId.IsEmpty)
+            {
+                Console.WriteLine("Projet introuvable.");
+                return new List<string>(); // Retourne une liste vide si aucun projet n'est trouvé
+            }
+
+            // Récupère tous les dossiers et sous-dossiers du projet
+            List<PdmObjectId> allFolders = GetAllSubFolders(dossierAtelierPdmId);
+
+            // Convertit la liste d'IDs en une liste de noms de dossiers
+            List<string> folderNames = new List<string>();
+
+            foreach (PdmObjectId folderId in allFolders)
+            {
+                try
+                {
+                    string folderName = TopSolidHost.Pdm.GetName(folderId);
+                    folderNames.Add(folderName);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Erreur lors de la récupération du nom du dossier : " + ex.Message, "Erreur", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
+
+            return folderNames;
+        }
+
+        #endregion Fin Récupération de la liste des dossiers dans le dossier atelier du projet
 
         #region Fonction de creation des dossier dans le dossier PDM Indice
         /// <summary>
@@ -911,7 +1060,7 @@ namespace Folder_Creator_Tool_V3
 
         #endregion Fin fonction treeview----------------------------------------------------------------------------------------------------------------------
 
-        //Fonction recuperation de l'indice pour valeur par defaut formulaire------------------------------------------------
+        #region Fonction recuperation de l'indice pour valeur par defaut formulaire
         void ChercherDossierDocumentEnCours(PdmObjectId PdmObjectIdCurrentDocumentId, out string IndiceTxtBox)
         {
             IndiceTxtBox = "";
@@ -939,8 +1088,9 @@ namespace Folder_Creator_Tool_V3
                 MessageBox.Show(new Form { TopMost = true }, "Erreur : " + ex.Message);
             }
         }
+        #endregion Fin fonction recuperation de l'indice pour valeur par defaut formulaire
 
-        //-----------Fonction Récupération Commentaire----------------------------------------------------------------------------------------------------------------------------
+        #region Fonction Récupération Commentaire
         class MyDocumentsEventsHost : IDocumentsEvents
         {
             // Variable pour suivre l'état d'édition du document
@@ -979,8 +1129,9 @@ namespace Folder_Creator_Tool_V3
                 myDialog.Show();
             }
         }
+        #endregion Fin Fonction Récupération Commentaire
 
-        ///----------------------------Fonction verification dossier indice---------------------------------
+        #region Fonction verification dossier indice---------------------------------
         string IndiceTxtFormat00 = ""; //Different format d'indice
         string IndiceTxtFormat01 = "";
         string nomDocu = string.Empty;
@@ -1035,7 +1186,9 @@ namespace Folder_Creator_Tool_V3
             // Retour de la valeur de FichierExiste après la fin de la boucle
             
         }
-        
+        #endregion Fin Fonction verification dossier indice
+
+        #region Fonction de configuration de l'exportateur Parasolid
         private void FindParasolidExporterIndex(out int X_TExporterIndex)
         {
             //search the Parasolid exporter index
@@ -1063,11 +1216,18 @@ namespace Folder_Creator_Tool_V3
             {
                 if (options[i].Key == "SAVE_VERSION")
                 {
-                    options[i] = new KeyValue("SAVE_VERSION", version); // Remplacement par un nouvel objet                                                      //break; // Sortie de la boucle après la modification
+                    options[i] = new KeyValue("SAVE_VERSION", version); // Remplacement par un nouvel objet                                                      
+                    //break; // Sortie de la boucle après la modification
                 }
             } 
                     return options;
         }
+
+        int X_TExporterIndex = new int();
+        //Configuartion version parasolid
+        List<KeyValue> options = new List<KeyValue>();
+
+        #endregion Fin Fonction de configuration de l'exportateur Parasolid
 
         void CréaetionParam(ElementId parametrePubliedId, in ElementId ParamSytemElementId, in string NomParamTxt, in DocumentId document)
         {
@@ -1084,10 +1244,43 @@ namespace Folder_Creator_Tool_V3
             TSH.Elements.SetName(parametrePubliedId, NomParamTxt);
 
         }
-        
-        int X_TExporterIndex = new int();
-        //Configuartion version parasolid
-        List<KeyValue> options = new List<KeyValue>();
+
+        #region Fonction de vérification du chemin atelier au démarrage
+
+        // Classe pour récupérer le chemin réseau complet
+        public class NetworkPathHelper
+        {
+            [DllImport("mpr.dll")]
+            private static extern int WNetGetConnection(string localName, StringBuilder remoteName, ref int length);
+
+            public static string GetNetworkPath(string driveLetter)
+            {
+                StringBuilder remoteName = new StringBuilder(256);
+                int length = remoteName.Capacity;
+
+                int result = WNetGetConnection(driveLetter, remoteName, ref length);
+                if (result == 0)
+                {
+                    return remoteName.ToString();
+                }
+                else
+                {
+                    return null;
+                }
+
+            }
+            public static string GetMappedDriveName(string driveLetter)
+            {
+                using (ManagementObjectSearcher searcher = new ManagementObjectSearcher($"SELECT VolumeName FROM Win32_LogicalDisk WHERE DeviceID='{driveLetter}'"))
+                {
+                    foreach (ManagementObject disk in searcher.Get())
+                    {
+                        return disk["VolumeName"]?.ToString();
+                    }
+                }
+                return null;
+            }
+        }
 
         private void VerifierCheminAuDemarrage()
         {
@@ -1118,7 +1311,10 @@ namespace Folder_Creator_Tool_V3
                 textBox4.Text = "Chemin du dossier atelier";
             }
         }
+        #endregion Fin Fonction de vérification du chemin atelier au démarrage
 
+
+        #region choix matiere
         // Sauvegarder le choix de matière dans les paramètres
         private void SaveMaterialChoice()
         {
@@ -1190,5 +1386,8 @@ namespace Folder_Creator_Tool_V3
             // Restaurer le choix de matière au démarrage
             RestoreMaterialChoice();
         }
+
+        #endregion  fin choix matiere
+
     }
 }
