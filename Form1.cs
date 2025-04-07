@@ -27,12 +27,8 @@ using System.Security;
 using System.Security.Cryptography;
 using System.Xml.Linq;
 using System.Drawing.Text;
-
-
-
-
-
-
+using Folder_Creator_Tool_V3;
+using static Folder_Creator_Tool_V3.FolderCreatorTool;
 
 
 
@@ -105,7 +101,7 @@ namespace Folder_Creator_Tool_V3
             try
             {
                 //CurrentProjectName = TSH.Pdm.GetName(currentDoc.ProjetId);  // Récupération Nom projet
-                string TextBoxProjectName = TSH.Pdm.GetName(currentDoc.ProjetId);
+                string TextBoxProjectName = currentDoc.Projet.NomProjet;
 
                 textBox10.Text = TextBoxProjectName; //Affichage du nom du projet courent dans la case texte
                 textBox1.Text = TextBoxProjectName; //Affichage le N° de moule dans la case texte
@@ -123,7 +119,7 @@ namespace Folder_Creator_Tool_V3
             //-------------Creation de la variable pour la recherche du dossier atelier-------------------------------------------------------------------------------------------------------------------
             try
             {
-                List<PdmObjectId> AtelierFolderIds = TSH.Pdm.SearchFolderByName(currentDoc.ProjetId, "02-Atelier");
+                List<PdmObjectId> AtelierFolderIds = TSH.Pdm.SearchFolderByName(currentDoc.Projet.ProjetId, "02-Atelier");
                 AtelierFolderId = AtelierFolderIds[0];
 
             }
@@ -212,7 +208,7 @@ namespace Folder_Creator_Tool_V3
                     string texteDossierRep = $"{textBox2.Text} - {textBox3.Text}";
                     string texteIndiceFolder = $"Ind {textBox8.Text}";
 
-                    List<PdmObjectId> pdmObjectAtelierFolderConstituant = DossierPdmInAtelier(currentDoc.ProjetId);
+                    List<PdmObjectId> pdmObjectAtelierFolderConstituant = DossierPdmInAtelier(currentDoc.Projet.ProjetId);
 
                     List<string> folderNames = GetAllProjectFolderNames(AtelierFolderId);
 
