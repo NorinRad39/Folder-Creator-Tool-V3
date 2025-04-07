@@ -208,41 +208,36 @@ namespace Folder_Creator_Tool_V3
                     string texteDossierRep = $"{textBox2.Text} - {textBox3.Text}";
                     string texteIndiceFolder = $"Ind {textBox8.Text}";
 
-                    List<PdmObjectId> pdmObjectAtelierFolderConstituant = DossierPdmInAtelier(currentDoc.Projet.ProjetId);
-
-                    List<string> folderNames = GetAllProjectFolderNames(AtelierFolderId);
+                    List<string> folderNames = GetAllProjectFolderNames(currentDoc.Projet.AtelierFolderId);
 
                     PdmObjectId dossier3D = new PdmObjectId();
 
-                    var result = DossierRepExiste(textBox2.Text, textBox3.Text, folderNames);
-                    bool existe = result.Item1;
-                    string folderName = result.Item2;
+                    string dossierRepExiste = DossierExiste(textBox2.Text, textBox3.Text, folderNames);
                     PdmObjectId dossierRepId = new PdmObjectId();
 
-                    if (!existe)
+                    if (string.Empty!= dossierRepExiste)
+                    {
+                        PdmObjectId dossierIndiceId = CreateFolderIfNotExists(dossierRepId, texteIndiceFolder);
+                    }
+                    else
                     {
                         dossierRepId = CreateFolderIfNotExists(AtelierFolderId, texteDossierRep);
                         PdmObjectId dossierIndiceId = CreateFolderIfNotExists(dossierRepId, texteIndiceFolder);
                         dossier3D = CreationAutreDossiers(dossierIndiceId);
                     }
-                    else if(!DossierIndExiste(textBox8.Text, folderNames))
-                    {
-                        dossierRepId = 
-                        PdmObjectId dossierIndiceId = CreateFolderIfNotExists(dossierRepId, texteIndiceFolder);
-                    }
-                    else
-                    {
-                        MessageBox.Show(
-                         "Un dossier avec le même repère ou avec la même désignation existe déjà.\n" +
-                         "Merci de vérifier et de relancer l'application si nécessaire.\n" +
-                         folderName,
-                         "Erreur",
-                         MessageBoxButtons.OK,
-                         MessageBoxIcon.Error
-                        );
-                        return;
+                    //else
+                    //{
+                    //    MessageBox.Show(
+                    //     "Un dossier avec le même repère ou avec la même désignation existe déjà.\n" +
+                    //     "Merci de vérifier et de relancer l'application si nécessaire.\n" +
+                    //     folderName,
+                    //     "Erreur",
+                    //     MessageBoxButtons.OK,
+                    //     MessageBoxIcon.Error
+                    //    );
+                    //    return;
 
-                    }
+                    //}
 
 
                     PdmObjectId auteurPdmObjectId = new PdmObjectId();
@@ -628,12 +623,12 @@ namespace Folder_Creator_Tool_V3
         #endregion Fin variable divers
 
         #region Fonction de verification de l'existence du dossier repere dans le dossier atelier du projet courant
-        (bool,string) DossierRepExiste(string Repere, string designation, List<string> folderNames)
+        string DossierExiste(string repere, string designation, List<string> folderNames)
         {
             foreach (string folderName in folderNames)
             {
                 string normalizedDossierName = folderName.Replace(" ", "").ToLower();
-                string normalizedRepere = Repere.Replace(" ", "").ToLower();
+                string normalizedRepere = repere.Replace(" ", "").ToLower();
                 string normalizedDesignation = designation.Replace(" ", "").ToLower();
 
                 bool startsWithRepere = normalizedDossierName.StartsWith(normalizedRepere);
@@ -641,10 +636,10 @@ namespace Folder_Creator_Tool_V3
 
                 if (startsWithRepere || (startsWithRepere && endsWithDesignation))
                 {
-                    return (true, folderName);
+                    return (folderName);
                 }
             }
-            return (false,"");
+            return (string.Empty);
         }
         #endregion Fin fonction de verification de l'existence du dossier repere dans le dossier atelier du projet courant
 
@@ -872,13 +867,13 @@ namespace Folder_Creator_Tool_V3
         /// <returns></returns>
         private TreeNode listePdf(string indice)
         {
-            if (!TSH.Pdm.SearchFolderByName(currentDoc.ProjetId, "01-2D").Any())
+            if (!TSH.Pdm.SearchFolderByName(currentDoc.Projet.ProjetId, "01-2D").Any())
             {
                 MessageBox.Show("Dossier '01-2D' introuvable.");
                 return null;
             }
 
-            PdmObjectId dossiers2D = TSH.Pdm.SearchFolderByName(currentDoc.ProjetId, "01-2D").First();
+            PdmObjectId dossiers2D = TSH.Pdm.SearchFolderByName(currentDoc.Projet.ProjetId, "01-2D").First();
             TreeNode rootFolderNode = new TreeNode(TSH.Pdm.GetName(dossiers2D));
 
             List<PdmObjectId> FoldersInPDFFolder = new List<PdmObjectId>();
@@ -1065,7 +1060,7 @@ namespace Folder_Creator_Tool_V3
             try
             {
                 // Recherche du dossier "02-3D" dans le projet courant
-                dossiers3Ds = TSH.Pdm.SearchFolderByName(currentDoc.ProjetId, "02-3D");
+                dossiers3Ds = TSH.Pdm.SearchFolderByName(currentDoc.Projet.ProjetId, "02-3D");
                 if (dossiers3Ds.Count > 0)
                 {
                     Dictionary<PdmObjectId, PdmObjectId> parentMapping = new Dictionary<PdmObjectId, PdmObjectId>();
@@ -1161,7 +1156,7 @@ namespace Folder_Creator_Tool_V3
                     if (test02 || test03)
                     {
                         // Recherche de documents par nom dans le projet actuel
-                        List<PdmObjectId> nomDocuIds = TSH.Pdm.SearchDocumentByName(currentDoc.ProjetId, nomDocu);
+                        List<PdmObjectId> nomDocuIds = TSH.Pdm.SearchDocumentByName(currentDoc.Projet.ProjetId, nomDocu);
                         // Si aucun document n'est trouvé, affichage d'un message
                         if (nomDocuIds.Count > 0)
                         {

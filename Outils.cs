@@ -31,15 +31,19 @@ namespace Folder_Creator_Tool_V3
 {
     public class FolderCreatorTool
     {
+
+        #region class Projet
+
         public class Projet
         {
+            
             public PdmObjectId ProjetId { get; private set; }
 
             public Projet(PdmObjectId projetId)
             {
                 ProjetId = projetId;
             }
-
+            
             /// <summary>
             /// Nom du projet.
             /// </summary>
@@ -151,10 +155,11 @@ namespace Folder_Creator_Tool_V3
                 File.AppendAllText(logPath, $"{DateTime.Now}: {message} - {ex.Message}\n");
             }
         }
-
+        #endregion Fin class Projet
+        #region class Document
         public class Document
         {
-            #region Propriétés
+            #region Propriétés class Document
 
             /// <summary>
             /// Identifiant unique du document.
@@ -226,9 +231,9 @@ namespace Folder_Creator_Tool_V3
             /// </summary>
             private static Dictionary<DocumentId, string> _cacheNomDocuments = new Dictionary<DocumentId, string>();
 
-            #endregion Propriétés
+            #endregion Propriétés class Document
 
-            #region Méthodes
+            #region Méthodes class Document
 
             // Constructeur par défaut
             public Document() { }
@@ -492,7 +497,8 @@ namespace Folder_Creator_Tool_V3
                 }
             }
 
-            #endregion Méthodes
+            #endregion Fin méthodes class Document
         }
+        #endregion Fin class Document
     }
 }
