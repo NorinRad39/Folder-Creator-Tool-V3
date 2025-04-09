@@ -67,6 +67,7 @@ namespace Folder_Creator_Tool_V3
             this.textBox5 = new System.Windows.Forms.TextBox();
             this.label11 = new System.Windows.Forms.Label();
             this.label6 = new System.Windows.Forms.Label();
+            this.dictionnaireToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
@@ -77,11 +78,13 @@ namespace Folder_Creator_Tool_V3
             // 
             // textBox1
             // 
+            this.textBox1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(224)))), ((int)(((byte)(224)))), ((int)(((byte)(224)))));
+            this.textBox1.Cursor = System.Windows.Forms.Cursors.Default;
             this.textBox1.Location = new System.Drawing.Point(76, 54);
             this.textBox1.Name = "textBox1";
             this.textBox1.ReadOnly = true;
             this.textBox1.Size = new System.Drawing.Size(317, 20);
-            this.textBox1.TabIndex = 1;
+            this.textBox1.TabIndex = 3;
             // 
             // label1
             // 
@@ -103,10 +106,11 @@ namespace Folder_Creator_Tool_V3
             // 
             // textBox2
             // 
+            this.textBox2.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.textBox2.Location = new System.Drawing.Point(76, 80);
             this.textBox2.Name = "textBox2";
             this.textBox2.Size = new System.Drawing.Size(317, 20);
-            this.textBox2.TabIndex = 3;
+            this.textBox2.TabIndex = 4;
             // 
             // label3
             // 
@@ -119,6 +123,7 @@ namespace Folder_Creator_Tool_V3
             // 
             // textBox3
             // 
+            this.textBox3.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.textBox3.Location = new System.Drawing.Point(76, 106);
             this.textBox3.Name = "textBox3";
             this.textBox3.Size = new System.Drawing.Size(317, 20);
@@ -145,18 +150,21 @@ namespace Folder_Creator_Tool_V3
             // 
             // textBox8
             // 
+            this.textBox8.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.textBox8.Location = new System.Drawing.Point(76, 132);
             this.textBox8.Name = "textBox8";
             this.textBox8.Size = new System.Drawing.Size(317, 20);
-            this.textBox8.TabIndex = 14;
+            this.textBox8.TabIndex = 6;
             // 
             // textBox9
             // 
+            this.textBox9.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(224)))), ((int)(((byte)(224)))), ((int)(((byte)(224)))));
+            this.textBox9.Cursor = System.Windows.Forms.Cursors.Default;
             this.textBox9.Location = new System.Drawing.Point(108, 28);
             this.textBox9.Name = "textBox9";
             this.textBox9.ReadOnly = true;
             this.textBox9.Size = new System.Drawing.Size(285, 20);
-            this.textBox9.TabIndex = 18;
+            this.textBox9.TabIndex = 2;
             // 
             // label9
             // 
@@ -178,27 +186,31 @@ namespace Folder_Creator_Tool_V3
             // 
             // textBox10
             // 
+            this.textBox10.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(224)))), ((int)(((byte)(224)))), ((int)(((byte)(224)))));
+            this.textBox10.Cursor = System.Windows.Forms.Cursors.Arrow;
             this.textBox10.Location = new System.Drawing.Point(108, 2);
             this.textBox10.Name = "textBox10";
             this.textBox10.ReadOnly = true;
             this.textBox10.Size = new System.Drawing.Size(285, 20);
-            this.textBox10.TabIndex = 20;
+            this.textBox10.TabIndex = 1;
             // 
             // button1
             // 
             this.button1.Location = new System.Drawing.Point(98, 71);
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(296, 47);
-            this.button1.TabIndex = 22;
+            this.button1.TabIndex = 14;
             this.button1.Text = "Reload";
             this.button1.UseVisualStyleBackColor = true;
             this.button1.Click += new System.EventHandler(this.button1_Click_1);
             // 
             // menuStrip1
             // 
+            this.menuStrip1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(224)))), ((int)(((byte)(224)))), ((int)(((byte)(224)))));
             this.menuStrip1.ImageScalingSize = new System.Drawing.Size(24, 24);
             this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.quitterToolStripMenuItem});
+            this.quitterToolStripMenuItem,
+            this.dictionnaireToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
             this.menuStrip1.Padding = new System.Windows.Forms.Padding(4, 1, 0, 1);
@@ -239,7 +251,7 @@ namespace Folder_Creator_Tool_V3
             this.treeView1.Margin = new System.Windows.Forms.Padding(2);
             this.treeView1.Name = "treeView1";
             this.treeView1.Size = new System.Drawing.Size(387, 317);
-            this.treeView1.TabIndex = 29;
+            this.treeView1.TabIndex = 10;
             // 
             // groupBox2
             // 
@@ -279,7 +291,7 @@ namespace Folder_Creator_Tool_V3
             this.matiereButton2.Location = new System.Drawing.Point(11, 42);
             this.matiereButton2.Name = "matiereButton2";
             this.matiereButton2.Size = new System.Drawing.Size(84, 17);
-            this.matiereButton2.TabIndex = 34;
+            this.matiereButton2.TabIndex = 12;
             this.matiereButton2.Text = "Acier trempé";
             this.matiereButton2.UseVisualStyleBackColor = true;
             // 
@@ -290,7 +302,7 @@ namespace Folder_Creator_Tool_V3
             this.matiereButton1.Location = new System.Drawing.Point(11, 19);
             this.matiereButton1.Name = "matiereButton1";
             this.matiereButton1.Size = new System.Drawing.Size(49, 17);
-            this.matiereButton1.TabIndex = 33;
+            this.matiereButton1.TabIndex = 11;
             this.matiereButton1.TabStop = true;
             this.matiereButton1.Text = "Acier";
             this.matiereButton1.UseVisualStyleBackColor = true;
@@ -300,7 +312,7 @@ namespace Folder_Creator_Tool_V3
             this.button3.Location = new System.Drawing.Point(331, 19);
             this.button3.Name = "button3";
             this.button3.Size = new System.Drawing.Size(63, 23);
-            this.button3.TabIndex = 29;
+            this.button3.TabIndex = 16;
             this.button3.Text = "Parcourir";
             this.button3.UseVisualStyleBackColor = true;
             this.button3.Click += new System.EventHandler(this.button3_Click_1);
@@ -311,7 +323,7 @@ namespace Folder_Creator_Tool_V3
             this.textBox4.Location = new System.Drawing.Point(6, 19);
             this.textBox4.Name = "textBox4";
             this.textBox4.Size = new System.Drawing.Size(320, 20);
-            this.textBox4.TabIndex = 30;
+            this.textBox4.TabIndex = 15;
             this.textBox4.Text = "Chemin du dossier atelier";
             // 
             // groupBox4
@@ -355,17 +367,18 @@ namespace Folder_Creator_Tool_V3
             this.groupBox5.Controls.Add(this.label6);
             this.groupBox5.Location = new System.Drawing.Point(13, 192);
             this.groupBox5.Name = "groupBox5";
-            this.groupBox5.Size = new System.Drawing.Size(395, 101);
+            this.groupBox5.Size = new System.Drawing.Size(399, 101);
             this.groupBox5.TabIndex = 32;
             this.groupBox5.TabStop = false;
             this.groupBox5.Text = "Informations complementaire";
             // 
             // textBox7
             // 
+            this.textBox7.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.textBox7.Location = new System.Drawing.Point(75, 68);
             this.textBox7.Name = "textBox7";
             this.textBox7.Size = new System.Drawing.Size(313, 20);
-            this.textBox7.TabIndex = 5;
+            this.textBox7.TabIndex = 9;
             // 
             // label12
             // 
@@ -378,17 +391,19 @@ namespace Folder_Creator_Tool_V3
             // 
             // textBox6
             // 
+            this.textBox6.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.textBox6.Location = new System.Drawing.Point(76, 42);
             this.textBox6.Name = "textBox6";
             this.textBox6.Size = new System.Drawing.Size(313, 20);
-            this.textBox6.TabIndex = 3;
+            this.textBox6.TabIndex = 8;
             // 
             // textBox5
             // 
+            this.textBox5.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.textBox5.Location = new System.Drawing.Point(76, 16);
             this.textBox5.Name = "textBox5";
             this.textBox5.Size = new System.Drawing.Size(313, 20);
-            this.textBox5.TabIndex = 2;
+            this.textBox5.TabIndex = 7;
             // 
             // label11
             // 
@@ -408,11 +423,18 @@ namespace Folder_Creator_Tool_V3
             this.label6.TabIndex = 0;
             this.label6.Text = "Matiére plan";
             // 
+            // dictionnaireToolStripMenuItem
+            // 
+            this.dictionnaireToolStripMenuItem.Name = "dictionnaireToolStripMenuItem";
+            this.dictionnaireToolStripMenuItem.Size = new System.Drawing.Size(83, 22);
+            this.dictionnaireToolStripMenuItem.Text = "Dictionnaire";
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.AutoSize = true;
+            this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(224)))), ((int)(((byte)(224)))), ((int)(((byte)(224)))));
             this.ClientSize = new System.Drawing.Size(425, 871);
             this.Controls.Add(this.groupBox5);
             this.Controls.Add(this.groupBox4);
@@ -494,6 +516,7 @@ namespace Folder_Creator_Tool_V3
         private System.Windows.Forms.TextBox textBox5;
         private System.Windows.Forms.TextBox textBox7;
         private System.Windows.Forms.Label label12;
+        private System.Windows.Forms.ToolStripMenuItem dictionnaireToolStripMenuItem;
     }
 }
 
