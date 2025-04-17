@@ -143,6 +143,19 @@ namespace Folder_Creator_Tool_V3
                 }
             }
 
+            /// <summary>
+            /// Liste des dossiers dans dossier atelier.
+            /// </summary>
+            public List<PdmObjectId> AtelierConstituantFolderIds
+            {
+                get
+                {
+                    List<PdmObjectId> atelierConstituantFolderIds = new List<PdmObjectId>();
+                    GetConstituentsRecursive(AtelierFolderId, atelierConstituantFolderIds, null);
+                    return atelierConstituantFolderIds;
+                }
+            }
+
             private void HandleException(Exception ex, string message)
             {
                 LogError(message, ex);
