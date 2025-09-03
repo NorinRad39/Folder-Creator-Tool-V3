@@ -120,9 +120,6 @@ namespace Folder_Creator_Tool_V3
 
         bool test00; //Creation bool pour tester la presence des dossiers a creer dans le projet
         bool test01;
-        bool test02;
-        bool test03;
-
 
         List<PdmObjectId> DocumentsInIndiceFolder = new List<PdmObjectId>(); //Liste document fictive pour recuperation dossier indice
         List<PdmObjectId> IndiceFolderIds = new List<PdmObjectId>(); //Liste des Id de dossier indice
@@ -539,7 +536,6 @@ namespace Folder_Creator_Tool_V3
         //-----------Fonction Récupération ID Document courant----------------------------------------------------------------------------------------------------------------------------
         void DocumentCourant(out PdmObjectId PdmObjectIdCurrentDocumentId, out DocumentId CurrentDocumentId, out DocumentId CurrentDocumentIdLastRev)
         {
-           
             try
             {
                 CurrentDocumentId = TSH.Documents.EditedDocument;  // Récupération ID Document courant
@@ -797,9 +793,6 @@ namespace Folder_Creator_Tool_V3
             // Appel de la méthode pour vérifier le chemin au démarrage
             VerifierCheminAuDemarrage();//-----------------------------------------------------------------------------////////////////////////////////////////---------------------------------------------------------
 
-            // Restaurer le choix de matière au démarrage
-            RestoreMaterialChoice();
-
             //-----------Récupération ID projet courant----------------------------------------------------------------------------------------------------------------------------
             try
             {
@@ -1035,8 +1028,7 @@ namespace Folder_Creator_Tool_V3
                                 PdmObjectId MaterialAcierTrempeJbt = TSH.Pdm.SearchDocumentByUniversalId(PdmObjectId.Empty, domain, uName2);
                                 DocumentId MaterialAcierTrempeJbtId = TSH.Documents.GetDocument(MaterialAcierTrempeJbt);
 
-                                // Appeler la vérification pour s'assurer qu'une matière est sélectionnée dès le départ
-                                CheckAndSetMaterial(MaterialAcierJbtId, MaterialAcierTrempeJbtId);
+                               
                             }
                             catch (Exception ex)
                             {
@@ -1278,7 +1270,7 @@ namespace Folder_Creator_Tool_V3
                         ElementId publishedIndice3DNomParamId = TSH.Parameters.PublishText(CurrentDocumentId, Indice3DNomParamTxt, Indice3DNomParam);
                         // Publie le paramètre texte 'Indice 3D' dans le document actuel et récupère l'identifiant de l'entité publiée.
                         TSH.Elements.SetName(publishedIndice3DNomParamId, Indice3DNomParamTxt);
-                        // Attribue le nom 'Indice 3D' à l'entité publiée.
+                        // Attribue le nom 'Indice 3D' à l'entité publiée;
 
 
 
@@ -2001,49 +1993,7 @@ namespace Folder_Creator_Tool_V3
             }
         }
 
-        // Sauvegarder le choix de matière dans les paramètres
-        private void SaveMaterialChoice()
-        {
-            if (matiereButton1.Checked)
-            {
-                // Sauvegarder le choix de matière dans les paramètres de l'application
-                Properties.Settings.Default.SelectedMaterial = "acierjbt";
-            }
-            else if (matiereButton2.Checked)
-            {
-                Properties.Settings.Default.SelectedMaterial = "aciertrempejbt";
-            }
-            else
-            {
-                Properties.Settings.Default.SelectedMaterial = string.Empty; // Aucun choix
-            }
-
-            // Sauvegarder les paramètres
-            Properties.Settings.Default.Save();
-        }
-
-        // Restaurer le choix de matière lors du démarrage
-        private void RestoreMaterialChoice()
-        {
-            // Récupérer le choix de matière enregistré dans les paramètres
-            string savedMaterial = Properties.Settings.Default.SelectedMaterial;
-
-            // Vérifier le choix sauvegardé et cocher le bon bouton radio
-            if (savedMaterial == "acierjbt")
-            {
-                matiereButton1.Checked = true;
-            }
-            else if (savedMaterial == "aciertrempejbt")
-            {
-                matiereButton2.Checked = true;
-            }
-            else
-            {
-                // Aucun choix sauvegardé ou choix vide, laisser les boutons décochés
-                matiereButton1.Checked = false;
-                matiereButton2.Checked = false;
-            }
-        }
+       
 
         private void buttonSetMaterial_Click(object sender, EventArgs e)
         {
@@ -2060,12 +2010,6 @@ namespace Folder_Creator_Tool_V3
                 PdmObjectId MaterialAcierTrempeJbt = TSH.Pdm.SearchDocumentByUniversalId(PdmObjectId.Empty, domain, uName2);
                 DocumentId MaterialAcierTrempeJbtId = TSH.Documents.GetDocument(MaterialAcierTrempeJbt);
 
-                // Appeler la vérification de la matière
-                CheckAndSetMaterial(MaterialAcierJbtId, MaterialAcierTrempeJbtId);
-
-                // Sauvegarder le choix de matière
-                SaveMaterialChoice();
-
                 // Message de confirmation (facultatif)
                 MessageBox.Show("La matière a été définie pour la pièce.");
             }
@@ -2074,35 +2018,46 @@ namespace Folder_Creator_Tool_V3
                 MessageBox.Show("Erreur lors de la définition de la matière : " + ex.Message);
             }
         }
-
-        // Nouvelle méthode pour vérifier les boutons et appliquer la matière
-        private void CheckAndSetMaterial(DocumentId MaterialAcierJbtId, DocumentId MaterialAcierTrempeJbtId)
+     
+        private void button4_Click(object sender, EventArgs e)
         {
-            if (matiereButton1.Checked)
+            // Récupérer les nœuds cochés
+            List<PdmObjectId> checkedPdfIds = new List<PdmObjectId>();
+            AddCheckedNodesToList(treeView1.Nodes, checkedPdfIds);
+
+            if (checkedPdfIds.Count == 0)
             {
-                // Si matiereButton1 est coché, assigner MaterialAcierJbtId
-                TopSolidDesignHost.Parts.SetMaterial(CurrentDocumentIdLastRev, MaterialAcierJbtId);
+                MessageBox.Show("Veuillez cocher au moins un PDF dans l'arbre.");
+                return;
             }
-            else if (matiereButton2.Checked)
+
+            int pdfOuverts = 0;
+            foreach (var pdfId in checkedPdfIds)
             {
-                // Si matiereButton2 est coché, assigner MaterialAcierTrempeJbtId
-                TopSolidDesignHost.Parts.SetMaterial(CurrentDocumentIdLastRev, MaterialAcierTrempeJbtId);
+                string extension;
+                var type = TSH.Pdm.GetType(pdfId, out extension);
+
+                if (extension == ".pdf")
+                {
+                    string tempPath = Path.Combine(Path.GetTempPath(), TSH.Pdm.GetName(pdfId) + ".pdf");
+                    PdmMajorRevisionId majRev = TSH.Pdm.GetLastMajorRevision(pdfId);
+                    PdmMinorRevisionId minRev = TSH.Pdm.GetLastMinorRevision(majRev);
+                    TSH.Pdm.ExportMinorRevisionFile(minRev, tempPath);
+
+                    // Ouvre le PDF avec le lecteur par défaut
+                    Process.Start(new ProcessStartInfo
+                    {
+                        FileName = tempPath,
+                        UseShellExecute = true
+                    });
+                    pdfOuverts++;
+                }
             }
-            else
+
+            if (pdfOuverts == 0)
             {
-                // Aucun bouton n'est sélectionné, afficher un message d'erreur
-                MessageBox.Show("Veuillez sélectionner une matière avant de continuer.");
-                throw new InvalidOperationException("Aucune matière sélectionnée.");
+                MessageBox.Show("Aucun fichier PDF n'a été trouvé parmi les éléments cochés.");
             }
         }
-
-        // Appeler la fonction RestoreMaterialChoice lors de l'initialisation de l'interface utilisateur (par exemple, dans le Form_Load)
-        private void Form_Load(object sender, EventArgs e)
-        {
-            // Restaurer le choix de matière au démarrage
-            RestoreMaterialChoice();
-        }
-
-        
     }
 }
