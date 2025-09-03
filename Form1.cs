@@ -21,7 +21,6 @@ using System.Threading;
 
 
 
-
 namespace Folder_Creator_Tool_V3
 {
   
@@ -1345,7 +1344,7 @@ namespace Folder_Creator_Tool_V3
                         // Création du paramètre de nom du document avec l'identifiant récupéré
                         ElementId PubliedNom_docu = new ElementId();
 
-                        //Modifiction tolérence de visualisation
+                        //Modifiction tolérance de visualisation
                         CréaetionParam(PubliedNom_docu, in Nom_docu, in NomDocuNomParam, in CurrentDocumentId);
                         double LinearTol = 0.00001;
                         double AngularTol = 0.08726646259971647;
@@ -1800,14 +1799,15 @@ namespace Folder_Creator_Tool_V3
                             Thread.Sleep(1000); // 1 seconde de délai
 
                             // Affiche une boîte de message avec un message d'information
-                            MessageBox.Show("Il semble que le dossier existe", "Information", MessageBoxButtons.OK, MessageBoxIcon.Information, MessageBoxDefaultButton.Button1, MessageBoxOptions.DefaultDesktopOnly); // Ouvre le dossier dans l'explorateur de fichiers
-                                Application.Exit();
+                            MessageBox.Show("Il semble que le dossier existe", "Information", MessageBoxButtons.OK, MessageBoxIcon.Information, MessageBoxDefaultButton.Button1);
+                            // Ouvre le dossier dans l'explorateur de fichiers
+                            Application.Exit();
                         }
                         else
                         {
                             //Si non si dossier moule et le dossier rep existe mais pas le dossier ind
                             // Le dossier avec le nom DossierIndice n'a pas été trouvé
-                            MessageBox.Show(this, $"Aucun dossier avec le nom '{DossierIndice}' n'a été trouvé", "Information", MessageBoxButtons.OK, MessageBoxIcon.Information, MessageBoxDefaultButton.Button1, MessageBoxOptions.DefaultDesktopOnly);
+                            MessageBox.Show(this, $"Aucun dossier avec le nom '{DossierIndice}' n'a été trouvé", "Information", MessageBoxButtons.OK, MessageBoxIcon.Information, MessageBoxDefaultButton.Button1);
 
                             // Création du sous-dossier "TexteIndiceFolder"
                             System.IO.Directory.CreateDirectory(DossierAtelierServeur + "\\" + folderName + "\\" + TexteDossierRep + "\\" + TexteIndiceFolder);
@@ -1823,7 +1823,6 @@ namespace Folder_Creator_Tool_V3
                     }
 
                     
-
 
 
                     PdmMinorRevisionId PDFRev = new PdmMinorRevisionId();
