@@ -49,6 +49,7 @@ namespace Folder_Creator_Tool_V3
             this.quitterToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.label4 = new System.Windows.Forms.Label();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.button4 = new System.Windows.Forms.Button();
             this.treeView1 = new System.Windows.Forms.TreeView();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
             this.groupBox3 = new System.Windows.Forms.GroupBox();
@@ -65,7 +66,7 @@ namespace Folder_Creator_Tool_V3
             this.textBox5 = new System.Windows.Forms.TextBox();
             this.label11 = new System.Windows.Forms.Label();
             this.label6 = new System.Windows.Forms.Label();
-            this.button4 = new System.Windows.Forms.Button();
+            this.button5 = new System.Windows.Forms.Button();
             this.menuStrip1.SuspendLayout();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
@@ -226,11 +227,21 @@ namespace Folder_Creator_Tool_V3
             this.groupBox1.Controls.Add(this.button4);
             this.groupBox1.Controls.Add(this.treeView1);
             this.groupBox1.Controls.Add(this.label4);
-            this.groupBox1.Location = new System.Drawing.Point(13, 299);
+            this.groupBox1.Location = new System.Drawing.Point(13, 350);
             this.groupBox1.Name = "groupBox1";
             this.groupBox1.Size = new System.Drawing.Size(400, 411);
             this.groupBox1.TabIndex = 26;
             this.groupBox1.TabStop = false;
+            // 
+            // button4
+            // 
+            this.button4.Location = new System.Drawing.Point(7, 353);
+            this.button4.Name = "button4";
+            this.button4.Size = new System.Drawing.Size(387, 49);
+            this.button4.TabIndex = 33;
+            this.button4.Text = "Ouvrir PDF";
+            this.button4.UseVisualStyleBackColor = true;
+            this.button4.Click += new System.EventHandler(this.button4_Click);
             // 
             // treeView1
             // 
@@ -265,7 +276,7 @@ namespace Folder_Creator_Tool_V3
             // 
             this.groupBox3.Controls.Add(this.button2);
             this.groupBox3.Controls.Add(this.button1);
-            this.groupBox3.Location = new System.Drawing.Point(13, 716);
+            this.groupBox3.Location = new System.Drawing.Point(13, 767);
             this.groupBox3.Name = "groupBox3";
             this.groupBox3.Size = new System.Drawing.Size(400, 130);
             this.groupBox3.TabIndex = 28;
@@ -296,7 +307,7 @@ namespace Folder_Creator_Tool_V3
             this.groupBox4.Controls.Add(this.label5);
             this.groupBox4.Controls.Add(this.textBox4);
             this.groupBox4.Controls.Add(this.button3);
-            this.groupBox4.Location = new System.Drawing.Point(14, 852);
+            this.groupBox4.Location = new System.Drawing.Point(14, 903);
             this.groupBox4.Name = "groupBox4";
             this.groupBox4.Size = new System.Drawing.Size(400, 63);
             this.groupBox4.TabIndex = 31;
@@ -323,6 +334,7 @@ namespace Folder_Creator_Tool_V3
             // 
             // groupBox5
             // 
+            this.groupBox5.Controls.Add(this.button5);
             this.groupBox5.Controls.Add(this.textBox7);
             this.groupBox5.Controls.Add(this.label12);
             this.groupBox5.Controls.Add(this.textBox6);
@@ -331,7 +343,7 @@ namespace Folder_Creator_Tool_V3
             this.groupBox5.Controls.Add(this.label6);
             this.groupBox5.Location = new System.Drawing.Point(13, 192);
             this.groupBox5.Name = "groupBox5";
-            this.groupBox5.Size = new System.Drawing.Size(395, 101);
+            this.groupBox5.Size = new System.Drawing.Size(400, 152);
             this.groupBox5.TabIndex = 32;
             this.groupBox5.TabStop = false;
             this.groupBox5.Text = "Informations complementaire";
@@ -384,22 +396,22 @@ namespace Folder_Creator_Tool_V3
             this.label6.TabIndex = 0;
             this.label6.Text = "Matiére plan";
             // 
-            // button4
+            // button5
             // 
-            this.button4.Location = new System.Drawing.Point(7, 353);
-            this.button4.Name = "button4";
-            this.button4.Size = new System.Drawing.Size(387, 49);
-            this.button4.TabIndex = 33;
-            this.button4.Text = "Ouvrir PDF";
-            this.button4.UseVisualStyleBackColor = true;
-            this.button4.Click += new System.EventHandler(this.button4_Click);
+            this.button5.Location = new System.Drawing.Point(7, 94);
+            this.button5.Name = "button5";
+            this.button5.Size = new System.Drawing.Size(387, 52);
+            this.button5.TabIndex = 6;
+            this.button5.Text = "Recherche informations";
+            this.button5.UseVisualStyleBackColor = true;
+            this.button5.Click += new System.EventHandler(this.button5_Click);
             // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.AutoSize = true;
-            this.ClientSize = new System.Drawing.Size(425, 924);
+            this.ClientSize = new System.Drawing.Size(425, 978);
             this.Controls.Add(this.groupBox5);
             this.Controls.Add(this.groupBox4);
             this.Controls.Add(this.groupBox2);
@@ -478,6 +490,7 @@ namespace Folder_Creator_Tool_V3
         private System.Windows.Forms.TextBox textBox7;
         private System.Windows.Forms.Label label12;
         private System.Windows.Forms.Button button4;
+        private System.Windows.Forms.Button button5;
     }
 }
 
