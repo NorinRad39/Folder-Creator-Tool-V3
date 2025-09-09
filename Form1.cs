@@ -1777,7 +1777,7 @@ namespace Folder_Creator_Tool_V3
                     {
                         //Si non si dossier moule et le dossier rep existe mais pas le dossier ind
                         // Le dossier avec le nom DossierIndice n'a pas été trouvé
-                        MessageBox.Show(this, $"Aucun dossier avec le nom '{DossierIndice}' n'a été trouvé", "Information", MessageBoxButtons.OK, MessageBoxIcon.Information, MessageBoxDefaultButton.Button1);
+                        //MessageBox.Show(this, $"Aucun dossier avec le nom '{DossierIndice}' n'a été trouvé", "Information", MessageBoxButtons.OK, MessageBoxIcon.Information, MessageBoxDefaultButton.Button1);
 
                         // Création du sous-dossier "TexteIndiceFolder"
                         System.IO.Directory.CreateDirectory(DossierAtelierServeur + "\\" + folderName + "\\" + TexteDossierRep + "\\" + TexteIndiceFolder);
