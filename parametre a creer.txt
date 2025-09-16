@@ -6,3 +6,11 @@ Document electrode
     -Total brut (parametre entier = Nbr d'élec Fini + Nbr d'élec Demi-fini +  Nbr d'élec Eb, publié) 
     -publication = 00-Gap Eb, 01-Gap Demi fini, 02-Gap Fini
     
+Document paralelisation electrode
+    -Gap eb (parametre texte a reco ='00-Gap Eb 0')
+    -Gap demi fini (parametre texte a reco ='01-Gap Demi fini 0')
+    -Gap fini (parametre texte a reco ='02-Gap Fini 0.1')
+    -Nom_elec (parametre texte ='Nom elec')
+    -Nom_docu (paramatre texte ='Nom_docu')
+    
+
