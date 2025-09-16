@@ -1,0 +1,8 @@
+Document electrode
+    -Indice 3D (parametre texte = Indice elec, publié)
+    -Designation (parametre texte=$'Désignation de la forme à éroder', publié)
+    -Nom-docu (parametre texte =$'Nom de la forme à éroder', publié)
+    -Nom elec (parametre texte =$Nom ,  publié)
+    -Total brut (parametre entier = Nbr d'élec Fini + Nbr d'élec Demi-fini +  Nbr d'élec Eb, publié) 
+    -publication = 00-Gap Eb, 01-Gap Demi fini, 02-Gap Fini
+    
