@@ -1,9 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.8.34309.116
+# Visual Studio Version 18
+VisualStudioVersion = 18.3.11505.172 d18.3
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Folder Creator Tool V3", "Folder Creator Tool V3.csproj", "{FEEFC0F1-CFD0-47A1-9DD9-32F569846A71}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OutilsTs", "..\Classe-outils-topsolid\Classe outils topsolid\OutilsTs.csproj", "{E2D81E73-A4DC-47BB-BC93-ACBEBDE63F1D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +23,14 @@ Global
 		{FEEFC0F1-CFD0-47A1-9DD9-32F569846A71}.Release|Any CPU.Build.0 = Release|Any CPU
 		{FEEFC0F1-CFD0-47A1-9DD9-32F569846A71}.Release|x64.ActiveCfg = Release|x64
 		{FEEFC0F1-CFD0-47A1-9DD9-32F569846A71}.Release|x64.Build.0 = Release|x64
+		{E2D81E73-A4DC-47BB-BC93-ACBEBDE63F1D}.Debug|Any CPU.ActiveCfg = Debug|x64
+		{E2D81E73-A4DC-47BB-BC93-ACBEBDE63F1D}.Debug|Any CPU.Build.0 = Debug|x64
+		{E2D81E73-A4DC-47BB-BC93-ACBEBDE63F1D}.Debug|x64.ActiveCfg = Debug|x64
+		{E2D81E73-A4DC-47BB-BC93-ACBEBDE63F1D}.Debug|x64.Build.0 = Debug|x64
+		{E2D81E73-A4DC-47BB-BC93-ACBEBDE63F1D}.Release|Any CPU.ActiveCfg = Release|x64
+		{E2D81E73-A4DC-47BB-BC93-ACBEBDE63F1D}.Release|Any CPU.Build.0 = Release|x64
+		{E2D81E73-A4DC-47BB-BC93-ACBEBDE63F1D}.Release|x64.ActiveCfg = Release|x64
+		{E2D81E73-A4DC-47BB-BC93-ACBEBDE63F1D}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

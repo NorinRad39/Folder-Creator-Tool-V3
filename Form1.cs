@@ -14,6 +14,7 @@ using System.Linq;
 using System.Net.NetworkInformation;
 using System.Diagnostics;
 using System.Threading;
+using OutilsTs;
 
 
 namespace Folder_Creator_Tool_V3
@@ -681,6 +682,8 @@ namespace Folder_Creator_Tool_V3
             }
             return options;
         }
+
+        
 
         private void FindNoConvertExporterIndex(out int NoConvertExporterIndex)
         {
@@ -1804,6 +1807,7 @@ namespace Folder_Creator_Tool_V3
                     {
                         cheminComplet = System.IO.Path.Combine(path3D, nomFichier);
                         TSH.Documents.ExportWithOptions(X_TExporterIndex, options, CurrentDocumentId, cheminComplet);
+                        Export.ExportDocId(CurrentDocumentId, path3D, nomDocument, "step");
 
                         for (int i = 0; i < CheckedItemListeCopie.Count; i++)
                         {
@@ -1826,10 +1830,6 @@ namespace Folder_Creator_Tool_V3
 
                                 cheminCompletPDF = System.IO.Path.Combine(path3D, PDFName);
                                 TSH.Pdm.ExportMinorRevisionFile(PDFRev, cheminCompletPDF);
-
-
-
-
 
                             }
                             catch (Exception ex)
