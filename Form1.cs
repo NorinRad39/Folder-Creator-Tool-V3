@@ -182,6 +182,7 @@ namespace Folder_Creator_Tool_V3
                 DossierMethodeId = TSH.Pdm.CreateFolder(DossierIndiceIdFonction, "Methode");
                 TSH.Pdm.CreateFolder(DossierMethodeId, "Contrôle");
                 TSH.Pdm.CreateFolder(DossierMethodeId, "Tournage");
+                TSH.Pdm.CreateFolder(DossierMethodeId, "Fil");
 
                 //Cration des dossier utilisateur dans le dossier fraisage
 
@@ -2016,18 +2017,39 @@ namespace Folder_Creator_Tool_V3
 
                 if (extension == ".pdf")
                 {
-                    string tempPath = Path.Combine(Path.GetTempPath(), TSH.Pdm.GetName(pdfId) + ".pdf");
-                    PdmMajorRevisionId majRev = TSH.Pdm.GetLastMajorRevision(pdfId);
-                    PdmMinorRevisionId minRev = TSH.Pdm.GetLastMinorRevision(majRev);
-                    TSH.Pdm.ExportMinorRevisionFile(minRev, tempPath);
+                    string pdfName = TSH.Pdm.GetName(pdfId) + ".pdf";
+                    string tempPath = Path.Combine(Path.GetTempPath(), pdfName);
 
-                    // Ouvre le PDF avec le lecteur par défaut
-                    Process.Start(new ProcessStartInfo
+                    try
                     {
-                        FileName = tempPath,
-                        UseShellExecute = true
-                    });
-                    pdfOuverts++;
+                        // Vérifier si le fichier existe déjà et s'il est verrouillé
+                        if (File.Exists(tempPath) && IsFileLocked(tempPath))
+                        {
+                            // Fichier déjà ouvert, essayer de mettre au premier plan la fenêtre
+                            if (BringPdfToForeground(pdfName))
+                            {
+                                pdfOuverts++;
+                                continue;
+                            }
+                        }
+
+                        // Exporter le fichier
+                        PdmMajorRevisionId majRev = TSH.Pdm.GetLastMajorRevision(pdfId);
+                        PdmMinorRevisionId minRev = TSH.Pdm.GetLastMinorRevision(majRev);
+                        TSH.Pdm.ExportMinorRevisionFile(minRev, tempPath);
+
+                        // Ouvre le PDF avec le lecteur par défaut
+                        Process.Start(new ProcessStartInfo
+                        {
+                            FileName = tempPath,
+                            UseShellExecute = true
+                        });
+                        pdfOuverts++;
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show($"Erreur lors de l'ouverture du fichier {pdfName} : {ex.Message}", "Erreur", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
                 }
             }
 
@@ -2035,6 +2057,64 @@ namespace Folder_Creator_Tool_V3
             {
                 MessageBox.Show("Aucun fichier PDF n'a été trouvé parmi les éléments cochés.");
             }
+        }
+
+        // Méthode pour vérifier si un fichier est verrouillé/ouvert
+        private bool IsFileLocked(string filePath)
+        {
+            try
+            {
+                using (FileStream stream = File.Open(filePath, FileMode.Open, FileAccess.Read, FileShare.None))
+                {
+                    stream.Close();
+                }
+            }
+            catch (IOException)
+            {
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+            return false;
+        }
+
+        // Méthode pour mettre au premier plan une fenêtre contenant le nom du PDF
+        private bool BringPdfToForeground(string pdfFileName)
+        {
+            try
+            {
+                // Rechercher tous les processus qui pourraient avoir ouvert le PDF
+                Process[] processes = Process.GetProcesses();
+
+                foreach (Process process in processes)
+                {
+                    try
+                    {
+                        // Vérifier si le titre de la fenêtre contient le nom du PDF
+                        if (!string.IsNullOrEmpty(process.MainWindowTitle) &&
+                            process.MainWindowTitle.Contains(Path.GetFileNameWithoutExtension(pdfFileName)))
+                        {
+                            // Mettre la fenêtre au premier plan
+                            SetForegroundWindow(process.MainWindowHandle);
+                            return true;
+                        }
+                    }
+                    catch
+                    {
+                        // Ignorer les erreurs d'accès aux processus
+                        continue;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                // En cas d'erreur, on continue sans bloquer
+                Debug.WriteLine($"Erreur lors de la recherche de la fenêtre : {ex.Message}");
+            }
+
+            return false;
         }
 
         private void button5_Click(object sender, EventArgs e)
