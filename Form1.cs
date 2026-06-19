@@ -1259,7 +1259,7 @@ namespace Folder_Creator_Tool_V3
 
                     ElementId matierePlanParamId = TSH.Parameters.CreateTextParameter(CurrentDocumentId, textBox5.Text);
                     // Crée un paramètre texte dans le document actuel avec la valeur spécifiée et stocke son identifiant.
-                    string matiereNomParamTxt = "Matiére plan";
+                    string matiereNomParamTxt = "Matiere plan";
                     // Définit une chaîne de caractères pour le nom du paramètre texte.
                     SmartText matierePlanParam = new SmartText(matierePlanParamId);
                     // Crée un objet SmartText à partir de la valeur contenue dans 'TextBoxIndiceValue'.
@@ -1285,7 +1285,7 @@ namespace Folder_Creator_Tool_V3
 
                     ElementId nbrPiecesParamId = TSH.Parameters.CreateTextParameter(CurrentDocumentId, textBox7.Text);
                     // Crée un paramètre texte dans le document actuel avec la valeur spécifiée et stocke son identifiant.
-                    string nbrPiecesNomParamTxt = "Nombre de piéces";
+                    string nbrPiecesNomParamTxt = "Nombre de pieces";
                     // Définit une chaîne de caractères pour le nom du paramètre texte.
                     SmartText nbrPiecesParam = new SmartText(nbrPiecesParamId);
                     // Crée un objet SmartText à partir de la valeur contenue dans 'TextBoxIndiceValue'.
@@ -2189,11 +2189,11 @@ namespace Folder_Creator_Tool_V3
                 foreach (var param in allParams)
                 {
                     string paramName = TSH.Elements.GetName(param);
-                    if (paramName == "Matiére plan")
+                    if (paramName == "Matiere plan")
                         textBox5.Text = TSH.Parameters.GetTextValue(param);
                     else if (paramName == "Traitement")
                         textBox6.Text = TSH.Parameters.GetTextValue(param);
-                    else if (paramName == "Nombre de piéces")
+                    else if (paramName == "Nombre de pieces")
                         textBox7.Text = TSH.Parameters.GetTextValue(param);
                 }
             }
