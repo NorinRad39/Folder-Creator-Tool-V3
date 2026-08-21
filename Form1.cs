@@ -168,8 +168,8 @@ namespace Folder_Creator_Tool_V3
             PdmObjectId DossierFraisageId; //Recuperation de l'Id du dossier fraisage pour creation des dossiers utilisateursP
             PdmObjectId DossierMethodeId;  //Recuperation de l'Id du dossier Methode pour creation des dossiers controle et tournage
             PdmObjectId DossierFLFA; //Recuperation de l'Id du dossier FLFA pour creation du dossier OP1
-            PdmObjectId DossierBEHE; //Recuperation de l'Id du dossier FLFA pour creation du dossier OP1
-            PdmObjectId DossierSETE; //Recuperation de l'Id du dossier FLFA pour creation du dossier OP1
+            PdmObjectId DossierBEHE; //Recuperation de l'Id du dossier BEHE pour creation du dossier OP1
+            PdmObjectId DossierSETE; //Recuperation de l'Id du dossier SETE pour creation du dossier OP1
 
 
             try
@@ -191,7 +191,7 @@ namespace Folder_Creator_Tool_V3
                 DossierSETE = TSH.Pdm.CreateFolder(DossierFraisageId, "SETE");
 
                 //Creation des dossier OP1
-                TSH.Pdm.CreateFolder(DossierBEHE, "OP1");
+                TSH.Pdm.CreateFolder(DossierBEHE, "OP1"); TSH.Pdm.CreateFolder(DossierBEHE, "3D");
                 TSH.Pdm.CreateFolder(DossierFLFA, "OP1");
                 TSH.Pdm.CreateFolder(DossierSETE, "OP1");
 
@@ -1285,7 +1285,7 @@ namespace Folder_Creator_Tool_V3
 
                     ElementId nbrPiecesParamId = TSH.Parameters.CreateTextParameter(CurrentDocumentId, textBox7.Text);
                     // Crée un paramètre texte dans le document actuel avec la valeur spécifiée et stocke son identifiant.
-                    string nbrPiecesNomParamTxt = "Nombre de piéces";
+                    string nbrPiecesNomParamTxt = "Nombre de pieces";
                     // Définit une chaîne de caractères pour le nom du paramètre texte.
                     SmartText nbrPiecesParam = new SmartText(nbrPiecesParamId);
                     // Crée un objet SmartText à partir de la valeur contenue dans 'TextBoxIndiceValue'.
@@ -2189,11 +2189,11 @@ namespace Folder_Creator_Tool_V3
                 foreach (var param in allParams)
                 {
                     string paramName = TSH.Elements.GetName(param);
-                    if (paramName == "Matiére plan")
+                    if (paramName == "Matiere plan")
                         textBox5.Text = TSH.Parameters.GetTextValue(param);
                     else if (paramName == "Traitement")
                         textBox6.Text = TSH.Parameters.GetTextValue(param);
-                    else if (paramName == "Nombre de piéces")
+                    else if (paramName == "Nombre de pieces")
                         textBox7.Text = TSH.Parameters.GetTextValue(param);
                 }
             }
