@@ -901,15 +901,15 @@ namespace Folder_Creator_Tool_V3
                 List<PdmObjectId> CheckedItemsliste = new List<PdmObjectId>();
                 List<PdmObjectId> CheckedItemCopieListe = new List<PdmObjectId>();
 
-                DialogResult resulta = MessageBox.Show("Voulez vous simplifier la piece", "Confirmation", MessageBoxButtons.YesNo);
+                //DialogResult resulta = MessageBox.Show("Voulez vous simplifier la piece", "Confirmation", MessageBoxButtons.YesNo);
 
-                if (resulta == DialogResult.Yes)
-                {
+                //if (resulta == DialogResult.Yes)
+                //{
 
-                    TSH.Application.InvokeCommand("TopSolid.Kernel.UI.D3.Shapes.Healing.HealCommand");
-                    // Redémarre l'application
-                    Application.Exit();
-                }
+                //    TSH.Application.InvokeCommand("TopSolid.Kernel.UI.D3.Shapes.Healing.HealCommand");
+                //    // Redémarre l'application
+                //    Application.Exit();
+                //}
 
                 // Ajout des nœuds cochés à la liste CheckedItems
                 try
