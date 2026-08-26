@@ -1259,7 +1259,7 @@ namespace Folder_Creator_Tool_V3
 
                     ElementId matierePlanParamId = TSH.Parameters.CreateTextParameter(CurrentDocumentId, textBox5.Text);
                     // Crée un paramètre texte dans le document actuel avec la valeur spécifiée et stocke son identifiant.
-                    string matiereNomParamTxt = "Matiére plan";
+                    string matiereNomParamTxt = "Matiere plan";
                     // Définit une chaîne de caractères pour le nom du paramètre texte.
                     SmartText matierePlanParam = new SmartText(matierePlanParamId);
                     // Crée un objet SmartText à partir de la valeur contenue dans 'TextBoxIndiceValue'.
