@@ -26,11 +26,50 @@ namespace Folder_Creator_Tool_V3
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
 
+            // Les parametres utilisateur (dossier atelier, materiau...) sont stockes par
+            // ApplicationSettingsBase dans un user.config range sous l'AssemblyVersion de
+            // l'executable. Le script de deploiement avance cette version a chaque publication
+            // (deploy_update.ps1), donc sans migration explicite chaque mise a jour retombe sur un
+            // dossier vide et le chemin choisi par l'utilisateur semble perdu.
+            MigrerParametresUtilisateurSiNecessaire();
+
             // Controle de version avant toute fenetre : une version en retard ne doit meme pas
             // s'ouvrir sur un document.
             if (!PeutDemarrer()) return;
 
             Application.Run(new Form1());
+        }
+
+        /// <summary>
+        /// Recopie les parametres utilisateur de la version precedente vers la version courante,
+        /// une seule fois par version installee.
+        /// </summary>
+        /// <remarks>
+        /// <see cref="Properties.Settings.Default.Upgrade"/> retrouve automatiquement le
+        /// user.config de la derniere version anterieure installee sur le poste et y recopie les
+        /// valeurs. Le drapeau <c>UpgradeRequired</c> est lui-meme un parametre utilisateur, donc il
+        /// revient a sa valeur par defaut (true) dans le user.config flambant neuf de chaque
+        /// nouvelle version : la migration se declenche automatiquement une fois, puis plus jamais
+        /// pour cette version.
+        /// </remarks>
+        private static void MigrerParametresUtilisateurSiNecessaire()
+        {
+            if (!Properties.Settings.Default.UpgradeRequired) return;
+
+            try
+            {
+                Properties.Settings.Default.Upgrade();
+            }
+            catch (Exception ex)
+            {
+                // Rien a migrer (premiere installation sur le poste) ou user.config anterieur
+                // illisible : on continue avec les valeurs par defaut plutot que de bloquer
+                // l'ouverture.
+                Console.WriteLine("[Parametres] Migration impossible : " + ex.Message);
+            }
+
+            Properties.Settings.Default.UpgradeRequired = false;
+            Properties.Settings.Default.Save();
         }
 
         /// <summary>Adresse du descripteur de mise a jour, sur le partage reseau.</summary>
