@@ -153,6 +153,9 @@
   <ItemGroup>
     <Content Include="icône pour une application de classement de fichiers 3D et de plans avec un robot et des dossiers.ico" />
   </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="TopSolid.Cad.Design.Automating" Version="7.20.400.121" />
+  </ItemGroup>
   <!-- Configuration ILMerge -->
   <PropertyGroup>
     <IlMerge>true</IlMerge>
